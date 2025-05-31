@@ -17,6 +17,9 @@ h3 {
 p {
     line-height: 1.7;
 }
+li {
+    margin-bottom: 10px;
+}
 br {
     margin-bottom: 10px;
 }
