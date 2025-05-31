@@ -15,19 +15,20 @@
     <h2>最新の投稿</h2>
     <ul id="post-list"></ul>
     <script>
-      const posts = [
-        { href: "./html/blog/post151.html", title: "投稿1: サイトを公開！！" }
-        // ここに新しい投稿を追加できます
-      ];
-      const ul = document.getElementById('post-list');
-      posts.forEach(post => {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = post.href;
-        a.textContent = post.title;
-        li.appendChild(a);
-        ul.appendChild(li);
-      });
+        // 投稿データをPythonの辞書型風にオブジェクト配列で管理
+        const posts = [
+            { num: 151, title: "投稿1: サイトを公開！！" },
+            // ここに { num: 152, title: "投稿2: ..." } のように追加
+        ];
+        const ul = document.getElementById('post-list');
+        posts.forEach(post => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = `./html/blog/post${post.num}.html`;
+            a.textContent = post.title;
+            li.appendChild(a);
+            ul.appendChild(li);
+        });
     </script>
 </body>
 </html>
