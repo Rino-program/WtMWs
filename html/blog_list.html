@@ -1,18 +1,29 @@
-<ul id="post-list"></ul>
-<script>
-    // 投稿データをPythonの辞書型風にオブジェクト配列で管理
-    // 数字は2025年1月1日からの経過日数です。
-    const posts = [
-        { num: 151, title: "投稿1: サイトを公開！！" },
-        // ここに { num: 152, title: "投稿2: ..." } のように追加
-    ];
-    const ul = document.getElementById('post-list');
-    posts.forEach(post => {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = `./html/blog/post${post.num}.html`;
-        a.textContent = post.title;
-        li.appendChild(a);
-        ul.appendChild(li);
-    });
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./css/style.css">
+    <title>post-list</title>
+</head>
+<body>
+    <ul id="post-list"></ul>
+    <script>
+        // 私はJavascriptはかけないのでgithubに書いてもらいました。
+        // 投稿データをPythonの辞書型風にオブジェクト配列で管理
+        // 数字は2025年1月1日からの経過日数です。
+        const posts = [
+            { num: 151, title: "投稿1: サイトを公開！！" },
+            // ここに { num: 152, title: "投稿2: ..." } のように追加
+        ];
+        const ul = document.getElementById('post-list');
+        posts.forEach(post => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = `./html/blog/post${post.num}.html`;
+            a.textContent = post.title;
+            li.appendChild(a);
+            ul.appendChild(li);
+        });
 </script>
+</body>
+</html>
