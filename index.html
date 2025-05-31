@@ -7,28 +7,13 @@
 </head>
 <body>
     <h1>Welcome to My Website</h1>
+    <p>最終更新日:2025/05/31</p>
     <p>初めてのウェブサイトです。</p>
     <h2>サイトの説明</h2>
     <p>このサイトでは</p>
     <p>ブログやリンク集などの</p>
     <p>様々な情報を提供します。</p>
-    <h2>最新の投稿</h2>
-    <ul id="post-list"></ul>
-    <script>
-        // 投稿データをPythonの辞書型風にオブジェクト配列で管理
-        const posts = [
-            { num: 151, title: "投稿1: サイトを公開！！" },
-            // ここに { num: 152, title: "投稿2: ..." } のように追加
-        ];
-        const ul = document.getElementById('post-list');
-        posts.forEach(post => {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = `./html/blog/post${post.num}.html`;
-            a.textContent = post.title;
-            li.appendChild(a);
-            ul.appendChild(li);
-        });
-    </script>
+    <h2>～ブログ～</h2>
+    <a href="./html/blog_list.html">   ブログ一覧</a>
 </body>
 </html>
