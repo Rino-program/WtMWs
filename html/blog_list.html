@@ -3,13 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="./css/style.css">
-    <title>post-list</title>
+    <title>blog-list</title>
 </head>
     <body>
         <header>
             <h1>ブログ一覧</h1>
             <p>最終更新日:2025/05/31</p>
         </header>
+        <h3>～テーマプログ～</h3>
+        <ul>
+            <li><a href="./blog_list_pc.html">プリキュアのブログ</a></li>
+        </ul>
+        <h3>～通常ブログ～</h3>
         <ul id="post-list"></ul>
         <script>
             // 私はJavascriptはかけないのでgithubに書いてもらいました。
@@ -21,14 +26,16 @@
                 // ここに { num: 152, title: "投稿2: ..." } のように追加
             ];
             const ul = document.getElementById('post-list');
-            posts.forEach(post => {
+            posts.forEach(blog => {
                 const li = document.createElement('li');
                 const a = document.createElement('a');
-                a.href = `./blog/post${post.num}.html`;
-                a.textContent = post.title;
+                a.href = `./blog/blog${blog.num}.html`;
+                a.textContent = blog.title;
                 li.appendChild(a);
                 ul.appendChild(li);
             });
         </script>
+        <br>
+        <button onclick="history.back()">戻る</button>
     </body>
 </html>
