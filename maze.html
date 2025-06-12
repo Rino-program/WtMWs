@@ -1,45 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Maze Solver</title>
+    <title>迷路の最短経路探索（アニメーション付き）</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
+        body { font-family: monospace; }
+        .maze { margin: 10px 0; }
+        .cell {
+            width: 24px; height: 24px; display: inline-block;
+            text-align: center; vertical-align: middle;
+            border: 1px solid #eee; cursor: pointer; user-select: none;
         }
-        h1 {
-            margin-bottom: 10px;
-        }
-        textarea {
-            width: 90%;
-            height: 300px;
-            margin-bottom: 20px;
-        }
-        pre {
-            background: #f4f4f4;
-            padding: 10px;
-            white-space: pre-wrap;
-            text-align: left;
-            overflow-x: auto;
-        }
-        button {
-            margin: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
+        .wall { background: #222; }
+        .empty { background: #fff; }
+        .path { background: #4dd; }
+        .start { background: #4f4; }
+        .goal { background: #f44; }
+        .border { background: #888; }
+        .visited { background: #ffa; }
     </style>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.0/full/pyodide.js"></script>
 </head>
 <body>
-    <h1>Python Maze Solver</h1>
-    <textarea id="python-code">
-# 迷路の解決: 迷路を表現した2次元リストを入力として受け取り、スタートからゴールまでの最短経路を見つけるプログラムを作成してください。
-from copy import deepcopy as dc
-maze = [
+    <h1>迷路の最短経路探索（アニメーション付き）</h1>
+    <button onclick="solveMazeWithAnimation()">最短経路を探索する</button>
+    <button onclick="resetMaze()">初期化</button>
+    <div id="maze" class="maze"></div>
+    <div id="result"></div>
+
+<script>
+const maze = [
     [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0],
     [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0],
     [1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
@@ -65,146 +54,73 @@ maze = [
     [0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
     [1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0],
     [1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1],
-    [1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+    [1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0],
     [1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0],
     [0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1],
     [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0]
-]
-start = (0, 0)  # スタート地点 (行, 列)
-end = (29, 29)    # ゴール地点 (行, 列)
+];
 
-# 周りの壁を追加  @アンコウ作
-trueend = ((end[0]+1, end[1]+1))
-truestart = ((start[0]+1, start[1]+1))
+const ROWS = maze.length;
+const COLS = maze[0].length;
 
-stack = [(start[0] + 1, start[1] + 1)]
-next_stack = []
-
-new_maze = []
-
-new_maze.append(["."]*(len(maze[0])+2))
-
-for i in range(len(maze)):
-    new_l = ["."]
-    for j in range(len(maze[0])):
-        if maze[i][j] == 0:
-            new_l.append(0)
-        else:
-            new_l.append(".")
-    new_l.append(".")
-    new_maze.append(new_l)
-
-new_maze.append(["."]*(len(maze[0])+2))
-
-new_maze[stack[0][1]][stack[0][0]] = 's'
-
-# 複製
-keep_maze = dc(new_maze)
-
-# 距離を求める
-distance = 1
-while trueend not in stack:
-    check = False
-    for x, y in stack:
-        for i in range(4):
-            if i == 0: # 上
-                if new_maze[y - 1][x] == 0:
-                    new_maze[y - 1][x] = distance
-                    next_stack.append((x, y - 1))
-                    check = True
-            if i == 1: # 右
-                if new_maze[y][x + 1] == 0:
-                    new_maze[y][x + 1] = distance
-                    next_stack.append((x + 1, y))
-                    check = True
-            if i == 2: # 下
-                if new_maze[y + 1][x] == 0:
-                    new_maze[y + 1][x] = distance
-                    next_stack.append((x, y + 1))
-                    check = True
-            if i == 3: # 左
-                if new_maze[y][x - 1] == 0:
-                    new_maze[y][x - 1] = distance
-                    next_stack.append((x - 1, y))
-                    check = True
-    if not check:
-        print("エラー：スタートとゴールがつながっていない可能性があります。")
-        break
-    stack = next_stack
-    next_stack = []
-    distance += 1
-
-# 距離を表示
-print("距離表")
-for i in new_maze:
-    print(i)
-x, y = trueend
-distance = new_maze[y][x]
-print(f"距離:{distance}")
-
-# 逆順にたどる
-while distance > 1:
-    moved = False
-    for i in range(4):
-        if i == 0 and y > 0:  # 上
-            if new_maze[y - 1][x] == distance - 1:
-                y -= 1
-                distance -= 1
-                keep_maze[y][x] = 2
-                break
-        if i == 1 and x < len(new_maze[0]) - 1:  # 右
-            if new_maze[y][x + 1] == distance - 1:
-                x += 1
-                distance -= 1
-                keep_maze[y][x] = 2
-                break
-        if i == 2 and y < len(new_maze) - 1:  # 下
-            if new_maze[y + 1][x] == distance - 1:
-                y += 1
-                distance -= 1
-                keep_maze[y][x] = 2
-                break
-        if i == 3 and x > 0:  # 左
-            if new_maze[y][x - 1] == distance - 1:
-                x -= 1
-                distance -= 1
-                keep_maze[y][x] = 2
-                break
-
-for i in keep_maze:
-    for j in i:
-        if j == ".":
-            i[i.index(j)] = 1
-        elif j == "s":
-            i[i.index(j)] = 3
-
-keep_maze[trueend[1]][trueend[0]] = 4
-
-# マップの解説
-print("迷路の最短経路\n0=空白, 1=壁, 2=最短経路, 3=スタート地点, 4=ゴール地点")
-
-# マップを出力
-for row in keep_maze:
-    print(' '.join(str(cell) for cell in row))
-    </textarea>
-    <button id="run-code">Run Python Code</button>
-    <pre id="output"></pre>
-
-    <script>
-        async function main() {
-            const pyodide = await loadPyodide();
-            document.getElementById("run-code").addEventListener("click", async () => {
-                const source = document.getElementById("python-code").value;
-                try {
-                    const output = await pyodide.runPython(source);
-                    document.querySelector("#output").innerText = String(output);
-                } catch (e) {
-                    document.querySelector("#output").innerText = "Error: " + String(e);
-                }
-            });
+function drawMaze(m, solutionPath, visitedCells) {
+    const mazeDiv = document.getElementById('maze');
+    mazeDiv.innerHTML = '';
+    let visitedSet = new Set();
+    if (visitedCells) {
+        for (const [x, y] of visitedCells) visitedSet.add(`${x},${y}`);
+    }
+    for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+            let className = 'cell';
+            if (visitedSet.has(`${x},${y}`)) className += ' visited';
+            else if (solutionPath && solutionPath.find(([xx, yy]) => xx === x && yy === y)) className += ' path';
+            else if (maze[y][x] === 1) className += ' wall';
+            else className += ' empty';
+            mazeDiv.innerHTML += `<span class="${className}">&nbsp;</span>`;
         }
-        main();
-    </script>
+        mazeDiv.innerHTML += "<br>";
+    }
+}
+
+function solveMazeWithAnimation() {
+    const queue = [[0, 0]];
+    const visited = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+    const visitedCells = [];
+    visited[0][0] = true;
+
+    function bfsStep() {
+        if (queue.length === 0) {
+            return;
+        }
+        const [x, y] = queue.shift();
+        visitedCells.push([x, y]);
+
+        for (const [dx, dy] of [[0, 1], [1, 0], [0, -1], [-1, 0]]) {
+            const nx = x + dx;
+            const ny = y + dy;
+
+            if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS && !visited[ny][nx] && maze[ny][nx] === 0) {
+                visited[ny][nx] = true;
+                queue.push([nx, ny]);
+            }
+        }
+
+        drawMaze(maze, null, visitedCells);
+        setTimeout(bfsStep, 100);
+    }
+
+    bfsStep();
+}
+
+function resetMaze() {
+    drawMaze(maze, []);
+}
+
+window.onload = function () {
+    resetMaze();
+};
+</script>
 </body>
 </html>
