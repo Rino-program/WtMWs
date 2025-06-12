@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Python処理で最短経路探索＋JSで表示</title>
+  <title>Python処理＋JS描画による迷路最短経路探索</title>
   <style>
     body { font-family: monospace; }
     .maze { margin: 10px 0; }
@@ -13,19 +13,16 @@
     .start { background: #4f4; }
     .goal { background: #f44; }
     .border { background: #888; }
-    .ui-panel { margin-bottom:10px; }
-    #maze { line-height: 0; }
   </style>
 </head>
 <body>
-  <h2>Python処理で最短経路探索＋JSで表示</h2>
+  <h2>Python処理＋JS描画による迷路最短経路探索</h2>
   <button onclick="runMazeSolve()">最短経路を探索する</button>
   <div id="maze" class="maze"></div>
   <div id="result"></div>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
 <script>
-// 迷路配列（初期状態）: JS→Pythonへ渡します
 const JS_MAZE = [
     [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0],
     [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0],
@@ -58,9 +55,6 @@ const JS_MAZE = [
     [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0]
 ];
-const ROWS = JS_MAZE.length;
-const COLS = JS_MAZE[0].length;
-const start = [0, 0], end = [29, 29];
 
 let pyodideReady = false;
 let pyodide = null;
@@ -102,6 +96,7 @@ async function runMazeSolve() {
 
   // Pythonスクリプト本体（あなたのロジックそのまま＆迷路mazeは外から注入）
   let pyCode = pyMazeCode + `
+# 迷路解決処理 (あなたのPythonコードそのまま)
 from copy import deepcopy as dc
 start = (0, 0)
 end = (29, 29)
