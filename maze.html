@@ -119,7 +119,7 @@ function editCell(x, y) {
     drawMaze();
 }
 
-async function solveMaze() {
+function solveMaze() {
     const m = maze.map(row => row.slice());
     const sy = start[0], sx = start[1];
     const gy = end[0], gx = end[1];
@@ -129,16 +129,41 @@ async function solveMaze() {
     const visitedCells = [];
     let found = false;
 
-    while (queue.length) {
+    function animate() {
+        if (queue.length === 0) {
+            if (!found) {
+                document.getElementById('result').innerText = "エラー：スタートとゴールがつながっていません。";
+            }
+            return;
+        }
+
         const [x, y] = queue.shift();
         visitedCells.push([x, y]);
         drawMaze([], visitedCells);
-        await new Promise(resolve => setTimeout(resolve, 10)); // アニメーションの速度を10msに設定
 
         if (x === gx && y === gy) {
             found = true;
-            break;
+            const solutionPath = [];
+            let cx = gx, cy = gy, d = dist[gy][gx];
+            while (d > 0) {
+                solutionPath.push([cx, cy]);
+                for (let [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
+                    const nx = cx + dx, ny = cy + dy;
+                    if (nx >= 0 && ny >= 0 && nx < COLS && ny < ROWS && dist[ny][nx] === d - 1) {
+                        cx = nx;
+                        cy = ny;
+                        d--;
+                        break;
+                    }
+                }
+            }
+            solutionPath.push([sx, sy]);
+            solutionPath.reverse();
+            drawMaze(solutionPath);
+            document.getElementById('result').innerText = `最短距離: ${dist[gy][gx]}`;
+            return;
         }
+
         for (let [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
             const nx = x + dx, ny = y + dy;
             if (nx >= 0 && ny >= 0 && nx < COLS && ny < ROWS && m[ny][nx] === 0 && dist[ny][nx] === -1) {
@@ -146,32 +171,11 @@ async function solveMaze() {
                 queue.push([nx, ny]);
             }
         }
+
+        requestAnimationFrame(animate); // アニメーションの継続
     }
 
-    if (!found) {
-        document.getElementById('result').innerText = "エラー：スタートとゴールがつながっていません。";
-        return;
-    }
-
-    const solutionPath = [];
-    let x = gx, y = gy, d = dist[gy][gx];
-    while (d > 0) {
-        solutionPath.push([x, y]);
-        for (let [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
-            const nx = x + dx, ny = y + dy;
-            if (nx >= 0 && ny >= 0 && nx < COLS && ny < ROWS && dist[ny][nx] === d - 1) {
-                x = nx;
-                y = ny;
-                d--;
-                break;
-            }
-        }
-    }
-    solutionPath.push([sx, sy]);
-    solutionPath.reverse();
-
-    drawMaze(solutionPath);
-    document.getElementById('result').innerText = `最短距離: ${dist[gy][gx]}`;
+    requestAnimationFrame(animate); // アニメーションの開始
 }
 
 window.onload = resetMaze;
