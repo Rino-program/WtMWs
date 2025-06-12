@@ -133,7 +133,7 @@ async function solveMaze() {
         const [x, y] = queue.shift();
         visitedCells.push([x, y]);
         drawMaze([], visitedCells);
-        await new Promise(resolve => setTimeout(resolve, 50)); // アニメーションの速度を調整
+        await new Promise(resolve => setTimeout(resolve, 10)); // アニメーションの速度を調整
 
         if (x === gx && y === gy) {
             found = true;
