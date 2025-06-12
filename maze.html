@@ -9,26 +9,28 @@
         .cell {
             width: 24px; height: 24px; display: inline-block;
             text-align: center; vertical-align: middle;
-            border: 1px solid #eee; cursor: pointer; user-select: none;
+            border: 1px solid #eee; user-select: none;
         }
         .wall { background: #222; }
         .empty { background: #fff; }
-        .path { background: #4dd; }
+        .path { background: #4dd; animation: animatePath 0.3s linear forwards; }
         .start { background: #4f4; }
         .goal { background: #f44; }
-        .border { background: #888; }
-        .visited { background: #ffa; }
+        @keyframes animatePath {
+            from { background: #fff; }
+            to { background: #4dd; }
+        }
     </style>
 </head>
 <body>
     <h1>迷路の最短経路探索（アニメーション付き）</h1>
-    <button onclick="solveMazeWithAnimation()">最短経路を探索する</button>
+    <button onclick="solveMaze()">最短経路を探索する</button>
     <button onclick="resetMaze()">初期化</button>
     <div id="maze" class="maze"></div>
     <div id="result"></div>
 
 <script>
-const maze = [
+const DEFAULT_MAZE = [
     [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0],
     [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0],
     [1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
@@ -61,66 +63,104 @@ const maze = [
     [1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0]
 ];
 
-const ROWS = maze.length;
-const COLS = maze[0].length;
+let maze = [];
+let ROWS, COLS;
+let start = [0, 0];
+let end = [29, 29];
 
-function drawMaze(m, solutionPath, visitedCells) {
+function resetMaze() {
+    maze = DEFAULT_MAZE.map(row => row.slice());
+    ROWS = maze.length;
+    COLS = maze[0].length;
+    start = [0, 0];
+    end = [29, 29];
+    drawMaze();
+    document.getElementById('result').innerHTML = '';
+}
+
+function addBorder(maze) {
+    const m = [];
+    m.push(Array(COLS + 2).fill('.'));
+    for (let i = 0; i < ROWS; i++) {
+        m.push(['.'].concat(maze[i].slice()).concat(['.']));
+    }
+    m.push(Array(COLS + 2).fill('.'));
+    return m;
+}
+
+function drawMaze(solutionPath) {
     const mazeDiv = document.getElementById('maze');
     mazeDiv.innerHTML = '';
-    let visitedSet = new Set();
-    if (visitedCells) {
-        for (const [x, y] of visitedCells) visitedSet.add(`${x},${y}`);
+    let pathSet = new Set();
+    if (solutionPath) {
+        for (const [x, y] of solutionPath) pathSet.add(`${x},${y}`);
     }
     for (let y = 0; y < ROWS; y++) {
         for (let x = 0; x < COLS; x++) {
             let className = 'cell';
-            if (visitedSet.has(`${x},${y}`)) className += ' visited';
-            else if (solutionPath && solutionPath.find(([xx, yy]) => xx === x && yy === y)) className += ' path';
+            if (x === start[1] && y === start[0]) className += ' start';
+            else if (x === end[1] && y === end[0]) className += ' goal';
+            else if (pathSet.has(`${x+1},${y+1}`)) className += ' path';
             else if (maze[y][x] === 1) className += ' wall';
             else className += ' empty';
-            mazeDiv.innerHTML += `<span class="${className}">&nbsp;</span>`;
+            mazeDiv.innerHTML += `<span class="${className}" data-x="${x}" data-y="${y}">&nbsp;</span>`;
         }
         mazeDiv.innerHTML += "<br>";
     }
 }
 
-function solveMazeWithAnimation() {
-    const queue = [[0, 0]];
-    const visited = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
-    const visitedCells = [];
-    visited[0][0] = true;
-
-    function bfsStep() {
-        if (queue.length === 0) {
-            return;
-        }
+function solveMaze() {
+    const m = addBorder(maze);
+    const sy = start[0] + 1, sx = start[1] + 1;
+    const gy = end[0] + 1, gx = end[1] + 1;
+    const height = m.length, width = m[0].length;
+    const dist = Array.from({length: height}, () => Array(width).fill(-1));
+    dist[sy][sx] = 0;
+    const queue = [[sx, sy]];
+    let found = false;
+    while (queue.length) {
         const [x, y] = queue.shift();
-        visitedCells.push([x, y]);
-
-        for (const [dx, dy] of [[0, 1], [1, 0], [0, -1], [-1, 0]]) {
-            const nx = x + dx;
-            const ny = y + dy;
-
-            if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS && !visited[ny][nx] && maze[ny][nx] === 0) {
-                visited[ny][nx] = true;
+        if (x === gx && y === gy) { found = true; break; }
+        for (let [dx, dy] of [[0,-1],[1,0],[0,1],[-1,0]]) {
+            const nx = x + dx, ny = y + dy;
+            if (m[ny][nx] === 0 && dist[ny][nx] === -1) {
+                dist[ny][nx] = dist[y][x] + 1;
                 queue.push([nx, ny]);
             }
         }
-
-        drawMaze(maze, null, visitedCells);
-        setTimeout(bfsStep, 100);
     }
 
-    bfsStep();
+    let resultDiv = document.getElementById('result');
+    if (!found) {
+        resultDiv.innerHTML = "エラー：スタートとゴールがつながっていません。";
+        drawMaze();
+        return;
+    }
+
+    // パス復元
+    let path = [];
+    let x = gx, y = gy, d = dist[y][x];
+    while (d > 0) {
+        path.push([x, y]);
+        for (let [dx, dy] of [[0,-1],[1,0],[0,1],[-1,0]]) {
+            const nx = x + dx, ny = y + dy;
+            if (dist[ny][nx] === d - 1) {
+                x = nx; y = ny; d--;
+                break;
+            }
+        }
+    }
+    path.push([sx, sy]);
+    path.reverse();
+
+    drawMaze(path);
+    resultDiv.innerHTML = `最短距離: ${dist[gy][gx]}<br>凡例: <span class="cell empty"></span>=空白 <span class="cell wall"></span>=壁 <span class="cell path"></span>=最短経路 <span class="cell start"></span>=スタート <span class="cell goal"></span>=ゴール`;
 }
 
-function resetMaze() {
-    drawMaze(maze, []);
-}
-
-window.onload = function () {
+window.onload = function() {
     resetMaze();
 };
+
 </script>
 </body>
 </html>
