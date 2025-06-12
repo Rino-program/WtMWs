@@ -2,19 +2,31 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>PyodideでPython迷路最短経路</title>
+  <title>Python処理で最短経路探索＋JSで表示</title>
   <style>
     body { font-family: monospace; }
-    textarea { width: 100%; height: 200px; }
-    pre { background: #eee; padding: 10px; }
+    .maze { margin: 10px 0; }
+    .cell { width: 24px; height: 24px; display: inline-block; text-align: center; vertical-align: middle; }
+    .wall { background: #222; }
+    .empty { background: #fff; }
+    .path { background: #4dd; }
+    .start { background: #4f4; }
+    .goal { background: #f44; }
+    .border { background: #888; }
+    .ui-panel { margin-bottom:10px; }
+    #maze { line-height: 0; }
   </style>
 </head>
 <body>
-  <h2>Python（Pyodide）で迷路最短経路</h2>
-  <textarea id="pycode">
-# ここにPythonコードを貼り付けてください
-from copy import deepcopy as dc
-maze = [
+  <h2>Python処理で最短経路探索＋JSで表示</h2>
+  <button onclick="runMazeSolve()">最短経路を探索する</button>
+  <div id="maze" class="maze"></div>
+  <div id="result"></div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+<script>
+// 迷路配列（初期状態）: JS→Pythonへ渡します
+const JS_MAZE = [
     [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0],
     [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0],
     [1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
@@ -45,11 +57,54 @@ maze = [
     [0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1],
     [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0]
-]
+];
+const ROWS = JS_MAZE.length;
+const COLS = JS_MAZE[0].length;
+const start = [0, 0], end = [29, 29];
+
+let pyodideReady = false;
+let pyodide = null;
+
+async function loadPyodideAndPackages() {
+  pyodide = await loadPyodide();
+  pyodideReady = true;
+}
+loadPyodideAndPackages();
+
+function drawMaze(maze) {
+    const mazeDiv = document.getElementById('maze');
+    mazeDiv.innerHTML = '';
+    for (let y = 0; y < maze.length; y++) {
+        for (let x = 0; x < maze[0].length; x++) {
+            let className = 'cell';
+            if (maze[y][x] == 1) className += ' wall';
+            else if (maze[y][x] == 0) className += ' empty';
+            else if (maze[y][x] == 2) className += ' path';
+            else if (maze[y][x] == 3) className += ' start';
+            else if (maze[y][x] == 4) className += ' goal';
+            mazeDiv.innerHTML += `<span class="${className}">&nbsp;</span>`;
+        }
+        mazeDiv.innerHTML += "<br>";
+    }
+}
+
+async function runMazeSolve() {
+  if (!pyodideReady) return;
+  document.getElementById('maze').innerHTML = '計算中...';
+  document.getElementById('result').textContent = '';
+
+  // JSの迷路配列→Pythonリスト表現
+  let pyMazeCode = "maze = [\n";
+  for (let row of JS_MAZE) {
+    pyMazeCode += "    [" + row.join(",") + "],\n";
+  }
+  pyMazeCode += "]\n";
+
+  // Pythonスクリプト本体（あなたのロジックそのまま＆迷路mazeは外から注入）
+  let pyCode = pyMazeCode + `
+from copy import deepcopy as dc
 start = (0, 0)
 end = (29, 29)
-
-from copy import deepcopy as dc
 trueend = ((end[0]+1, end[1]+1))
 truestart = ((start[0]+1, start[1]+1))
 
@@ -58,7 +113,6 @@ next_stack = []
 
 new_maze = []
 new_maze.append(["."]*(len(maze[0])+2))
-
 for i in range(len(maze)):
     new_l = ["."]
     for j in range(len(maze[0])):
@@ -69,7 +123,6 @@ for i in range(len(maze)):
     new_l.append(".")
     new_maze.append(new_l)
 new_maze.append(["."]*(len(maze[0])+2))
-
 new_maze[stack[0][1]][stack[0][0]] = 's'
 keep_maze = dc(new_maze)
 
@@ -105,12 +158,8 @@ while trueend not in stack:
     next_stack = []
     distance += 1
 
-print("距離表")
-for i in new_maze:
-    print(i)
 x, y = trueend
 distance = new_maze[y][x]
-print(f"距離:{distance}")
 
 while distance > 1:
     moved = False
@@ -149,42 +198,38 @@ for i in keep_maze:
 
 keep_maze[trueend[1]][trueend[0]] = 4
 
-print("迷路の最短経路\n0=空白, 1=壁, 2=最短経路, 3=スタート地点, 4=ゴール地点")
+# JS側で使いやすい形でprint（2次元配列：0,1,2,3,4）
 for row in keep_maze:
-    print(' '.join(str(cell) for cell in row))
-  </textarea>
-  <br>
-  <button id="runbtn" onclick="runPy()">実行</button>
-  <h3>実行結果</h3>
-  <pre id="output"></pre>
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
-  <script>
-    let pyodideReady = false;
-    let pyodide = null;
-    async function loadPyodideAndPackages() {
-      pyodide = await loadPyodide();
-      pyodideReady = true;
-      document.getElementById('runbtn').disabled = false;
-    }
-    loadPyodideAndPackages();
+    print("ROW:" + ",".join(str(cell) for cell in row))
+`;
 
-    async function runPy() {
-      if (!pyodideReady) return;
-      let code = document.getElementById('pycode').value;
-      let output = "";
-      try {
-        pyodide.setStdout({
-          batched: s => output += s + '\n'
-        });
-        pyodide.setStderr({
-          batched: s => output += s + '\n'
-        });
-        await pyodide.runPythonAsync(code);
-      } catch (err) {
-        output += err + "\n";
-      }
-      document.getElementById('output').textContent = output;
+  let result = '';
+  pyodide.setStdout({ batched: s => result += s + '\n' });
+  pyodide.setStderr({ batched: s => result += s + '\n' });
+  await pyodide.runPythonAsync(pyCode);
+
+  // 最短経路付き迷路の配列を抽出
+  let maze = [];
+  let errMsg = '';
+  for (let line of result.split('\n')) {
+    if (line.startsWith('ROW:')) {
+      let arr = line.replace('ROW:', '').split(',').map(Number);
+      maze.push(arr);
+    } else if (line.startsWith('エラー')) {
+      errMsg += line + '\n';
     }
-  </script>
+  }
+  if (maze.length > 0) {
+    drawMaze(maze);
+    document.getElementById('result').textContent = (errMsg ? errMsg : '') + "凡例: ■=壁 □=空白 ■=道 ●=スタート ◆=ゴール";
+  } else {
+    document.getElementById('maze').textContent = "エラー: 計算できませんでした";
+    document.getElementById('result').textContent = errMsg || result;
+  }
+}
+
+// 初期表示
+drawMaze(JS_MAZE);
+</script>
 </body>
 </html>
