@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>迷路の最短経路探索（JavaScript版）</title>
+    <title>迷路の最短経路探索（修正版）</title>
     <style>
         body { font-family: monospace; }
         .maze { margin: 10px 0; }
@@ -22,7 +22,6 @@
     <div id="result"></div>
 
 <script>
-// Pythonのmaze配列をそのままJavaScriptに移植
 const maze = [
     [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0],
     [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0],
@@ -61,7 +60,6 @@ const COLS = maze[0].length;
 const start = [0, 0];
 const end = [29, 29];
 
-// 周囲に壁を足した迷路を生成
 function addBorder(maze) {
     const m = [];
     m.push(Array(COLS + 2).fill('.'));
@@ -72,40 +70,36 @@ function addBorder(maze) {
     return m;
 }
 
-// 迷路を表示
 function drawMaze(m, solutionPath, startPos, endPos) {
     const mazeDiv = document.getElementById('maze');
     mazeDiv.innerHTML = '';
+    let pathSet = new Set();
+    if (solutionPath) {
+        for (const [x, y] of solutionPath) pathSet.add(`${x},${y}`);
+    }
     for (let y = 0; y < m.length; y++) {
         for (let x = 0; x < m[0].length; x++) {
-            let cell = m[y][x];
             let className = 'cell';
-            if (cell === '.' || cell === 1) className += ' wall border';
-            else if (cell === 0) className += ' empty';
-            else if (solutionPath && solutionPath.find(([xx, yy]) => xx === x && yy === y)) className += ' path';
-            if (startPos && x === startPos[0] && y === startPos[1]) className += ' start';
-            else if (endPos && x === endPos[0] && y === endPos[1]) className += ' goal';
+            if (x === startPos[0] && y === startPos[1]) className += ' start';
+            else if (x === endPos[0] && y === endPos[1]) className += ' goal';
+            else if (pathSet.has(`${x},${y}`)) className += ' path';
+            else if (m[y][x] === '.' || m[y][x] === 1) className += ' wall border';
+            else className += ' empty';
             mazeDiv.innerHTML += `<span class="${className}">&nbsp;</span>`;
         }
         mazeDiv.innerHTML += "<br>";
     }
 }
 
-// 幅優先探索で最短経路を探索
 function solveMaze() {
-    // 境界付き
     const m = addBorder(maze);
     const sy = start[0] + 1, sx = start[1] + 1;
     const gy = end[0] + 1, gx = end[1] + 1;
     const height = m.length, width = m[0].length;
-
-    // 距離記録
     const dist = Array.from({length: height}, () => Array(width).fill(-1));
     dist[sy][sx] = 0;
     const queue = [[sx, sy]];
     let found = false;
-
-    // BFS
     while (queue.length) {
         const [x, y] = queue.shift();
         if (x === gx && y === gy) { found = true; break; }
@@ -127,8 +121,7 @@ function solveMaze() {
 
     // パス復元
     let path = [];
-    let x = gx, y = gy;
-    let d = dist[y][x];
+    let x = gx, y = gy, d = dist[y][x];
     while (d > 0) {
         path.push([x, y]);
         for (let [dx, dy] of [[0,-1],[1,0],[0,1],[-1,0]]) {
@@ -146,7 +139,6 @@ function solveMaze() {
     resultDiv.innerHTML = `最短距離: ${dist[gy][gx]}<br>凡例: <span class="cell empty"></span>=空白 <span class="cell wall"></span>=壁 <span class="cell path"></span>=最短経路 <span class="cell start"></span>=スタート <span class="cell goal"></span>=ゴール`;
 }
 
-// 初期状態（未解決）
 window.onload = function() {
     drawMaze(addBorder(maze), null, [start[1]+1, start[0]+1], [end[1]+1, end[0]+1]);
 };
