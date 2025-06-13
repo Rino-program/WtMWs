@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>もっと見るリスト</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            padding: 5px 0;
+        }
+        .list-item {
+            display: none;
+        }
+        .list-item.visible {
+            display: list-item;
+        }
+        #show-more-btn {
+            cursor: pointer;
+            color: blue;
+            text-decoration: underline;
+            display: inline-block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>リスト</h1>
+    <ul id="item-list">
+        <li class="list-item visible">アイテム1</li>
+        <li class="list-item visible">アイテム2</li>
+        <li class="list-item visible">アイテム3</li>
+        <li class="list-item visible">アイテム4</li>
+        <li class="list-item visible">アイテム5</li>
+        <li class="list-item">アイテム6</li>
+        <li class="list-item">アイテム7</li>
+        <li class="list-item">アイテム8</li>
+    </ul>
+    <div id="show-more-btn">もっと見る</div>
+
+    <script>
+        const showMoreBtn = document.getElementById('show-more-btn');
+        const listItems = document.querySelectorAll('.list-item');
+
+        showMoreBtn.addEventListener('click', () => {
+            listItems.forEach(item => item.classList.add('visible'));
+            showMoreBtn.style.display = 'none'; // ボタンを非表示
+        });
+    </script>
+</body>
+</html>
