@@ -35,6 +35,30 @@
 
 ## 使う場面の例文
 
+- 友達との普通の会話  
+  > See you later! :)  
+  （またね！）
+
+- 残念な時  
+  > I forgot my umbrella :(  
+  （傘を忘れちゃった）
+
+- 面白いジョークの後  
+  > That was hilarious XD  
+  （めっちゃウケた！）
+
+- 皮肉っぽく  
+  > Oh, really? ;)  
+  （へぇ、そうなんだ？）
+
+- 驚いた時  
+  > You did what? :O  
+  （何したって？）
+
+- 感謝や愛情を伝えたい時  
+  > Thanks for everything <3  
+  （いろいろありがとう）
+
 - 気まずい時  
   > Sorry, I forgot again :S  
   （ごめん、また忘れちゃった）
