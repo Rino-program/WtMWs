@@ -5,7 +5,7 @@
 ## サイト概要
 
 - ブログやリンク集など、さまざまな情報を発信しています。
-- ノーコードツールは使わず、HTML/CSS/JavaScriptで手作りしています。（JavaScriptのみgithub Copilot作）
+- ノーコードツールは使わず、HTML/CSS/JavaScriptで手作りしています。（JavaScriptと一部のcssのみgithub Copilot作）
 
 ## ディレクトリ構成
 
