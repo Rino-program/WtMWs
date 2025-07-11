@@ -114,6 +114,12 @@ footer {
     padding-bottom: 1em;
 }
 
+dt {
+    margin: 0.5em 0;
+    font-weight: bold;
+    color: #2e3440;
+}
+
 @media (max-width: 900px) {
     section {
         max-width: 98vw;
