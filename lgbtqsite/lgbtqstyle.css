@@ -124,6 +124,59 @@ dd {
     margin-bottom: 1em;
 }
 
+blockquote {
+    position: relative;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    font-style: italic;
+    color: #4e4e4e;
+    background: #fff0f0;
+}
+
+blockquote:before{
+    display: inline-block;
+    position: absolute;
+    top: 7px;
+    left: 10px;
+    content: "\f10d";
+    font-family: FontAwesome;
+    color: #ffdfdf;
+    font-size: 58px;
+    line-height: 1;
+    font-weight: 900;
+}
+
+blockquote:after{
+    display: inline-block;
+    position: absolute;
+    bottom: 5px;
+    right: 15px;
+    text-align: center;
+    content: "\f10e";
+    font-family: FontAwesome;
+    color: #ffdfdf;
+    font-size: 40px;
+    line-height: 1;
+    font-weight: 900;
+}
+
+blockquote p {
+    position: relative;
+    padding: 0;
+    margin: 10px 0;
+    z-index: 3;
+    line-height: 1.7;
+}
+
+blockquote cite {
+    position: relative;
+    z-index: 3;
+    display: block;
+    text-align: right;
+    color: #888888;
+    font-size: 0.9em;
+}
+
 @media (max-width: 900px) {
     section {
         max-width: 98vw;
