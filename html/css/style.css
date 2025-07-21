@@ -23,3 +23,26 @@ li {
 br {
     margin-bottom: 10px;
 }
+#update-schedule {
+    margin: 20px 0;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+#update-schedule h2 {
+    font-size: 1.5em;
+    color: #333;
+}
+
+#update-schedule ul {
+    list-style-type: disc;
+    padding-left: 20px;
+}
+
+#update-schedule li {
+    margin: 5px 0;
+    font-size: 1em;
+    color: #555;
+}
