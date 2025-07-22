@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="./img/title.png">
-    <link rel="stylesheet" href="./html/css/style.css">
+    <link rel="stylesheet" href=".\\html\\blog\\blogcss\\blogstyle.css">
     <title>Welcome to My Website (main page)</title>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-144HPKP3NS"></script>
@@ -14,21 +14,36 @@
 
         gtag('config', 'G-144HPKP3NS');
     </script>
+    <style>
+    body {
+        margin-left: 20px; /* 左に20pxの空白を作成 */
+    }
+    #main-header {
+        margin-left: -20px;
+    }
+    #main-nav {
+        margin-left: -20px;
+    }
+    </style>
 </head>
 <body>
     <!--shinobi1<script type="text/javascript" src="https://xa.shinobi.jp/ufo/191994000"></script><noscript><a href="https://xa.shinobi.jp/bin/gg?191994000" target="_blank"><img src="https://xa.shinobi.jp/bin/ll?191994000" style="border: 0;" alt="訪問カウンター"></a><br><span style="font-size:9px; color: inherit;"></span><img style="margin:0;vertical-align:text-bottom;" src="https://img.shinobi.jp/tadaima/fj.gif" width="19" height="11" alt=""></span></noscript>shinobi2-->
-    <br>
-    <h1>Welcome to My Website</h1>
-    <p>全体最終更新日:2025/07/16</p>
-    <p>初めてのウェブサイトです。</p>
-    <p>ノーコードで作れるようなツールは基本使っていません。</p>
-    <p>このサイトはRino-programが自分で作成したものです。</p>
-    <p>個人情報の観点からあまり詳しい事は書きませんが、</p>
-    <p>本人確認情報ってどうやって書けばいいの( > <。)</p>
-    <!--
-    <br>
-    <p>訪問カウンター(研究中)</p>
-    カウンタータグここから<table border="0" cellpadding="0" cellspacing="1" style="border:#CCCCCC 1px dotted;"><tr><td><table border="0" cellspacing="1" cellpadding="1"><tr><td valign="middle"><img src="https://smart-counter.net/images/today.gif"><a href="https://smart-counter.net/"><img src="https://smart-counter.net/tday-d64-f5-051/683bd0603e352/" alt="アクセスカウンター" border="0"></a></td><td valign="middle"><img src="https://smart-counter.net/images/yesterday.gif" alt=""><a href="https://smart-counter.net/"><img src="https://smart-counter.net/yday-d64-f5-051/683bd0603e352/" alt="アクセスカウンター" border="0"></a></td><td valign="middle"><img src="https://smart-counter.net/images/total.gif"><a href="https://smart-counter.net/"><img src="https://smart-counter.net/total-d64-f6-051/683bd0603e352/" alt="アクセスカウンター" border="0"></a></td></tr></table></td></tr></table>カウンタータグここまで-->
+    <header id="main-header">
+        <h1>Welcome to My Website</h1>
+        <p>全体最終更新日:2025/07/22</p>
+        <p>初めてのウェブサイトです。</p>
+        <p>ノーコードで作れるようなツールは基本使っていません。</p>
+        <p>このサイトはRino-programが自分で作成したものです。</p>
+        <p>本人確認情報ってどうやって書けばいいの( > <。)</p>
+    </header>
+    <nav id="main-nav">
+        <ul>
+            <li><a href="./html/index.html">メインページ</a></li>
+            <li><a href="./html/blog_list.html">ブログ一覧</a></li>
+            <li><a href="./html/tokusetu.html">特設サイト一覧</a></li>
+            <li><a href="./html/vote/index.html">投票ページ</a></li>
+        </ul>
+    </nav>
     <br>
     <h2>サイトの説明</h2>
     <p>このサイトでは</p>
@@ -36,7 +51,6 @@
     <p>様々な情報を提供します。</p>
     <p>〜最近のお知らせ〜(基本3つ)</p>
     <ul>
-        <li>25/07/11 特設サイト: lgbtq+特設サイトを正式公開しました。</li>
         <li>25/07/11 メインページ: サイト全体の更新を行いました。</li>
         <li>25/07/01 投票フォーム: 投票フォームを公開しました。</li>
     </ul>
@@ -76,6 +90,13 @@
             <p>25/06/16 github: リポジトリの改修が終わったためリンクを公開しました。</p>
         </li>
     </ul>
+    <section id="update-schedule">
+        <h2>製作中, 制作予定リスト</h2>
+        <ul>
+            <li>ブログ記事を制作中 (3記事)python, C++, 通常</li>
+            <li>地震の特設サイトを制作予定</li>
+        </ul>
+    </section>
     <h2>～お問い合わせ～</h2>
     <p>ご意見やご質問がありましたら、<a href="https://forms.gle/6dbLHQxDBsK87Ksv6">google フォーム</a>でご連絡ください。</p>
     <br>
@@ -84,17 +105,6 @@
     <p>サイトURLのDNS: DDSN Now / aquapal</p>
     <!--<p>アクセス解析: 忍者アクセス解析 (広告が出てしまうので停止中)</p>-->
     <br>
-    <!--
-    <section id="update-schedule">
-        <h2>更新予定リスト</h2>
-        <ul>
-            <li>2025/07/25: 新しいブログ記事を公開予定</li>
-            <li>2025/08/01: サイトデザインの改善</li>
-            <li>2025/08/15: 動的サイトの追加準備</li>
-            <li>2025/08/30: アクセス解析機能の導入</li>
-        </ul>
-    </section>
-    -->
     <footer>@Rinotti-Family</footer>
 </body>
 </html>
