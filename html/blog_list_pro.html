@@ -17,23 +17,23 @@
     <body>
         <header>
             <h1>プログラミングのブログ一覧(.py, .cpp)</h1>
-            <p>最終更新日:2025/07/22</p>
+            <p>最終更新日:2025/07/24</p>
         </header>
-        <h3>～pythonブログ (製作中)～</h3>
+        <h3>～pythonブログ～</h3>
         <ul id="post-list_py"></ul>
         <script>
             // 私はJavascriptはかけないのでgithubに書いてもらいました。
             // 投稿データをRinoが管理しやすいようにPythonの辞書型風にオブジェクト配列で管理
             // 数字は2025年1月1日からの経過日数です。
             const posts = [
-                // { num: 151, title: "25/05/31 1: 1 pythonって？"}
-                // ここに { num: 152, title: "投稿2: ..." } のように追加
+                { num: "001", title: "25/07/24: Pythonって？ - 初心者から中級者まで完全ガイド"}
+                // ここに { num: "152", title: "投稿2: ..." } のように追加
             ];
-            const ul = document.getElementById('post-list');
+            const ul = document.getElementById('post-list_py');
             posts.forEach(blog => {
                 const li = document.createElement('li');
                 const a = document.createElement('a');
-                a.href = `./blog/pro/py/blog${blog.num}.html`;
+                a.href = `blog/pro/py/blog${blog.num}.html`;
                 a.textContent = blog.title;
                 li.appendChild(a);
                 ul.appendChild(li);
@@ -44,13 +44,13 @@
         <script>
             // C++のブログ投稿データ
             const cppPosts = [
-                // { num: 201, title: "25/07/01 1: 1 C++って？" },
+                // { num: "201", title: "25/07/01: C++って？" },
             ];
             const cppUl = document.getElementById('post-list_cpp');
             cppPosts.forEach(blog => {
                 const li = document.createElement('li');
                 const a = document.createElement('a');
-                a.href = `./blog/pro/cpp/blog${blog.num}.html`;
+                a.href = `blog/pro/cpp/blog${blog.num}.html`;
                 a.textContent = blog.title;
                 li.appendChild(a);
                 cppUl.appendChild(li);

@@ -1,0 +1,413 @@
+/* Python紹介ブログ専用CSS */
+
+/* 全体のスタイリング */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+}
+
+/* ヘロセクション */
+.python-hero {
+    background: linear-gradient(135deg, #3776ab 0%, #ffd43b 100%);
+    color: white;
+    padding: 40px 20px;
+    border-radius: 15px;
+    margin: 20px 0;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(55, 118, 171, 0.3);
+}
+
+.python-hero h2 {
+    font-size: 2.5em;
+    margin: 0 0 10px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.python-logo {
+    font-size: 4em;
+    margin: 20px 0;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+/* セクション共通スタイル */
+.content-section {
+    background: white;
+    margin: 25px 0;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-left: 5px solid #3776ab;
+}
+
+.content-section h3 {
+    color: #3776ab;
+    margin-top: 0;
+    font-size: 1.4em;
+    border-bottom: 2px solid #ffd43b;
+    padding-bottom: 8px;
+}
+
+/* 特徴カード */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.feature-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.feature-icon {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.feature-card h4 {
+    margin: 10px 0;
+    font-size: 1.2em;
+}
+
+/* コードブロック */
+.code-container {
+    background: #1e1e1e;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 15px 0;
+    overflow-x: auto;
+    position: relative;
+}
+
+.code-header {
+    background: #2d2d2d;
+    color: #ffd43b;
+    padding: 8px 15px;
+    border-radius: 6px 6px 0 0;
+    margin: -20px -20px 15px -20px;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.code-block {
+    background: transparent;
+    color: #f8f8f2;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+/* シンタックスハイライト */
+.keyword { color: #ff79c6; }
+.string { color: #f1fa8c; }
+.comment { color: #6272a4; font-style: italic; }
+.function { color: #50fa7b; }
+.number { color: #bd93f9; }
+
+/* 比較テーブル */
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    border: 1px solid #e1e8ed;
+}
+
+.comparison-table th {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 18px 15px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.95em;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    letter-spacing: 0.5px;
+}
+
+.comparison-table th:first-child {
+    text-align: left;
+    padding-left: 20px;
+}
+
+.comparison-table td {
+    padding: 16px 15px;
+    text-align: center;
+    border-bottom: 1px solid #f1f3f4;
+    vertical-align: middle;
+    font-size: 0.9em;
+    color: #2c3e50;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.comparison-table td:first-child {
+    background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
+    font-weight: 700;
+    color: #2c3e50;
+    text-align: left;
+    padding-left: 20px;
+    border-right: 2px solid #bdc3c7;
+}
+
+.comparison-table tr:hover {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.comparison-table tr:hover td:first-child {
+    background: linear-gradient(135deg, #d5dbdb 0%, #a6acaf 100%);
+}
+
+/* 評価スター */
+.rating {
+    color: #f39c12;
+    font-size: 1.1em;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    display: inline-block;
+    margin-right: 8px;
+    letter-spacing: 1px;
+}
+
+.rating-text {
+    font-size: 0.85em;
+    color: #34495e;
+    font-weight: 600;
+    display: block;
+    margin-top: 2px;
+}
+
+/* 用途別カード */
+.use-cases {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.use-case-card {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.use-case-card:hover {
+    border-color: #3776ab;
+    box-shadow: 0 5px 15px rgba(55, 118, 171, 0.2);
+    transform: translateY(-3px);
+}
+
+.use-case-icon {
+    font-size: 2em;
+    margin-bottom: 10px;
+    color: #3776ab;
+}
+
+/* 対話的要素 */
+.interactive-demo {
+    background: #f8f9fa;
+    border: 2px dashed #3776ab;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.demo-button {
+    background: linear-gradient(135deg, #3776ab 0%, #ffd43b 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    margin: 5px;
+}
+
+.demo-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(55, 118, 171, 0.4);
+}
+
+.demo-output {
+    background: #1e1e1e;
+    color: #f8f8f2;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.4;
+    border: 1px solid #333;
+}
+
+/* 学習パス */
+.learning-path {
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    margin: 20px 0;
+}
+
+.learning-path h3 {
+    color: white;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+.learning-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+    overflow-x: auto;
+}
+
+.learning-step {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    min-width: 120px;
+    margin: 0 10px;
+    position: relative;
+}
+
+.learning-step::after {
+    content: "→";
+    position: absolute;
+    right: -15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5em;
+    color: #ffd43b;
+}
+
+.learning-step:last-child::after {
+    display: none;
+}
+
+.step-number {
+    background: #f39c12;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px auto;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .python-hero {
+        padding: 30px 15px;
+    }
+    
+    .python-hero h2 {
+        font-size: 2em;
+    }
+    
+    .python-logo {
+        font-size: 3em;
+    }
+    
+    .features-grid,
+    .use-cases {
+        grid-template-columns: 1fr;
+    }
+    
+    .comparison-table {
+        font-size: 0.8em;
+    }
+    
+    .comparison-table th,
+    .comparison-table td {
+        padding: 8px 5px;
+    }
+    
+    .learning-steps {
+        flex-direction: column;
+    }
+    
+    .learning-step {
+        margin: 10px 0;
+        width: 100%;
+    }
+    
+    .learning-step::after {
+        content: "↓";
+        right: 50%;
+        top: 100%;
+        transform: translateX(50%);
+    }
+    
+    .content-section {
+        padding: 20px 15px;
+    }
+}
+
+/* アニメーション */
+.fade-in {
+    animation: fadeIn 0.6s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 強調ボックス */
+.highlight-box {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    border-left: 5px solid #d35400;
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+.highlight-box::before {
+    content: "💡 ";
+    font-size: 1.2em;
+    margin-right: 5px;
+}
