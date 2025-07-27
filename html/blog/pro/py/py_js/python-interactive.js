@@ -242,23 +242,31 @@ function highlightCodeDifferences() {
     
     codeBlocks.forEach(block => {
         let html = block.innerHTML;
-        
+        // 言語ごとにキーワードを分岐（C++/Java/Python/JS対応）
+        const lang = (block.previousElementSibling && block.previousElementSibling.textContent) ? block.previousElementSibling.textContent.toLowerCase() : '';
+        let keywordPattern = '';
+        if (lang.includes('c++')) {
+            keywordPattern = '\b(int|return|include|using|namespace|std|cout|endl|main|void|class|public|private|protected|if|else|for|while|break|continue|switch|case|default|const|static|new|delete|this|struct|template|typename|try|catch|throw)\b';
+        } else if (lang.includes('java')) {
+            keywordPattern = '\b(public|static|void|main|class|int|String|System|out|println|return|if|else|for|while|break|continue|switch|case|default|new|this|try|catch|throw)\b';
+        } else if (lang.includes('python')) {
+            keywordPattern = '\b(def|if|else|for|while|import|from|class|return|try|except|with|as|print|in|not|and|or|is|lambda|pass|break|continue|yield|global|nonlocal|assert|del)\b';
+        } else if (lang.includes('javascript')) {
+            keywordPattern = '\b(function|if|else|for|while|var|let|const|return|class|import|from|export|default|try|catch|throw|new|this|break|continue)\b';
+        } else {
+            // デフォルトはPython風
+            keywordPattern = '\b(def|if|else|for|while|import|from|class|return|try|except|with|as)\b';
+        }
         // キーワードのハイライト
-        html = html.replace(/\b(def|if|else|for|while|import|from|class|return|try|except|with|as)\b/g, 
-            '<span class="keyword">$1</span>');
-        
+        html = html.replace(new RegExp(keywordPattern, 'g'), '<span class="keyword">$1</span>');
         // 文字列のハイライト
         html = html.replace(/(["'].*?["'])/g, '<span class="string">$1</span>');
-        
-        // コメントのハイライト
-        html = html.replace(/(#.*$)/gm, '<span class="comment">$1</span>');
-        
+        // コメントのハイライト（C++/Java/Python/JS対応）
+        html = html.replace(/(\/\/.*$|#.*$)/gm, '<span class="comment">$1</span>');
         // 関数名のハイライト
         html = html.replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g, '<span class="function">$1</span>');
-        
         // 数字のハイライト
         html = html.replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="number">$1</span>');
-        
         block.innerHTML = html;
     });
 }

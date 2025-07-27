@@ -411,3 +411,15 @@ body {
     font-size: 1.2em;
     margin-right: 5px;
 }
+
+.section-all {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.section-all > * {
+        width: 850px;
+        max-width: 100%;
+}
