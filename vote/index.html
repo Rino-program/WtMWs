@@ -13,6 +13,44 @@
 
         gtag('config', 'G-144HPKP3NS');
     </script>
+    <style>
+        /* jump-form をページ中央付近に配置し、横並び・レスポンシブにする */
+        #jump-form{
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            justify-content: center; /* 横方向中央寄せ */
+            flex-wrap: wrap;
+            margin: 1rem auto; /* 上下に余白を確保して中央付近に */
+            width: 100%;
+            max-width: 720px; /* ページ中央付近に見える幅を制限 */
+            box-sizing: border-box;
+            padding: 0 0.5rem;
+        }
+        #jump-form label{ white-space: nowrap; }
+        #jump-form input{
+            padding: 0.4rem 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            min-width: 8rem;
+            max-width: 100%;
+            flex: 1 1 12rem; /* 幅がある場合は伸びる */
+        }
+        #jump-form button{
+            padding: 0.4rem 0.7rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            border: 1px solid #2a7ae2;
+            background: #2a7ae2;
+            color: #fff;
+            cursor: pointer;
+            flex: 0 0 auto;
+        }
+        @media (max-width:480px){
+            #jump-form input{ flex: 1 1 auto; min-width: 6rem; }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -32,6 +70,15 @@
         <p>25/07/09: <a href="#0003">たけのこvsきのこ決戦</a>を公開しました！</p>
         <p>25/07/05: <a href="#0002">好きな元素調査</a>を公開しました！</p>
         <p>25/07/01: <a href="#0001">アンケートの試作(test)</a>を公開しました！</p>
+    </section>
+    <section id="jump-section">
+        <h2>アンケートへジャンプ</h2>
+        <p>番号を入力して、アンケートにジャンプできます。</p>
+        <div id="jump-form">
+            <label for="jump-input">番号で移動：</label>
+            <input id="jump-input" type="text" placeholder="例: 1 または 0001 など" />
+            <button id="jump-btn" type="button">移動</button>
+        </div>
     </section>
     <section id="0003">
         <h2>たけのこvsきのこ決戦 (実施中)</h2>
@@ -54,5 +101,6 @@
     <br>
     <button onclick="history.back()">戻る</button>
     <footer>@Rinotti-Family</footer>
+    <script src="../post/navigate.js"></script>
 </body>
 </html>
