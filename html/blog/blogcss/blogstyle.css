@@ -49,7 +49,7 @@ nav li a:hover {
 
 section {
     background: #fff;
-    margin: 1.6em auto;
+    margin: 1.5em auto;
     padding: 2em;
     max-width: 800px;
     border-radius: 10px;
@@ -68,6 +68,12 @@ section h3 {
     color: #5e81ac;
     margin-top: 1.5em;
     font-size: 1.15em;
+}
+
+section p {
+    margin: 2em 1;
+    color: #493752;
+    line-height: 2.3;
 }
 
 ul, ol {
