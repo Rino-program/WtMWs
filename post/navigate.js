@@ -6,17 +6,16 @@
 
     if(!input || !btn) return;
 
-    function normalize(val){
-        if(!val) return null;
-        // 数字のみ抽出
-        const m = val.match(/(\d+)/);
-        if(!m) return null;
-        let num = m[1];
-        // 先頭の0を無視してから再補完することで、'0001'や'1'両方を扱う
-        num = String(parseInt(num,10));
-        if(isNaN(num)) return null;
-        // 4桁に0埋め
-        return num.padStart(4,'0');
+    // 単数あるいはカンマ区切りで複数の番号を正規化して配列で返す
+    function normalizeList(val){
+        if(!val) return [];
+        // 入力中の全ての数字のかたまりを抽出（カンマ区切りや空白に対応）
+        const parts = String(val).split(/[,\s]+/).map(s => (s||'').match(/(\d+)/)).filter(Boolean).map(m=>m[1]);
+        const nums = parts.map(n => {
+            const x = parseInt(n,10);
+            return Number.isNaN(x) ? null : String(x).padStart(4,'0');
+        }).filter(Boolean);
+        return nums;
     }
 
     function highlightAndFocus(el){
@@ -37,24 +36,33 @@
 
     function go(){
         const raw = input.value.trim();
-        const id = normalize(raw);
-        if(!id){
-            alert('有効な番号を入力してください (例: 1 または 0001 など)');
+        const ids = normalizeList(raw);
+        if(ids.length === 0){
+            alert('有効な番号を入力してください (例: 1 または 0001 など、カンマ区切りも可)');
             return;
         }
-        const el = document.getElementById(id);
-        if(el){
-            el.scrollIntoView({behavior:'smooth', block:'start'});
-            // ハイライト＋フォーカス
-            highlightAndFocus(el);
-            // ハッシュ更新（履歴に残る）: 同じID連打のときは書き換え
-            if(location.hash === '#'+id){
-                history.replaceState(null,'', '#'+id);
+        // ページ内の section を検索し、data-ids に含まれるか id と一致するものを探す
+        const sections = Array.from(document.querySelectorAll('section'));
+        let found = null;
+        for(const id of ids){
+            found = sections.find(sec => {
+                const sids = (sec.dataset.ids || sec.id || '').split(/\s*,\s*/).map(x=>x.padStart(4,'0'));
+                return sids.includes(id);
+            });
+            if(found) break;
+        }
+        if(found){
+            found.scrollIntoView({behavior:'smooth', block:'start'});
+            highlightAndFocus(found);
+            // 更新するハッシュは最初のマッチした番号にする
+            const outHash = ids[0].replace(/^0+/, '');
+            if(location.hash === '#'+outHash){
+                history.replaceState(null,'', '#'+outHash);
             } else {
-                history.pushState(null,'', '#'+id);
+                history.pushState(null,'', '#'+outHash);
             }
         } else {
-            alert('該当するセクションが見つかりません: ' + id);
+            alert('該当するセクションが見つかりません: ' + ids.join(','));
         }
     }
 
@@ -71,14 +79,22 @@
     window.addEventListener('load', function(){
         const h = (location.hash || '').replace('#','');
         if(h){
-            const nid = normalize(h);
-            if(nid){
-                const el = document.getElementById(nid);
-                if(el){
+            const ids = normalizeList(h);
+            if(ids.length){
+                const sections = Array.from(document.querySelectorAll('section'));
+                let found = null;
+                for(const id of ids){
+                    found = sections.find(sec => {
+                        const sids = (sec.dataset.ids || sec.id || '').split(/\s*,\s*/).map(x=>x.padStart(4,'0'));
+                        return sids.includes(id);
+                    });
+                    if(found) break;
+                }
+                if(found){
                     // 少し待ってからスクロール（ブラウザのデフォルトハッシュ処理上書き対策）
                     setTimeout(()=> {
-                        el.scrollIntoView({behavior:'smooth', block:'start'});
-                        highlightAndFocus(el);
+                        found.scrollIntoView({behavior:'smooth', block:'start'});
+                        highlightAndFocus(found);
                     }, 80);
                 }
             }
