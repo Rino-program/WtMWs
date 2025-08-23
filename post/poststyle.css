@@ -1,0 +1,303 @@
+/* poststyle.css — ポスト一覧ページ用スタイル
+   見やすさ重視 + 更新しやすい構造
+   1) カラーテーマはCSS変数で集中管理
+   2) タグUIと本文はクラスで制御（JSはclassの付け外しのみ）
+   3) 本文は3行でクランプ。展開時は .expanded を付与
+*/
+
+:root{
+  --bg: #0b0c0f;
+  --card: #12141a;
+  --text: #eae8e4;
+  --subtext: #bab4ad;
+  --border: #2a2f3a;
+  /* 暖色系アクセント（青から変更） */
+  --accent: #ff7a59;            /* コーラル系 */
+  --accent-weak: rgba(255,122,89,.16);
+  --danger: #ff6b6b;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 8px 24px rgba(0,0,0,.35);
+  --shadow-soft: 0 4px 14px rgba(0,0,0,.25);
+  --maxw: 960px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root{
+    --bg: #faf7f3;
+    --card: #ffffff;
+    --text: #2a201b;
+    --subtext: #6e635b;
+    --border: #e7e0d9;
+    --accent: #d2643a;          /* ライトモードの暖色 */
+    --accent-weak: rgba(210,100,58,.12);
+    --shadow: 0 8px 20px rgba(0,0,0,.08);
+    --shadow-soft: 0 4px 12px rgba(0,0,0,.06);
+  }
+}
+
+*{ box-sizing: border-box; }
+html{ scroll-behavior: smooth; }
+body{
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  /* 背景のアクセントも暖色に */
+  background: radial-gradient(1200px 800px at 10% -10%, rgba(255,122,89,.08), transparent 60%) ,
+              radial-gradient(1200px 800px at 110% 20%, rgba(255,122,89,.06), transparent 60%),
+              var(--bg);
+  color: var(--text);
+  line-height: 1.75;
+}
+
+/* コンテナ */
+main, .container{
+  width: min(100%, var(--maxw));
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ヘッダー */
+header{
+  width: 100%;
+  background: linear-gradient(180deg, rgba(255,122,89,.10), transparent 60%);
+  padding: 2.2rem 1rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+header h1{
+  margin: 0 0 .25rem;
+  font-size: clamp(1.3rem, 1.2rem + 1.2vw, 2rem);
+}
+header p{ color: var(--subtext); margin: .125rem 1rem .125rem 0; display: inline-block; }
+@media (max-width: 520px){ header p{ display:block; } }
+
+/* ナビ（ページ内） */
+nav{
+  width: min(100%, var(--maxw));
+  margin: 0 auto 1rem;
+  padding: 0 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+nav::-webkit-scrollbar{ height: 6px; }
+nav::-webkit-scrollbar-thumb{ background: var(--border); border-radius: 6px; }
+nav li{ list-style: none; display: inline-block; margin-right: .4rem; }
+nav a{
+  display: inline-block;
+  padding: .35rem .7rem;
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  background: var(--accent-weak);
+  text-decoration: none;
+}
+nav a:hover{ filter: brightness(1.1); }
+
+/* ジャンプフォーム */
+#jump-form{
+  width: min(100%, var(--maxw));
+  margin: .25rem auto 1.25rem;
+  padding: .75rem 1rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: .5rem;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+#jump-form label{ color: var(--subtext); }
+#jump-input{
+  height: 40px;
+  padding: 0 .75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+}
+#jump-btn{
+  height: 40px;
+  padding: 0 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent);
+  background: var(--accent-weak);
+  color: var(--accent);
+  cursor: pointer;
+}
+#jump-btn:hover{ filter: brightness(1.1); }
+
+/* タグ一覧 */
+#tag-list{ width: min(100%, var(--maxw)); margin: 0 auto; }
+#tag-list-flex{
+  display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center;
+  max-height: 2.9rem; /* 2行相当 */
+  overflow: hidden;
+  transition: max-height .25s ease;
+}
+#tag-list-flex.expanded{ max-height: 999px; }
+#tag-list-more-btn{
+  margin: .5rem auto 0; display: block;
+  padding: .4rem .9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+}
+.tag-btn{
+  padding: .35rem .75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+}
+.tag-btn:hover{ border-color: var(--accent); }
+.tag-btn.selected{
+  color: #fff; background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* セクション（各ポスト） */
+section{
+  width: min(100%, var(--maxw));
+  margin: 1rem auto;
+  padding: 1.1rem 1rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  position: relative;
+}
+section h2{
+  margin: 0 0 .25rem;
+  font-size: clamp(1rem, .9rem + .6vw, 1.25rem);
+}
+section[data-tags]::before{
+  content: attr(data-tags);
+  position: absolute; top: .6rem; right: .8rem;
+  font-size: .75rem; letter-spacing: .02em;
+  color: var(--subtext);
+}
+
+/* アンカーで飛んだ時の余白調整（固定ヘッダー対策にも有効） */
+section{ scroll-margin-top: 72px; }
+
+/* 本文クランプ（初期3行） */
+.post-content{
+  display: -webkit-box;
+  /* 一部エンジン向け（標準プロパティも併記） */
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-height: 4.8em; /* 安全側で高さも指定 */
+  transition: max-height .2s ease;
+  white-space: normal;
+}
+.post-content.expanded{
+  -webkit-line-clamp: initial;
+  line-clamp: initial;
+  max-height: none;
+}
+
+/* 画像サムネイル（本文内に置ける） */
+.post-media{
+  display: block;
+  max-width: 100%;
+  margin: .6rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: zoom-in;
+}
+.post-media img{
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  /* 最大表示高さを制限してカード高さを抑える */
+  max-height: 220px;
+}
+
+/* ライトボックス（モーダル） */
+.p-modal{
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.65);
+  z-index: 2000;
+  padding: 24px;
+}
+.p-modal.open{ display: flex; }
+.p-modal img{
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.6);
+}
+.p-modal .close-btn{
+  position: absolute; top: 18px; right: 18px;
+  background: rgba(255,255,255,.06);
+  color: #fff; border: none; padding: .4rem .6rem; border-radius: 999px; cursor: pointer;
+}
+.p-modal .close-btn:hover{ background: rgba(255,255,255,.12); }
+
+/* もっと見るボタン */
+.more-btn{
+  margin-top: .5rem;
+  padding: .35rem .8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--accent);
+  cursor: pointer;
+}
+.more-btn:hover{ border-color: var(--accent); background: var(--accent-weak); }
+
+/* ハイライト（ジャンプ直後に点灯） */
+@keyframes pulse-bg {
+  0% { box-shadow: 0 0 0 0 rgba(90,169,255,.65); }
+  100% { box-shadow: 0 0 0 18px rgba(90,169,255,0); }
+}
+.highlight{ animation: pulse-bg .9s ease-out 1; }
+
+/* フッターなど */
+footer{ width: min(100%, var(--maxw)); margin: 1.5rem auto; padding: 1rem; color: var(--subtext); }
+
+/* 戻るボタンを画面右下のフローティングに */
+button[onclick="history.back()"]{
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1000;
+  padding: .6rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--accent);
+  box-shadow: var(--shadow);
+}
+button[onclick="history.back()"]:hover{ background: var(--accent-weak); border-color: var(--accent); }
+@supports(padding:max(0px)){
+  button[onclick="history.back()"]{ bottom: max(16px, env(safe-area-inset-bottom, 16px)); right: max(16px, env(safe-area-inset-right, 16px)); }
+}
+
+/* ボタンのフォーカス見やすく */
+button:focus-visible, a:focus-visible, input:focus-visible{
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 小さめ画面調整 */
+@media (max-width: 520px){
+  #jump-form{ grid-template-columns: 1fr 1fr; grid-auto-rows: 40px; }
+  #jump-form label{ grid-column: 1 / -1; }
+}
+
+/* 印刷簡易 */
+@media print{
+  header, nav, #jump-form, #tag-list, .more-btn, button[onclick="history.back()"]{ display: none !important; }
+  section{ box-shadow: none; border-color: #aaa; }
+}

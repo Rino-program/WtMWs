@@ -19,6 +19,22 @@
         return num.padStart(4,'0');
     }
 
+    function highlightAndFocus(el){
+        // 一瞬ハイライト
+        el.classList.add('highlight');
+        setTimeout(()=> el.classList.remove('highlight'), 1200);
+        // アクセシビリティ: フォーカス可能にしてフォーカス
+        const prevTabIndex = el.getAttribute('tabindex');
+        el.setAttribute('tabindex','-1');
+        el.focus({preventScroll:true});
+        // 元に戻す（次のフォーカス移動に影響しないよう）
+        if(prevTabIndex === null){
+            setTimeout(()=> el.removeAttribute('tabindex'), 0);
+        } else {
+            setTimeout(()=> el.setAttribute('tabindex', prevTabIndex), 0);
+        }
+    }
+
     function go(){
         const raw = input.value.trim();
         const id = normalize(raw);
@@ -29,8 +45,14 @@
         const el = document.getElementById(id);
         if(el){
             el.scrollIntoView({behavior:'smooth', block:'start'});
-            // ハッシュ更新（履歴に残る）
-            history.pushState(null,'', '#'+id);
+            // ハイライト＋フォーカス
+            highlightAndFocus(el);
+            // ハッシュ更新（履歴に残る）: 同じID連打のときは書き換え
+            if(location.hash === '#'+id){
+                history.replaceState(null,'', '#'+id);
+            } else {
+                history.pushState(null,'', '#'+id);
+            }
         } else {
             alert('該当するセクションが見つかりません: ' + id);
         }
@@ -54,7 +76,10 @@
                 const el = document.getElementById(nid);
                 if(el){
                     // 少し待ってからスクロール（ブラウザのデフォルトハッシュ処理上書き対策）
-                    setTimeout(()=> el.scrollIntoView({behavior:'smooth', block:'start'}), 50);
+                    setTimeout(()=> {
+                        el.scrollIntoView({behavior:'smooth', block:'start'});
+                        highlightAndFocus(el);
+                    }, 80);
                 }
             }
         }
