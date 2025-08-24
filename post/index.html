@@ -23,9 +23,7 @@
         <p>更新日:25/08/21</p>
     </header>
     <nav aria-label="セクションナビ">
-        <ul class="nav-inline" role="list">
-            <li><a href="#0001">#1〜</a></li>
-        </ul>
+        <ul class="nav-inline" id="nav-inline" role="list"></ul>
     </nav>
     <main class="container">
     <!-- ここに入力欄を作る -->
@@ -34,11 +32,32 @@
         <input id="jump-input" type="text" placeholder="例: 1 または 0001 など" />
         <button id="jump-btn" type="button">移動</button>
     </div>
+        <!-- キーワード検索 -->
+        <div id="search-form" role="search">
+            <label for="search-input">キーワードで絞り込み：</label>
+            <input id="search-input" type="search" placeholder="例: 夏, 目的, アイス…" />
+            <button id="search-clear" type="button" aria-label="検索をクリア">クリア</button>
+        </div>
         <!-- タグ一覧表示 -->
             <div id="tag-list" style="margin:1rem 0; text-align:center;">
                 <div id="tag-list-flex"></div>
                 <button id="tag-list-more-btn" style="display:none;">もっと見る</button>
             </div>
+    <section id="0005" data-tags="atcoder,競プロ">
+        <h2>ABC420感想</h2>
+        <p class="post-content">link: <a href="https://atcoder.jp/contests/abc420/submissions/me">https://atcoder.jp/contests/abc420/submissions/me</a><br>
+            今回の問題は簡単な方だと思います。おそらくA,B,Cすべて灰レート。<br>
+            A問題では + (x + y) // 13 を書かないといけない事を見落としてwaを一回、<br>
+            B問題では制約が少ないので問題文をそのまま書けばACになると思います。<br>
+            C問題では10 ^ 9とかいう大きい数が上限になっているので、問題文のまま合計値を調べるとTLEになります。<br>
+            私の初期のコード案は前半の合計値と後半の合計値を先に出しておいて、変更部分を変えてから残りの合計値を求める<br>
+            となっていましたがのこり15分頃でこんなに難しく計算量の多い処理は必要ないと気付いて急いで修正しましたが、<br>
+            コンテストの終了時間になってしまいfinish...<br>
+            本来の解き方は全体の合計値を先に求めておいて、変更部分だけを考慮するというものでした。<br>
+            それを実装できれば計算量もとても少なく済みますし、実装も簡単です。<br>
+            パフォーマンスは294新レート灰203差分+11となりました。
+        </p>
+    </section>
     <section id="0004" data-tags="質問">
         <h2>Q 夏なのに長袖着てて暑く無いの？</h2>
         <p class="post-content">報告: ここのポスト集ではよく聞かれる質問に答えていきます！</p>
@@ -68,6 +87,7 @@
     </section>
     </main>
     <button onclick="history.back()">戻る</button>
+    <button id="to-top-btn" type="button" aria-label="先頭へ">▲</button>
     <footer>@Rinotti-Family</footer>
     <script src="./navigate.js" defer></script>
     <script src="./postscript.js" defer></script>

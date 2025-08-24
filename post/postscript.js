@@ -2,6 +2,10 @@
 // タグ一覧生成＆絞り込み＋もっと見る
 
 document.addEventListener('DOMContentLoaded', function() {
+    // =========================
+    // 1) 動的ナビ生成（#番号一覧）
+    // =========================
+    const navUl = document.getElementById('nav-inline');
     // タグUI
     const sections = Array.from(document.querySelectorAll('section[data-tags]'));
     const tagSet = new Set();
@@ -37,6 +41,70 @@ document.addEventListener('DOMContentLoaded', function() {
         const title = base.replace(/^\s*#?\s*[\d\s,]+\s*/, '').trim();
         h2.textContent = `#${displayNums} ${title}`;
     });
+    // ナビ: 各セクションの ids と見出しを抽出
+    if(navUl){
+        // sections から最大の番号を計算
+        const allNums = [];
+        sections.forEach(sec => {
+            const ids = (sec.dataset.ids || sec.id || '').split(/\s*,\s*/).map(s=>s.replace(/^0+/, '')).filter(Boolean).map(n=>parseInt(n,10)).filter(Boolean);
+            if(ids.length) ids.forEach(n=> allNums.push(n));
+        });
+        const maxId = allNums.length ? Math.max(...allNums) : sections.length;
+        const step = 20; // 20単位で移動
+        const starts = [];
+        for(let s = 1; s <= maxId; s += step) starts.push(s);
+
+        navUl.innerHTML = starts.map(s => `<li><button type="button" class="nav-step" data-start="${s}">#${s}${s+step-1 <= maxId ? '–'+(s+step-1) : ''}</button></li>`).join('');
+
+        // クリックでその開始番号以上の最小のIDを持つセクションへ移動
+        navUl.addEventListener('click', function(e){
+            const btn = e.target.closest && e.target.closest('.nav-step');
+            if(!btn) return;
+            const start = parseInt(btn.dataset.start, 10);
+            if(Number.isNaN(start)) return;
+            // すべてのセクションを数値IDにマップして、start 以上のIDを持つ中で最小のIDを選ぶ
+            let best = null; // {sec, id}
+            sections.forEach(sec => {
+                const ids = (sec.dataset.ids || sec.id || '')
+                    .split(/\s*,\s*/)
+                    .map(s=>s.replace(/^0+/, ''))
+                    .filter(Boolean)
+                    .map(n=>parseInt(n,10))
+                    .filter(Number.isFinite);
+                // 対象となる IDs (>= start) を抽出
+                const ge = ids.filter(n => n >= start);
+                if(ge.length === 0) return;
+                const cand = Math.min(...ge);
+                if(best === null || cand < best.id){ best = {sec, id: cand}; }
+            });
+            let target = null;
+            let chosenId = null;
+            if(best){ target = best.sec; chosenId = best.id; }
+            else { target = sections[sections.length-1];
+                // 最後のセクションの最小IDを取得（フォールバック）
+                const ids = (target.dataset.ids || target.id || '').split(/\s*,\s*/).map(s=>s.replace(/^0+/, '')).filter(Boolean).map(n=>parseInt(n,10)).filter(Number.isFinite);
+                chosenId = ids.length ? Math.min(...ids) : null;
+            }
+            // スクロール & ハイライト
+            if(target){
+                target.scrollIntoView({behavior:'smooth', block:'start'});
+                const prevTab = target.getAttribute('tabindex');
+                target.classList.add('highlight');
+                setTimeout(()=> target.classList.remove('highlight'), 1200);
+                target.setAttribute('tabindex','-1');
+                target.focus({preventScroll:true});
+                if(prevTab === null){ setTimeout(()=> target.removeAttribute('tabindex'), 0); }
+                else { setTimeout(()=> target.setAttribute('tabindex', prevTab), 0); }
+            }
+            // URL を更新（選ばれたIDで）
+            if(chosenId !== null){
+                const outHash = String(chosenId).replace(/^0+/, '');
+                if(location.hash === '#'+outHash) history.replaceState(null,'', '#'+outHash);
+                else history.pushState(null,'', '#'+outHash);
+            }
+        });
+    }
+
     const tagListFlex = document.getElementById('tag-list-flex');
     const moreBtn = document.getElementById('tag-list-more-btn');
     const tags = Array.from(tagSet);
@@ -75,13 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const tag = e.target.dataset.tag;
             tagListFlex.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('selected'));
             e.target.classList.add('selected');
-            sections.forEach(sec => {
-                if(tag === 'ALL' || sec.dataset.tags.split(',').map(t=>t.trim()).includes(tag)) {
-                    sec.style.display = '';
-                } else {
-                    sec.style.display = 'none';
-                }
-            });
+            applyFilters();
         }
     });
     // resizeはデバウンス
@@ -243,4 +305,92 @@ document.addEventListener('DOMContentLoaded', function() {
         // Escで閉じる
         window.addEventListener('keydown', function(e){ if(e.key === 'Escape') close(); });
     })();
+
+    // =========================
+    // 2) キーワード検索 + タグ複合フィルタ
+    // =========================
+    const searchInput = document.getElementById('search-input');
+    const clearBtn = document.getElementById('search-clear');
+
+    function getActiveTag(){
+        const sel = tagListFlex.querySelector('.tag-btn.selected');
+        return sel ? sel.dataset.tag : 'ALL';
+    }
+
+    function matchKeyword(sec, kw){
+        if(!kw) return true;
+        const text = (sec.textContent || '').toLowerCase();
+        return kw.split(/[,\s]+/).filter(Boolean).every(token => text.includes(token.toLowerCase()));
+    }
+
+    function applyFilters(){
+        const tag = getActiveTag();
+        const kw = (searchInput && searchInput.value || '').trim();
+        sections.forEach(sec => {
+            const tagOk = (tag === 'ALL') || sec.dataset.tags.split(',').map(t=>t.trim()).includes(tag);
+            const kwOk = matchKeyword(sec, kw);
+            sec.style.display = (tagOk && kwOk) ? '' : 'none';
+        });
+    }
+
+    if(searchInput){
+        searchInput.addEventListener('input', function(){
+            applyFilters();
+        });
+    }
+    if(clearBtn){
+        clearBtn.addEventListener('click', function(){
+            if(searchInput){ searchInput.value = ''; }
+            applyFilters();
+        });
+    }
+    // 初期適用（ALL + 空検索）
+    applyFilters();
+
+    // =========================
+    // 3) 見出しのアンカーコピーと先頭へ
+    // =========================
+    // 各セクション見出し右上にコピーアイコンを付与
+    sections.forEach(sec => {
+        const h2 = sec.querySelector('h2');
+        if(!h2) return;
+        let btn = sec.querySelector('.anchor-copy');
+        if(!btn){
+            btn = document.createElement('button');
+            btn.className = 'anchor-copy';
+            btn.type = 'button';
+            btn.title = 'リンクをコピー';
+            btn.setAttribute('aria-label','リンクをコピー');
+            btn.textContent = '🔗';
+            h2.appendChild(btn);
+        }
+        btn.addEventListener('click', async () => {
+            const idRaw = (sec.dataset.ids || sec.id || '').split(/\s*,\s*/)[0] || '';
+            const anchor = idRaw.replace(/^0+/, '');
+            const url = location.origin + location.pathname + '#' + anchor;
+            try{
+                await navigator.clipboard.writeText(url);
+                btn.textContent = '✅';
+                setTimeout(()=> btn.textContent = '🔗', 1200);
+            }catch{
+                // フォールバック
+                const ta = document.createElement('textarea');
+                ta.value = url; document.body.appendChild(ta); ta.select();
+                try{ document.execCommand('copy'); }catch{}
+                ta.remove();
+            }
+        });
+    });
+
+    // 先頭へボタン
+    const toTop = document.getElementById('to-top-btn');
+    if(toTop){
+        toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+        const onScroll = () => {
+            if(window.scrollY > 300){ toTop.classList.add('show'); }
+            else { toTop.classList.remove('show'); }
+        };
+        document.addEventListener('scroll', onScroll, {passive:true});
+        onScroll();
+    }
 });
