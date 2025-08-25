@@ -3,6 +3,60 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // =========================
+    // テーマ切替: 明 / 暗 / システム同期
+    //  localStorage に 'site-theme' を保存。'light'|'dark'|'system'
+    // =========================
+    (function(){
+        const SWITCH_KEY = 'site-theme';
+        const btnsRoot = document.getElementById('theme-switcher');
+        const root = document.documentElement;
+        const mql = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+
+        function applyTheme(mode){
+            if(mode === 'system'){
+                const isDark = mql ? mql.matches : false;
+                root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            } else if(mode === 'dark' || mode === 'light'){
+                root.setAttribute('data-theme', mode);
+            }
+            // UI
+            if(btnsRoot){
+                btnsRoot.querySelectorAll('.theme-btn').forEach(b => {
+                    b.setAttribute('aria-pressed', String(b.dataset.theme === mode));
+                });
+            }
+        }
+
+        function initTheme(){
+            const stored = localStorage.getItem(SWITCH_KEY) || 'system';
+            applyTheme(stored);
+        }
+
+        if(btnsRoot){
+            btnsRoot.addEventListener('click', function(e){
+                const b = e.target.closest && e.target.closest('.theme-btn');
+                if(!b) return;
+                const mode = b.dataset.theme;
+                if(mode === 'system'){
+                    localStorage.setItem(SWITCH_KEY, 'system');
+                } else if(mode === 'light' || mode === 'dark'){
+                    localStorage.setItem(SWITCH_KEY, mode);
+                }
+                applyTheme(mode);
+            });
+        }
+
+        // システム設定が変わったら system モード時に反映
+        if(mql && mql.addEventListener){
+            mql.addEventListener('change', function(){ if(localStorage.getItem(SWITCH_KEY) === 'system'){ applyTheme('system'); } });
+        } else if(mql && mql.addListener){
+            mql.addListener(function(){ if(localStorage.getItem(SWITCH_KEY) === 'system'){ applyTheme('system'); } });
+        }
+
+        initTheme();
+    })();
+
+    // =========================
     // 1) 動的ナビ生成（#番号一覧）
     // =========================
     const navUl = document.getElementById('nav-inline');
@@ -186,21 +240,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 各段落の初期表示行数を計算して適用する関数
         function applyCollapsed(){
+            // 段落ごとに "expanded" クラスが付いている場合はその段落は展開状態を維持する。
+            // これにより iPad 等でリサイズイベントやフォント読み込みで自動的に折りたたまれる問題を防ぐ。
             let remaining = TOTAL_LINES;
             ps.forEach((p, i) => {
                 const full = fullLines[i] || 1;
-                const visible = Math.max(0, Math.min(full, remaining));
-                if(visible > 0){
-                    p.style.maxHeight = (visible * baseLine) + 'px';
-                    p.style.overflow = 'hidden';
-                    p.classList.remove('expanded');
+                const isExpanded = p.classList.contains('expanded');
+                if(isExpanded){
+                    // 展開状態を維持: 最大高さやoverflowを解除して全表示にする
+                    p.style.maxHeight = '';
+                    p.style.overflow = '';
+                    // 展開されている分だけ残り行数を減らす
+                    remaining = Math.max(0, remaining - full);
                 } else {
-                    // 表示行が0なら完全に折りたたむ（高さ0）
-                    p.style.maxHeight = '0px';
-                    p.style.overflow = 'hidden';
+                    const visible = Math.max(0, Math.min(full, remaining));
+                    if(visible > 0){
+                        p.style.maxHeight = (visible * baseLine) + 'px';
+                        p.style.overflow = 'hidden';
+                    } else {
+                        // 表示行が0なら完全に折りたたむ（高さ0）
+                        p.style.maxHeight = '0px';
+                        p.style.overflow = 'hidden';
+                    }
                     p.classList.remove('expanded');
+                    remaining -= visible;
                 }
-                remaining -= visible;
             });
             // 各段落の more-btn 表示判定を更新
             ps.forEach((p, i) => {
