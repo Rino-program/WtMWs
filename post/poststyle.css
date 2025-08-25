@@ -623,9 +623,57 @@ button:focus-visible, a:focus-visible, input:focus-visible{
 }
 
 /* 小さめ画面調整 */
-@media (max-width: 520px){
-  #jump-form{ grid-template-columns: 1fr 1fr; grid-auto-rows: 40px; }
-  #jump-form label{ grid-column: 1 / -1; }
+@media (max-width: 768px) {
+  .header-inner {
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+  .header-right {
+    gap: .5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 600px) {
+  /* ヘッダー: タイトルとそれ以外を縦に */
+  .header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .header-right {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  /* ジャンプフォームと検索フォームを縦レイアウトに */
+  #jump-form, #search-form {
+    grid-template-columns: 1fr;
+    gap: .5rem;
+    padding: .75rem;
+  }
+  #jump-form label, #search-form label {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+  }
+  #jump-input, #jump-btn, #search-input, #search-clear {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  #jump-form {
+    grid-auto-rows: auto;
+  }
+}
+
+@media (max-width: 420px) {
+    /* 特に狭い画面では、更新日などを非表示に */
+    .header-right .meta {
+        display: none;
+    }
+    .header-right {
+        justify-content: flex-start;
+    }
 }
 
 /* 低速/低刺激環境ではアニメーションを減らす */
