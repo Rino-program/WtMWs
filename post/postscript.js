@@ -57,6 +57,69 @@ document.addEventListener('DOMContentLoaded', function() {
     })();
 
     // =========================
+    // リンクの表示をリンク先の<title>に差し替える（可能なときのみ）
+    // - CORSで取得できないサイトは静かにスキップ
+    // - 同一リンクはlocalStorageでキャッシュ
+    // =========================
+    (function(){
+        const MAX_CONCURRENT = 4;
+        const TIMEOUT_MS = 3500;
+        const CACHE_KEY = 'post_link_title_cache_v1';
+        let cache = {};
+        try{ cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); }catch(e){ cache = {}; }
+
+        const anchors = Array.from(document.querySelectorAll('.post-content a[href]'));
+        // 候補判定: テキストがURLらしい、または表示テキストが長い（生URL）など
+        const candidates = anchors.filter(a => {
+            const href = a.getAttribute('href') || '';
+            if(!href) return false;
+            if(href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#')) return false;
+            const txt = (a.textContent || '').trim();
+            // 既に説明的な短いテキストがある場合は無視
+            if(txt && txt.length > 0 && txt.length < 40 && !/^https?:\/\//i.test(txt) && !/^www\./i.test(txt)) return false;
+            return true;
+        });
+
+        let i = 0; let running = 0;
+        function runNext(){
+            if(i >= candidates.length) return;
+            if(running >= MAX_CONCURRENT) return;
+            const a = candidates[i++];
+            const hrefAbs = a.href; // ブラウザが解決した絶対URL
+            if(!hrefAbs) return runNext();
+            if(cache[hrefAbs]){
+                a.textContent = cache[hrefAbs];
+                a.title = cache[hrefAbs];
+                return runNext();
+            }
+            running++;
+            const ac = new AbortController();
+            const timer = setTimeout(()=> ac.abort(), TIMEOUT_MS);
+            // fetchはCORSに依存するため成功しない場合が多い。失敗しても静かにフォールバック。
+            fetch(hrefAbs, {signal: ac.signal, credentials: 'omit'})
+            .then(resp => {
+                if(!resp.ok) throw new Error('network');
+                return resp.text();
+            })
+            .then(html => {
+                const m = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+                const title = m ? m[1].trim().replace(/\s+/g,' ') : null;
+                if(title){
+                    try{ cache[hrefAbs] = title; localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); }catch(e){}
+                    a.textContent = title;
+                    a.title = title;
+                }
+            })
+            .catch(()=>{/* ignore */})
+            .finally(()=>{ clearTimeout(timer); running--; runNext(); });
+            // 直列処理を続けるため再帰
+            runNext();
+        }
+        // キャンディデートを少し遅延させてページ描画優先
+        setTimeout(()=>{ runNext(); }, 250);
+    })();
+
+    // =========================
     // 1) 動的ナビ生成（#番号一覧）
     // =========================
     const navUl = document.getElementById('nav-inline');
@@ -299,7 +362,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if(!btn.dataset.handlerAttached){
                     btn.addEventListener('click', function(){
                         if(p.classList.contains('expanded')){
-                            // 折りたたみに戻す
+                            // 折りたたみに戻す: まずexpandedを外してから再配分
+                            p.classList.remove('expanded');
+                            btn.textContent = 'もっと見る';
                             applyCollapsed();
                         } else {
                             // 展開: 当該段落は全表示にする
@@ -344,9 +409,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // 画像のライトボックス処理
     (function(){
         // モーダル要素を作成
-        const modal = document.createElement('div');
-        modal.className = 'p-modal';
-        modal.innerHTML = '<button class="close-btn" aria-label="閉じる">✕</button><img alt="" />';
+    const modal = document.createElement('div');
+    modal.className = 'p-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('tabindex', '-1');
+    modal.innerHTML = '<button class="close-btn" type="button" aria-label="閉じる" title="閉じる">✕</button><img alt="" />';
         document.body.appendChild(modal);
         const modalImg = modal.querySelector('img');
         const closeBtn = modal.querySelector('.close-btn');
@@ -372,13 +440,28 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // 閉じるボタン・背景クリック
-        closeBtn.addEventListener('click', close);
+        // 閉じるボタン・背景クリック（内側クリックは伝播停止）
+        const onBtnClose = (e)=>{ e.stopPropagation(); e.preventDefault && e.preventDefault(); close(); };
+        closeBtn.addEventListener('click', onBtnClose);
+        closeBtn.addEventListener('pointerup', onBtnClose);
+        closeBtn.addEventListener('touchend', onBtnClose, {passive:false});
+        closeBtn.addEventListener('keydown', (e)=>{
+            if(e.key === 'Enter' || e.key === ' '){ onBtnClose(e); }
+        });
         modal.addEventListener('click', function(e){
             if(e.target === modal) close();
         });
+        modal.addEventListener('pointerup', function(e){ if(e.target === modal) close(); });
+        // 画像自体のクリックは閉じないように
+        modalImg.addEventListener('click', (e)=> e.stopPropagation());
         // Escで閉じる
         window.addEventListener('keydown', function(e){ if(e.key === 'Escape') close(); });
+
+        // 念のための委譲（何らかの理由で個別リスナーが外れた場合でも動作）
+        document.addEventListener('click', function(e){
+            const btn = e.target.closest && e.target.closest('.p-modal .close-btn');
+            if(btn){ onBtnClose(e); }
+        });
     })();
 
     // =========================
@@ -423,7 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
     applyFilters();
 
     // =========================
-    // 3) 見出しのアンカーコピーと先頭へ
+    // 3) 見出しのアンカーコピーと先頭へ + 演出
     // =========================
     // 各セクション見出し右上にコピーアイコンを付与
     sections.forEach(sec => {
@@ -468,4 +551,217 @@ document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('scroll', onScroll, {passive:true});
         onScroll();
     }
-});
+
+    // =========================
+    // 4) スクロール・リビール + 進捗バー
+    // =========================
+    (function(){
+        const progressBar = document.getElementById('scroll-progress');
+        function updateProgress(){
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrolled = window.scrollY;
+            const progress = Math.min(Math.max(scrolled / docHeight, 0), 1);
+            if(progressBar){
+                progressBar.style.setProperty('--progress', progress);
+            }
+        }
+        document.addEventListener('scroll', updateProgress, {passive: true});
+        updateProgress();
+
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const items = Array.from(document.querySelectorAll('section'));
+        items.forEach(el => el.classList.add('reveal-init'));
+        if(prefersReduced){
+            items.forEach(el => el.classList.add('revealed'));
+            return;
+        }
+        const io = new IntersectionObserver((entries, obs)=>{
+            entries.forEach(ent =>{
+                if(ent.isIntersecting){
+                    ent.target.classList.add('revealed');
+                    obs.unobserve(ent.target);
+                }
+            });
+        }, { root: null, rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+        items.forEach(el => io.observe(el));
+    })();
+
+    // =========================
+    // 5) 豪華なクラッカー演出（パステル虹色+多様な形）
+    // =========================
+    (function(){
+        const PASTEL_COLORS = [
+            '#ff9a9e', '#fecfef', '#a8edea', '#fed6e3', '#d299c2', 
+            '#fad0c4', '#a8d8ff', '#c2e9fb', '#ffeaa7', '#fab1a0',
+            '#fd79a8', '#fdcb6e', '#6c5ce7', '#a29bfe', '#fd79a8'
+        ];
+        const SHAPES = ['normal', 'star', 'circle', 'heart'];
+        
+        function spawnLuxuryConfetti(x, y, isSpecial = false){
+            const count = isSpecial ? 25 : 18; // 特別な時は更に豪華
+            for(let i = 0; i < count; i++){
+                const d = document.createElement('div');
+                const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+                d.className = `confetti-piece ${shape}`;
+                
+                const color = PASTEL_COLORS[Math.floor(Math.random() * PASTEL_COLORS.length)];
+                d.style.background = color;
+                
+                // 開始位置
+                d.style.setProperty('--x', Math.max(0, x) + 'px');
+                d.style.setProperty('--y', Math.max(0, y) + 'px');
+                
+                // 飛散方向（扇状に広がる）
+                const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+                const distance = 60 + Math.random() * 80;
+                const dx = Math.cos(angle) * distance;
+                const dy = Math.sin(angle) * distance - Math.random() * 30; // 少し上向きも
+                
+                d.style.setProperty('--dx', dx + 'px');
+                d.style.setProperty('--dy', dy + 'px');
+                
+                // 回転
+                const rotStart = Math.random() * 45 + 'deg';
+                const rotEnd = (Math.random() * 720 + 180) + 'deg';
+                d.style.setProperty('--rot-mid', rotStart);
+                d.style.setProperty('--rot', rotEnd);
+                
+                document.body.appendChild(d);
+                setTimeout(() => d.remove(), 1300);
+            }
+        }
+        
+        // クリック全域で発火（モーダルやフォーム等は除外）
+        document.addEventListener('click', (e) => {
+            // 除外: モーダル内部・ボタン/入力系・リンク長押しなど
+            const t = e.target;
+            if(
+                t.closest('.p-modal') ||
+                t.closest('button, [role="button"], input, textarea, select, a.anchor-copy')
+            ) return;
+            const x = e.clientX;
+            const y = e.clientY;
+            if(Number.isFinite(x) && Number.isFinite(y)){
+                spawnLuxuryConfetti(x, y, false);
+            }
+        }, {passive: true});
+        
+        // タグ選択時の小さな演出
+        document.body.addEventListener('click', (e) => {
+            if(e.target.classList.contains('tag-btn')) {
+                const rect = e.target.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top + rect.height / 2;
+                spawnLuxuryConfetti(x, y, false);
+            }
+        }, {passive: true});
+    })();
+
+    // =========================
+    // 6) キーボードショートカット + 豪華トースト
+    //    - / or f: 検索へフォーカス
+    //    - t: 先頭へ
+    //    - ?: ヘルプのトースト
+    // =========================
+    (function(){
+        let toastTimer = null;
+        function showToast(msg){
+            let el = document.getElementById('mini-toast');
+            if(!el){
+                el = document.createElement('div');
+                el.id = 'mini-toast';
+                el.style.position = 'fixed';
+                el.style.left = '50%';
+                el.style.bottom = '24px';
+                el.style.transform = 'translateX(-50%)';
+                el.style.background = 'linear-gradient(45deg, rgba(255,154,158,0.95), rgba(168,237,234,0.95))';
+                el.style.color = 'var(--text)';
+                el.style.border = '1px solid rgba(255,255,255,0.2)';
+                el.style.boxShadow = '0 8px 32px rgba(0,0,0,0.1), 0 0 20px rgba(255,154,158,0.3)';
+                el.style.borderRadius = '15px';
+                el.style.padding = '.7rem 1rem';
+                el.style.zIndex = '4000';
+                el.style.fontSize = '.95rem';
+                el.style.backdropFilter = 'blur(10px)';
+                el.style.fontWeight = '500';
+                document.body.appendChild(el);
+            }
+            el.textContent = msg;
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(-50%) translateY(20px) scale(0.9)';
+            el.style.transition = 'all .25s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+            requestAnimationFrame(()=>{
+                el.style.opacity = '1';
+                el.style.transform = 'translateX(-50%) translateY(0) scale(1)';
+            });
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(()=>{
+                el.style.opacity = '0';
+                el.style.transform = 'translateX(-50%) translateY(10px) scale(0.95)';
+            }, 2200);
+        }
+        document.addEventListener('keydown', (e)=>{
+            if(e.defaultPrevented) return;
+            const tag = (e.target && e.target.tagName || '').toLowerCase();
+            const typing = ['input','textarea'].includes(tag);
+            if(!typing && (e.key === '/' || e.key.toLowerCase() === 'f')){
+                const si = document.getElementById('search-input');
+                if(si){ si.focus(); si.select && si.select(); e.preventDefault(); }
+                showToast('🔍 検索モードに切り替えました');
+            } else if(!typing && e.key.toLowerCase() === 't'){
+                window.scrollTo({top:0, behavior:'smooth'});
+                showToast('⬆️ ページトップへ移動します');
+            } else if(!typing && e.key === '?'){
+                showToast('✨ ショートカット: / または F →検索, T →先頭へ, ? →ヘルプ');
+            }
+        });
+    })();
+
+    // =========================
+    // 7) ランダムキラキラ背景演出
+    // =========================
+    (function(){
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if(prefersReduced) return;
+        
+        function createSparkle(){
+            const sparkle = document.createElement('div');
+            sparkle.style.position = 'fixed';
+            sparkle.style.width = '4px';
+            sparkle.style.height = '4px';
+            sparkle.style.background = '#fff';
+            sparkle.style.borderRadius = '50%';
+            sparkle.style.pointerEvents = 'none';
+            sparkle.style.zIndex = '1';
+            sparkle.style.opacity = '0';
+            
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * window.innerHeight;
+            sparkle.style.left = x + 'px';
+            sparkle.style.top = y + 'px';
+            
+            sparkle.style.animation = 'sparkle-twinkle 2s ease-in-out forwards';
+            
+            document.body.appendChild(sparkle);
+            setTimeout(() => sparkle.remove(), 2100);
+        }
+        // ランダムキラキラの頻度アップ（1.8秒ごとに2〜3個）
+        setInterval(() => {
+            const burst = 2 + Math.floor(Math.random() * 2);
+            for(let i=0;i<burst;i++) setTimeout(createSparkle, i * 180);
+        }, 1800);
+        
+        // キラキラのCSSアニメーション（動的追加）
+        if(!document.getElementById('sparkle-styles')){
+            const style = document.createElement('style');
+            style.id = 'sparkle-styles';
+            style.textContent = `
+                @keyframes sparkle-twinkle {
+                    0%, 100% { opacity: 0; transform: scale(0.8); }
+                    50% { opacity: 0.8; transform: scale(1.2); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    })();
+ });
