@@ -268,39 +268,50 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             // 各段落の more-btn 表示判定を更新
             ps.forEach((p, i) => {
-                let btn = p.nextElementSibling;
-                if(!btn || !btn.classList.contains('more-btn')){
+                // 固有の識別子を割り当て（sectionごとにユニーク）
+                const uid = (section.id || 'sec') + '-para-' + i;
+                p.dataset.moreUid = uid;
+
+                // 既存ボタンを検索（section 内で uid に対応するもの）
+                let btn = section.querySelector(`.more-btn[data-morefor="${uid}"]`);
+                if(!btn){
                     btn = document.createElement('button');
                     btn.className = 'more-btn';
                     btn.type = 'button';
                     btn.textContent = 'もっと見る';
                     btn.style.display = 'none';
+                    btn.dataset.morefor = uid;
                     p.after(btn);
                 }
+
                 const full = fullLines[i] || 1;
                 const currMax = parseFloat(p.style.maxHeight) || 0;
                 const currVisibleLines = Math.round(currMax / baseLine);
                 if(full > currVisibleLines){
                     btn.style.display = '';
-                    btn.textContent = 'もっと見る';
+                    // 展開済みなら「閉じる」表示
+                    btn.textContent = p.classList.contains('expanded') ? '閉じる' : 'もっと見る';
                 } else {
                     btn.style.display = 'none';
                 }
 
-                // クリック処理（各段落ごと）
-                btn.onclick = function(){
-                    if(p.classList.contains('expanded')){
-                        // 折りたたみに戻す
-                        applyCollapsed();
-                    } else {
-                        // 展開: 当該段落は全表示にする
-                        p.classList.add('expanded');
-                        p.style.maxHeight = '';
-                        p.style.overflow = '';
-                        btn.textContent = '閉じる';
-                    }
-                    checkOverflow();
-                };
+                // クリック処理は一度だけ追加
+                if(!btn.dataset.handlerAttached){
+                    btn.addEventListener('click', function(){
+                        if(p.classList.contains('expanded')){
+                            // 折りたたみに戻す
+                            applyCollapsed();
+                        } else {
+                            // 展開: 当該段落は全表示にする
+                            p.classList.add('expanded');
+                            p.style.maxHeight = '';
+                            p.style.overflow = '';
+                            btn.textContent = '閉じる';
+                        }
+                        checkOverflow();
+                    });
+                    btn.dataset.handlerAttached = '1';
+                }
             });
         }
 
