@@ -36,8 +36,8 @@
   }
 }
 
-/* 明暗切替のためのユーティリティクラス */
-:root[data-theme='light']{
+/* 明暗切替のためのユーティリティ: html[data-theme] を使ってモバイルでも確実に上書き */
+html[data-theme='light']{
   --bg: #faf7f3;
   --card: #ffffff;
   --text: #2a201b;
@@ -48,7 +48,7 @@
   --shadow: 0 8px 20px rgba(0,0,0,.08);
   --shadow-soft: 0 4px 12px rgba(0,0,0,.06);
 }
-:root[data-theme='dark']{
+html[data-theme='dark']{
   --bg: #0b0c0f;
   --card: #12141a;
   --text: #eae8e4;
@@ -62,8 +62,24 @@
 
 /* テーマスイッチャー */
 #theme-switcher{ margin-top:.6rem; display:flex; gap:.5rem; }
-.theme-btn{ padding:.35rem .6rem; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer; }
-.theme-btn[aria-pressed="true"]{ background:var(--accent); color:#fff; border-color:var(--accent); }
+.theme-btn{
+  padding:.35rem .6rem; border-radius:8px; border:1px solid var(--border);
+  background:var(--card); color:var(--text); cursor:pointer; font-weight:600;
+  box-shadow: var(--shadow-soft);
+}
+.theme-btn[aria-pressed="true"]{ background:var(--accent); color:#fff; border-color:var(--accent); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+.theme-btn:focus-visible{ outline: 3px solid rgba(0,0,0,0.06); outline-offset: 2px }
+
+/* ボタンやpill系の色調整（グローバル） */
+.nav-step, .tag-btn, .more-btn, button[onclick="history.back()"], #to-top-btn{
+  transition: transform .08s ease, background .12s ease, border-color .12s ease;
+}
+.tag-btn.selected, .nav-step.selected{ background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ナビの見た目を少し改善 */
+#nav-inline{ padding: .6rem 0; display:flex; gap:.4rem; flex-wrap:wrap; }
+.nav-step{ border:1px solid var(--border); background:transparent; color:var(--accent); padding:.35rem .6rem; border-radius:999px; }
+.nav-step:hover{ background:var(--accent-weak); }
 
 
 *{ box-sizing: border-box; }
@@ -256,14 +272,15 @@ section{
   padding: 1.1rem 1rem 1rem;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: calc(var(--radius) - 4px);
   box-shadow: var(--shadow);
   position: relative;
 }
 section h2{
-  margin: 0 0 .25rem;
+  margin: 0 0 .25rem; display:flex; align-items:center; gap:.6rem;
   font-size: clamp(1rem, .9rem + .6vw, 1.25rem);
 }
+section h2::before{ content:''; display:inline-block; width:6px; height:18px; background:var(--accent); border-radius:3px; }
 /* 見出しにアンカーコピー用のボタンを表示（デスクトップのみ） */
 section h2{ position: relative; padding-right: 2rem; }
 .anchor-copy{
@@ -272,7 +289,7 @@ section h2{ position: relative; padding-right: 2rem; }
   width: 28px; height: 28px;
   border-radius: 6px; border: 1px solid var(--border);
   background: var(--card);
-  color: var(--subtext); cursor: pointer;
+  color: var(--subtext); cursor: pointer; font-size:14px; line-height:1; padding:0;
 }
 @media (hover:hover){
   section:hover .anchor-copy{ display: inline-grid; place-items: center; }
