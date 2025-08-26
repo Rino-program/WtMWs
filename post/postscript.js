@@ -590,21 +590,38 @@ document.addEventListener('DOMContentLoaded', function() {
     // 5) 豪華なクラッカー演出（パステル虹色+多様な形）
     // =========================
     (function(){
+    // 多重初期化防止
+    if(window.__confettiInit){ return; }
+    window.__confettiInit = true;
         const PASTEL_COLORS = [
             '#ff9a9e', '#fecfef', '#a8edea', '#fed6e3', '#d299c2', 
             '#fad0c4', '#a8d8ff', '#c2e9fb', '#ffeaa7', '#fab1a0',
             '#fd79a8', '#fdcb6e', '#6c5ce7', '#a29bfe', '#fd79a8'
         ];
+        const GOLD_COLORS = [ '#ffd54f', '#ffca28', '#ffc107', '#ffb300', '#ffe082' ];
         const SHAPES = ['normal', 'star', 'circle', 'heart'];
         
-        function spawnLuxuryConfetti(x, y, isSpecial = false){
-            const count = isSpecial ? 25 : 18; // 特別な時は更に豪華
+        // オプション対応（後方互換: 第3引数がbooleanの場合は special として扱う）
+        function spawnLuxuryConfetti(x, y, opts = {}){
+            if(typeof opts === 'boolean') opts = { special: opts };
+            const special = !!opts.special;
+            const count = Number.isFinite(opts.count) ? opts.count : (special ? 28 : 18);
+            const colors = Array.isArray(opts.colors) && opts.colors.length ? opts.colors : (special ? GOLD_COLORS : PASTEL_COLORS);
+            const shapes = Array.isArray(opts.shapes) && opts.shapes.length ? opts.shapes : SHAPES;
+            const durationMs = Number.isFinite(opts.durationMs) ? opts.durationMs : 1300; // confetti-fallはデフォ1200ms
+            const baseDistance = Number.isFinite(opts.baseDistance) ? opts.baseDistance : (special ? 120 : 60);
+            const varDistance  = Number.isFinite(opts.varDistance)  ? opts.varDistance  : (special ? 220 : 80);
+            const angleJitter = Number.isFinite(opts.angleJitter) ? opts.angleJitter : 0.35; // 放射角に揺らぎ
+            const spreadMode = opts.spreadMode || (special ? 'disc' : 'ring'); // 'disc' | 'ring'
+            const minRadius = Number.isFinite(opts.minRadius) ? opts.minRadius : 0;
             for(let i = 0; i < count; i++){
                 const d = document.createElement('div');
-                const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+                const shape = shapes[Math.floor(Math.random() * shapes.length)];
                 d.className = `confetti-piece ${shape}`;
+        // クリック透過（後続クリックで重ね要素を拾わない）
+        d.style.pointerEvents = 'none';
                 
-                const color = PASTEL_COLORS[Math.floor(Math.random() * PASTEL_COLORS.length)];
+                const color = colors[Math.floor(Math.random() * colors.length)];
                 d.style.background = color;
                 
                 // 開始位置
@@ -612,8 +629,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 d.style.setProperty('--y', Math.max(0, y) + 'px');
                 
                 // 飛散方向（扇状に広がる）
-                const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
-                const distance = 60 + Math.random() * 80;
+                let angle, distance;
+                if(spreadMode === 'disc'){
+                    // 円盤分布: 一様な角度 + rはsqrt分布で均等に面を埋める
+                    angle = Math.random() * Math.PI * 2;
+                    const maxR = baseDistance + varDistance;
+                    const r = minRadius + (maxR - minRadius) * Math.sqrt(Math.random());
+                    distance = r;
+                } else {
+                    // 既存のリング状（等間隔+揺らぎ）
+                    angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * angleJitter;
+                    distance = baseDistance + Math.random() * varDistance;
+                }
                 const dx = Math.cos(angle) * distance;
                 const dy = Math.sin(angle) * distance - Math.random() * 30; // 少し上向きも
                 
@@ -625,16 +652,89 @@ document.addEventListener('DOMContentLoaded', function() {
                 const rotEnd = (Math.random() * 720 + 180) + 'deg';
                 d.style.setProperty('--rot-mid', rotStart);
                 d.style.setProperty('--rot', rotEnd);
+                // 長めの残留
+                d.style.animationDuration = durationMs + 'ms';
                 
                 document.body.appendChild(d);
-                setTimeout(() => d.remove(), 1300);
+                setTimeout(() => d.remove(), durationMs + 200);
             }
         }
         
+        // クリックリップル演出（クリック地点から拡がる波紋）
+        function ensureRippleStyles(){
+            if(document.getElementById('ripple-styles')) return;
+            const style = document.createElement('style');
+            style.id = 'ripple-styles';
+            style.textContent = `
+                .click-ripple{ position: fixed; width: 8px; height: 8px; margin-left: -4px; margin-top: -4px; border-radius: 50%;
+                  background: radial-gradient(circle, rgba(255,255,255,0.9), rgba(255,255,255,0.25) 40%, rgba(255,255,255,0) 60%);
+                  pointer-events: none; z-index: 3500; animation: ripple-exp 620ms ease-out forwards; }
+                @keyframes ripple-exp{ from{ transform: scale(1); opacity: .75; } to{ transform: scale(20); opacity: 0; } }
+            `;
+            document.head.appendChild(style);
+        }
+        function spawnRipple(x, y){
+            ensureRippleStyles();
+            const r = document.createElement('div');
+            r.className = 'click-ripple';
+            r.style.left = x + 'px';
+            r.style.top = y + 'px';
+            document.body.appendChild(r);
+            setTimeout(()=> r.remove(), 650);
+        }
+
+                // 特大バースト用のショックウェーブとスクリーンシェイク
+                        function ensureEpicStyles(){
+                                if(document.getElementById('epic-styles')) return;
+                                const style = document.createElement('style');
+                                style.id = 'epic-styles';
+                                style.textContent = `
+                                        .shockwave{ position: fixed; left:0; top:0; width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.45);
+                                            box-shadow: 0 0 12px rgba(255,255,255,0.18), 0 0 24px rgba(255,154,158,0.12);
+                                            transform: translate(var(--x), var(--y)) translate(-50%, -50%) scale(1);
+                                            pointer-events: none; z-index: 3500; animation: shock-exp 600ms ease-out forwards; }
+                                        @keyframes shock-exp{ from{ opacity:.6; transform: translate(var(--x), var(--y)) translate(-50%, -50%) scale(1); }
+                                                                                    to  { opacity:0;   transform: translate(var(--x), var(--y)) translate(-50%, -50%) scale(16); } }
+                                        .screen-shake{ animation: screen-shake 320ms cubic-bezier(.36,.07,.19,.97) 1; }
+                                        @keyframes screen-shake{
+                                            10%{ transform: translate(-1px, -1px); }
+                                            20%{ transform: translate(1px, 1px); }
+                                            30%{ transform: translate(-1px, 1px); }
+                                            40%{ transform: translate(1px, -1px); }
+                                            50%{ transform: translate(0px, 0px); }
+                                            100%{ transform: translate(0,0); }
+                                        }
+                                `;
+                                document.head.appendChild(style);
+                        }
+                function spawnShockwave(x, y){
+                        ensureEpicStyles();
+                        const sw = document.createElement('div');
+                        sw.className = 'shockwave';
+                        sw.style.setProperty('--x', x + 'px');
+                        sw.style.setProperty('--y', y + 'px');
+                        document.body.appendChild(sw);
+                        setTimeout(()=> sw.remove(), 820);
+                }
+                function screenShake(){
+                        ensureEpicStyles();
+                        const root = document.documentElement;
+                        // すでに付いていたら付け直し
+                        root.classList.remove('screen-shake');
+                        // リフローで再適用
+                        void root.offsetWidth;
+                        root.classList.add('screen-shake');
+                        setTimeout(()=> root.classList.remove('screen-shake'), 450);
+                }
+        
         // クリック全域で発火（モーダルやフォーム等は除外）
+        // 直前クリックと近接ならスキップ（デバウンス）
+        let lastAt = 0, lastX = 0, lastY = 0;
         document.addEventListener('click', (e) => {
             // 除外: モーダル内部・ボタン/入力系・リンク長押しなど
             const t = e.target;
+            // 左クリックのみ
+            if(e.button !== 0) return;
             if(
                 t.closest('.p-modal') ||
                 t.closest('button, [role="button"], input, textarea, select, a.anchor-copy')
@@ -642,6 +742,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const x = e.clientX;
             const y = e.clientY;
             if(Number.isFinite(x) && Number.isFinite(y)){
+                const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+                const dt = now - lastAt;
+                const dx = Math.abs(x - lastX);
+                const dy = Math.abs(y - lastY);
+                if(dt < 150 && dx < 6 && dy < 6){
+                    return; // 直前とほぼ同じクリックは無視
+                }
+                lastAt = now; lastX = x; lastY = y;
+                spawnRipple(x, y);
                 spawnLuxuryConfetti(x, y, false);
             }
         }, {passive: true});
@@ -652,9 +761,121 @@ document.addEventListener('DOMContentLoaded', function() {
                 const rect = e.target.getBoundingClientRect();
                 const x = rect.left + rect.width / 2;
                 const y = rect.top + rect.height / 2;
+                spawnRipple(x, y);
                 spawnLuxuryConfetti(x, y, false);
             }
         }, {passive: true});
+
+        // 見出しのアンカーコピー時は金色で華やかに
+        document.body.addEventListener('click', (e) => {
+            const btn = e.target.closest && e.target.closest('.anchor-copy');
+            if(!btn) return;
+            const rect = btn.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+            spawnRipple(x, y);
+            spawnLuxuryConfetti(x, y, { special: true, colors: GOLD_COLORS, shapes: ['star','heart'], count: 26 });
+        }, {passive: true});
+
+        // 先頭へボタンクリック時のミニ演出
+        const toTopBtn = document.getElementById('to-top-btn');
+        if(toTopBtn){
+            toTopBtn.addEventListener('click', (e) => {
+                const rect = toTopBtn.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top + rect.height / 2;
+                spawnRipple(x, y);
+                spawnLuxuryConfetti(x, y, { count: 14, shapes: ['circle','star'] });
+            }, {passive: true});
+        }
+
+        // セクションが初めて表示されたときに控えめな演出
+        try{
+            const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if(!prefersReduced){
+                const secs = Array.from(document.querySelectorAll('section'));
+                const io = new IntersectionObserver((entries, obs)=>{
+                    entries.forEach(ent =>{
+                        if(ent.isIntersecting){
+                            const rect = ent.target.getBoundingClientRect();
+                            const x = rect.left + rect.width * (0.2 + Math.random()*0.6);
+                            const y = rect.top + 24;
+                            spawnLuxuryConfetti(x, y, { count: 12, shapes: ['normal','star'] });
+                            obs.unobserve(ent.target);
+                        }
+                    });
+                }, { root: null, rootMargin: '0px 0px -10% 0px', threshold: 0.2 });
+                secs.forEach(s => io.observe(s));
+            }
+        } catch(_) {}
+
+        // 時々ランダムな場所ではじける自動バースト
+        (function(){
+            const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if(reduce) return;
+            let tId = null;
+            function schedule(){
+                clearTimeout(tId);
+                const delay = 3000 + Math.random() * 7000; // 3〜10秒ごと
+                tId = setTimeout(()=>{
+                    if(document.visibilityState !== 'visible'){
+                        schedule();
+                        return;
+                    }
+                    const marginX = 0.1 * window.innerWidth;
+                    const marginY = 0.15 * window.innerHeight;
+                    const x = Math.floor(marginX + Math.random() * (window.innerWidth - marginX*2));
+                    const y = Math.floor(marginY + Math.random() * (window.innerHeight - marginY*2));
+                    // Weighted selection:
+                    // - 5% : 特大 (epic)
+                    // - 15% : 中バースト A (pastel, star/circle)
+                    // - 15% : 中バースト B (gold, star/heart)
+                    // - 15% : 中バースト C (mixed, normal/star)
+                    // - 残り 50% : 通常
+                    const r = Math.random();
+                    if(r < 0.05){
+                        // 特大バースト (5%)
+                        spawnShockwave(x, y);
+                        screenShake();
+                        const EPIC_COLORS = PASTEL_COLORS.concat(GOLD_COLORS);
+                        const count = 160 + Math.floor(Math.random() * 61); // 160〜220
+                        spawnLuxuryConfetti(x, y, {
+                            special: true,
+                            count,
+                            colors: EPIC_COLORS,
+                            shapes: ['normal','star','circle','heart'],
+                            durationMs: 2200,
+                            baseDistance: 140,
+                            varDistance: 240,
+                            angleJitter: 0.6,
+                            spreadMode: 'disc',
+                            minRadius: 0
+                        });
+                    } else if(r < 0.05 + 0.15){
+                        // 中バースト A (15%): pastel, star+circle
+                        const cnt = 48 + Math.floor(Math.random() * 13); // 48-60
+                        spawnLuxuryConfetti(x, y, { count: cnt, colors: PASTEL_COLORS, shapes: ['star','circle'], durationMs: 1800, baseDistance: 100, varDistance: 160, spreadMode: 'disc' });
+                    } else if(r < 0.05 + 0.15 * 2){
+                        // 中バースト B (15%): gold, star+heart
+                        const cnt = 48 + Math.floor(Math.random() * 13);
+                        spawnLuxuryConfetti(x, y, { count: cnt, colors: GOLD_COLORS, shapes: ['star','heart'], durationMs: 1800, baseDistance: 90, varDistance: 140, spreadMode: 'disc' });
+                    } else if(r < 0.05 + 0.15 * 3){
+                        // 中バースト C (15%): mixed, normal+star
+                        const MIX = PASTEL_COLORS.concat(GOLD_COLORS.slice(0,2));
+                        const cnt = 48 + Math.floor(Math.random() * 13);
+                        spawnLuxuryConfetti(x, y, { count: cnt, colors: MIX, shapes: ['normal','star'], durationMs: 1800, baseDistance: 110, varDistance: 180, spreadMode: 'disc' });
+                    } else {
+                        // 通常 (残り)
+                        spawnLuxuryConfetti(x, y, { count: 12, shapes: ['normal','star'] });
+                    }
+                    schedule();
+                }, delay);
+            }
+            document.addEventListener('visibilitychange', ()=>{
+                if(document.visibilityState === 'visible') schedule();
+            });
+            schedule();
+        })();
     })();
 
     // =========================
@@ -745,10 +966,10 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.appendChild(sparkle);
             setTimeout(() => sparkle.remove(), 2100);
         }
-        // ランダムキラキラの頻度アップ（1.8秒ごとに2〜3個）
+        // ランダムキラキラ（1.8秒ごとに4〜5個）: 同時発生しすぎないように微分散
         setInterval(() => {
-            const burst = 2 + Math.floor(Math.random() * 2);
-            for(let i=0;i<burst;i++) setTimeout(createSparkle, i * 180);
+            const burst = 4 + Math.floor(Math.random() * 2); // 4 or 5
+            for(let i=0;i<burst;i++) setTimeout(createSparkle, Math.random() * 450); // 0〜450msでランダム発火
         }, 1800);
         
         // キラキラのCSSアニメーション（動的追加）
