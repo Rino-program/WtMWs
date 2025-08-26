@@ -684,47 +684,61 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
                 // 特大バースト用のショックウェーブとスクリーンシェイク
-                        function ensureEpicStyles(){
-                                if(document.getElementById('epic-styles')) return;
-                                const style = document.createElement('style');
-                                style.id = 'epic-styles';
-                                style.textContent = `
-                                        .shockwave{ position: fixed; left:0; top:0; width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.45);
-                                            box-shadow: 0 0 12px rgba(255,255,255,0.18), 0 0 24px rgba(255,154,158,0.12);
-                                            transform: translate(var(--x), var(--y)) translate(-50%, -50%) scale(1);
-                                            pointer-events: none; z-index: 3500; animation: shock-exp 600ms ease-out forwards; }
-                                        @keyframes shock-exp{ from{ opacity:.6; transform: translate(var(--x), var(--y)) translate(-50%, -50%) scale(1); }
-                                                                                    to  { opacity:0;   transform: translate(var(--x), var(--y)) translate(-50%, -50%) scale(16); } }
-                                        .screen-shake{ animation: screen-shake 320ms cubic-bezier(.36,.07,.19,.97) 1; }
-                                        @keyframes screen-shake{
-                                            10%{ transform: translate(-1px, -1px); }
-                                            20%{ transform: translate(1px, 1px); }
-                                            30%{ transform: translate(-1px, 1px); }
-                                            40%{ transform: translate(1px, -1px); }
-                                            50%{ transform: translate(0px, 0px); }
-                                            100%{ transform: translate(0,0); }
-                                        }
-                                `;
-                                document.head.appendChild(style);
-                        }
-                function spawnShockwave(x, y){
-                        ensureEpicStyles();
-                        const sw = document.createElement('div');
-                        sw.className = 'shockwave';
-                        sw.style.setProperty('--x', x + 'px');
-                        sw.style.setProperty('--y', y + 'px');
-                        document.body.appendChild(sw);
-                        setTimeout(()=> sw.remove(), 820);
+                                function ensureEpicStyles(){
+                                        if(document.getElementById('epic-styles')) return;
+                                        const style = document.createElement('style');
+                                        style.id = 'epic-styles';
+                                        style.textContent = `
+                                                .shockwave{ position: fixed; left:0; top:0; width: 20px; height: 20px; border-radius: 50%;
+                                                    border: 1px solid rgba(255,255,255,var(--sw-opacity,0.45));
+                                                    box-shadow: 0 0 12px rgba(255,255,255,calc(var(--sw-opacity,0.45) * 0.4)), 0 0 24px rgba(255,154,158,calc(var(--sw-opacity,0.45) * 0.25));
+                                                    transform: translate(var(--x), var(--y)) translate(-50%, -50%) scale(1);
+                                                    pointer-events: none; z-index: 3500; animation: shock-exp var(--sw-duration,600ms) ease-out forwards; }
+                                                @keyframes shock-exp{ from{ opacity:var(--sw-opacity,0.6); transform: translate(var(--x), var(--y)) translate(-50%, -50%) scale(1); }
+                                                                                            to  { opacity:0;   transform: translate(var(--x), var(--y)) translate(-50%, -50%) scale(calc(var(--sw-scale,16))); } }
+                                                .screen-shake{ }
+                                        `;
+                                        document.head.appendChild(style);
+                                }
+                function spawnShockwave(x, y, opts){
+                    ensureEpicStyles();
+                    opts = opts || {};
+                    const sw = document.createElement('div');
+                    sw.className = 'shockwave';
+                    sw.style.setProperty('--x', x + 'px');
+                    sw.style.setProperty('--y', y + 'px');
+                    // configurable intensity
+                    const scale = String(Number.isFinite(opts.scale) ? opts.scale : 16);
+                    const opacity = String(Number.isFinite(opts.opacity) ? opts.opacity : 0.75);
+                    const duration = String(opts.durationMs ? opts.durationMs + 'ms' : '600ms');
+                    sw.style.setProperty('--sw-scale', scale);
+                    sw.style.setProperty('--sw-opacity', opacity);
+                    sw.style.setProperty('--sw-duration', duration);
+                    document.body.appendChild(sw);
+                    setTimeout(()=> sw.remove(), (opts.durationMs || 600) + 50);
                 }
-                function screenShake(){
-                        ensureEpicStyles();
-                        const root = document.documentElement;
-                        // すでに付いていたら付け直し
+                function screenShake(intensity){
+                    // intensity: suggested pixel amplitude (number)
+                    ensureEpicStyles();
+                    const root = document.documentElement;
+                    const amp = Number.isFinite(intensity) ? intensity : 2; // px
+                    // Use Web Animations API for controlled shake
+                    try{
+                        root.animate([
+                            { transform: 'translate(0,0)' },
+                            { transform: `translate(${ -amp }px, ${ -amp }px)` },
+                            { transform: `translate(${ amp }px, ${ amp }px)` },
+                            { transform: `translate(${ -Math.round(amp/2) }px, ${ amp }px)` },
+                            { transform: `translate(${ Math.round(amp/2) }px, ${ -Math.round(amp/2) }px)` },
+                            { transform: 'translate(0,0)' }
+                        ], { duration: Math.min(420, Math.max(260, amp * 80)), easing: 'cubic-bezier(.36,.07,.19,.97)' });
+                    }catch(e){
+                        // fallback: small class toggle
                         root.classList.remove('screen-shake');
-                        // リフローで再適用
                         void root.offsetWidth;
                         root.classList.add('screen-shake');
-                        setTimeout(()=> root.classList.remove('screen-shake'), 450);
+                        setTimeout(()=> root.classList.remove('screen-shake'), 340);
+                    }
                 }
         
         // クリック全域で発火（モーダルやフォーム等は除外）
@@ -816,7 +830,9 @@ document.addEventListener('DOMContentLoaded', function() {
             let tId = null;
             function schedule(){
                 clearTimeout(tId);
-                const delay = 3000 + Math.random() * 7000; // 3〜10秒ごと
+                // 間隔を画面幅に応じて調整（画面が大きいほど短く）
+                const vwScale = Math.min(1.6, Math.max(0.6, window.innerWidth / 1280));
+                const delay = (3000 + Math.random() * 7000) / vwScale; // 3〜10秒を幅で短縮
                 tId = setTimeout(()=>{
                     if(document.visibilityState !== 'visible'){
                         schedule();
@@ -826,48 +842,93 @@ document.addEventListener('DOMContentLoaded', function() {
                     const marginY = 0.15 * window.innerHeight;
                     const x = Math.floor(marginX + Math.random() * (window.innerWidth - marginX*2));
                     const y = Math.floor(marginY + Math.random() * (window.innerHeight - marginY*2));
-                    // Weighted selection:
-                    // - 5% : 特大 (epic)
-                    // - 15% : 中バースト A (pastel, star/circle)
-                    // - 15% : 中バースト B (gold, star/heart)
-                    // - 15% : 中バースト C (mixed, normal/star)
-                    // - 残り 50% : 通常
-                    const r = Math.random();
-                    if(r < 0.05){
-                        // 特大バースト (5%)
-                        spawnShockwave(x, y);
-                        screenShake();
+                    // 50%で特大バースト（ショックウェーブ + シェイク + 大量コンフェッティ）
+                    // Weighted burst selection influenced by viewport width
+                    const vw = Math.min(1.6, Math.max(0.6, window.innerWidth / 1280));
+                    // base weights (sum=100)
+                    const weights = {
+                        epic: 7,
+                        midrnd: 10,
+                        midA: 15,
+                        midB: 15,
+                        midC: 15,
+                        small: 38
+                    };
+                    // larger viewports increase weight for big bursts
+                    const bigMultiplier = vw; // 0.6..1.6
+                    const weighted = {
+                        epic: weights.epic * bigMultiplier,
+                        midrnd: weights.midrnd * bigMultiplier,
+                        midA: weights.midA * bigMultiplier,
+                        midB: weights.midB * bigMultiplier,
+                        midC: weights.midC * bigMultiplier,
+                        small: weights.small
+                    };
+                    const total = Object.values(weighted).reduce((a,b)=>a+b,0);
+                    // pick by weight
+                    let pick = Math.random() * total;
+                    let badgeText = '';
+                    if(pick < weighted.epic){
+                        badgeText = 'EPIC';
+                        spawnShockwave(x, y, { scale: 18, opacity: 0.75, durationMs: 700 });
+                        screenShake(4);
                         const EPIC_COLORS = PASTEL_COLORS.concat(GOLD_COLORS);
-                        const count = 160 + Math.floor(Math.random() * 61); // 160〜220
+                        const count = 220 + Math.floor(Math.random() * 81); // 220〜300
                         spawnLuxuryConfetti(x, y, {
                             special: true,
                             count,
                             colors: EPIC_COLORS,
                             shapes: ['normal','star','circle','heart'],
-                            durationMs: 2200,
-                            baseDistance: 140,
-                            varDistance: 240,
-                            angleJitter: 0.6,
+                            durationMs: 3000,
+                            baseDistance: 160,
+                            varDistance: 300,
+                            angleJitter: 0.8,
                             spreadMode: 'disc',
                             minRadius: 0
                         });
-                    } else if(r < 0.05 + 0.15){
-                        // 中バースト A (15%): pastel, star+circle
-                        const cnt = 48 + Math.floor(Math.random() * 13); // 48-60
-                        spawnLuxuryConfetti(x, y, { count: cnt, colors: PASTEL_COLORS, shapes: ['star','circle'], durationMs: 1800, baseDistance: 100, varDistance: 160, spreadMode: 'disc' });
-                    } else if(r < 0.05 + 0.15 * 2){
-                        // 中バースト B (15%): gold, star+heart
-                        const cnt = 48 + Math.floor(Math.random() * 13);
-                        spawnLuxuryConfetti(x, y, { count: cnt, colors: GOLD_COLORS, shapes: ['star','heart'], durationMs: 1800, baseDistance: 90, varDistance: 140, spreadMode: 'disc' });
-                    } else if(r < 0.05 + 0.15 * 3){
-                        // 中バースト C (15%): mixed, normal+star
-                        const MIX = PASTEL_COLORS.concat(GOLD_COLORS.slice(0,2));
-                        const cnt = 48 + Math.floor(Math.random() * 13);
-                        spawnLuxuryConfetti(x, y, { count: cnt, colors: MIX, shapes: ['normal','star'], durationMs: 1800, baseDistance: 110, varDistance: 180, spreadMode: 'disc' });
                     } else {
-                        // 通常 (残り)
-                        spawnLuxuryConfetti(x, y, { count: 12, shapes: ['normal','star'] });
+                        pick -= weighted.epic;
+                        if(pick < weighted.midrnd){
+                            badgeText = 'MID-RND';
+                            const palette = (Math.random() < 0.5) ? PASTEL_COLORS : GOLD_COLORS;
+                            spawnLuxuryConfetti(x, y, { count: 44 + Math.floor(Math.random()*12), colors: palette, durationMs: 2200, baseDistance: 100, varDistance: 140, spreadMode: 'disc' });
+                        } else {
+                            pick -= weighted.midrnd;
+                            if(pick < weighted.midA){
+                                badgeText = 'MID-A';
+                                spawnLuxuryConfetti(x, y, { count: 36, colors: ['#a8edea','#c2e9fb','#a29bfe'], shapes: ['circle','normal'], durationMs: 2300, baseDistance: 90, varDistance: 120 });
+                            } else {
+                                pick -= weighted.midA;
+                                if(pick < weighted.midB){
+                                    badgeText = 'MID-B';
+                                    spawnLuxuryConfetti(x, y, { count: 36, colors: ['#ff9a9e','#fed6e3','#fd79a8'], shapes: ['star','normal'], durationMs: 2300, baseDistance: 90, varDistance: 120 });
+                                } else {
+                                    pick -= weighted.midB;
+                                    if(pick < weighted.midC){
+                                        badgeText = 'MID-C';
+                                        spawnLuxuryConfetti(x, y, { count: 36, colors: ['#ffeaa7','#fad0c4','#a8d8ff'], shapes: ['heart','circle'], durationMs: 2300, baseDistance: 90, varDistance: 120 });
+                                    } else {
+                                        badgeText = 'SMALL';
+                                        spawnLuxuryConfetti(x, y, { count: 12, shapes: ['normal','star'], durationMs: 1600, baseDistance: 60, varDistance: 80 });
+                                    }
+                                }
+                            }
+                        }
                     }
+
+                    // Subtle indicator of which burst happened (small badge bottom-right)
+                    try{
+                        const id = '__burstBadge';
+                        let b = document.getElementById(id);
+                        if(!b){ b = document.createElement('div'); b.id = id; b.style.position = 'fixed'; b.style.left = '12px'; b.style.bottom = '12px'; b.style.padding = '8px 10px'; b.style.borderRadius = '12px'; b.style.fontSize = '12px'; b.style.background = 'rgba(0,0,0,0.34)'; b.style.color = 'rgba(255,255,255,0.95)'; b.style.zIndex = 6000; b.style.backdropFilter = 'blur(6px)'; b.style.boxShadow = '0 6px 18px rgba(0,0,0,0.18)'; document.body.appendChild(b); }
+                        b.textContent = badgeText;
+                        b.style.opacity = '0.02';
+                        // fade in/out subtly
+                        b.style.transition = 'opacity 260ms linear';
+                        requestAnimationFrame(()=> b.style.opacity = '0.9');
+                        clearTimeout(b._t);
+                        b._t = setTimeout(()=>{ b.style.opacity = '0.02'; }, 1600);
+                    }catch(e){}
                     schedule();
                 }, delay);
             }
