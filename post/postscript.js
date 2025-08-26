@@ -599,6 +599,48 @@ document.addEventListener('DOMContentLoaded', function() {
             '#fd79a8', '#fdcb6e', '#6c5ce7', '#a29bfe', '#fd79a8'
         ];
         const GOLD_COLORS = [ '#ffd54f', '#ffca28', '#ffc107', '#ffb300', '#ffe082' ];
+
+        // Helper function to convert HSL to hex
+        function hslToHex(h, s, l) {
+            h = h % 360;
+            s = Math.max(0, Math.min(1, s));
+            l = Math.max(0, Math.min(1, l));
+            
+            const c = (1 - Math.abs(2 * l - 1)) * s;
+            const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+            const m = l - c / 2;
+            
+            let r, g, b;
+            if (h < 60) { r = c; g = x; b = 0; }
+            else if (h < 120) { r = x; g = c; b = 0; }
+            else if (h < 180) { r = 0; g = c; b = x; }
+            else if (h < 240) { r = 0; g = x; b = c; }
+            else if (h < 300) { r = x; g = 0; b = c; }
+            else { r = c; g = 0; b = x; }
+            
+            r = Math.round((r + m) * 255);
+            g = Math.round((g + m) * 255);
+            b = Math.round((b + m) * 255);
+            
+            return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
+
+        // Generate monochrome palette with same-family colors
+        function generateMonochromePalette(count = 6, opts = {}) {
+            const baseHue = opts.baseHue !== undefined ? opts.baseHue : Math.floor(Math.random() * 360);
+            const hueJitter = opts.hueJitter !== undefined ? opts.hueJitter : 15;
+            const satRange = opts.satRange || { min: 0.4, max: 0.8 };
+            const lightRange = opts.lightRange || { min: 0.4, max: 0.8 };
+            
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                const hue = baseHue + (Math.random() - 0.5) * 2 * hueJitter;
+                const sat = satRange.min + Math.random() * (satRange.max - satRange.min);
+                const light = lightRange.min + Math.random() * (lightRange.max - lightRange.min);
+                colors.push(hslToHex(hue, sat, light));
+            }
+            return colors;
+        }
         const SHAPES = ['normal', 'star', 'circle', 'heart'];
         
         // オプション対応（後方互換: 第3引数がbooleanの場合は special として扱う）
@@ -890,7 +932,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         pick -= weighted.epic;
                         if(pick < weighted.midrnd){
                             badgeText = 'MID-RND';
-                            const palette = (Math.random() < 0.5) ? PASTEL_COLORS : GOLD_COLORS;
+                            const palette = generateMonochromePalette(6);
                             spawnLuxuryConfetti(x, y, { count: 44 + Math.floor(Math.random()*12), colors: palette, durationMs: 2200, baseDistance: 100, varDistance: 140, spreadMode: 'disc' });
                         } else {
                             pick -= weighted.midrnd;
@@ -916,18 +958,62 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
 
-                    // Subtle indicator of which burst happened (small badge bottom-right)
+                    // Subtle indicator of which burst happened (small badge bottom-left)
                     try{
                         const id = '__burstBadge';
                         let b = document.getElementById(id);
-                        if(!b){ b = document.createElement('div'); b.id = id; b.style.position = 'fixed'; b.style.left = '12px'; b.style.bottom = '12px'; b.style.padding = '8px 10px'; b.style.borderRadius = '12px'; b.style.fontSize = '12px'; b.style.background = 'rgba(0,0,0,0.34)'; b.style.color = 'rgba(255,255,255,0.95)'; b.style.zIndex = 6000; b.style.backdropFilter = 'blur(6px)'; b.style.boxShadow = '0 6px 18px rgba(0,0,0,0.18)'; document.body.appendChild(b); }
-                        b.textContent = badgeText;
-                        b.style.opacity = '0.02';
-                        // fade in/out subtly
+                        if(!b){ 
+                            b = document.createElement('div'); 
+                            b.id = id; 
+                            // Ensure badge is appended to document.body
+                            document.body.appendChild(b);
+                        }
+                        // Apply strong defensive styles for iPad Safari compatibility
+                        b.style.position = 'fixed';
+                        b.style.left = '12px';
+                        b.style.bottom = '12px';
+                        b.style.padding = '8px 10px';
+                        b.style.borderRadius = '10px';
+                        b.style.background = 'rgba(255,255,255,0.92)';
+                        b.style.color = '#111';
+                        b.style.boxShadow = '0 6px 18px rgba(0,0,0,0.12)';
+                        b.style.zIndex = '99999';
+                        b.style.fontSize = '0.85rem';
+                        b.style.fontWeight = '600';
+                        b.style.pointerEvents = 'none';
+                        b.style.opacity = '0';
                         b.style.transition = 'opacity 260ms linear';
-                        requestAnimationFrame(()=> b.style.opacity = '0.9');
+                        
+                        b.textContent = badgeText;
+                        
+                        // Clear previous timer
                         clearTimeout(b._t);
-                        b._t = setTimeout(()=>{ b.style.opacity = '0.02'; }, 1600);
+                        
+                        // Use rAF with setTimeout fallback for fade-in
+                        if(typeof requestAnimationFrame !== 'undefined'){
+                            requestAnimationFrame(() => {
+                                if(b.style) b.style.opacity = '0.9';
+                                // Verify computed opacity after 60ms and boost if needed
+                                setTimeout(() => {
+                                    try {
+                                        if(typeof getComputedStyle !== 'undefined'){
+                                            const computed = getComputedStyle(b);
+                                            if(computed && parseFloat(computed.opacity) < 0.3){
+                                                b.style.opacity = '0.95';
+                                            }
+                                        }
+                                    } catch(e) { /* ignore getComputedStyle errors on older browsers */ }
+                                }, 60);
+                            });
+                        } else {
+                            // Fallback for older browsers
+                            setTimeout(() => { if(b.style) b.style.opacity = '0.9'; }, 16);
+                        }
+                        
+                        // Set fade-out timeout (keep existing 1600ms lifetime)
+                        b._t = setTimeout(() => { 
+                            if(b.style) b.style.opacity = '0'; 
+                        }, 1600);
                     }catch(e){}
                     schedule();
                 }, delay);
