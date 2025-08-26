@@ -808,6 +808,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             if(!prefersReduced){
                 const secs = Array.from(document.querySelectorAll('section'));
+                // 10%マージン説明: rootMargin '0px 0px -10% 0px' により、
+                // セクションがビューポート下端の10%手前に来たときにコンフェッティを発動。
+                // これにより、セクションが完全に見える前に華やかな演出が開始される。
                 const io = new IntersectionObserver((entries, obs)=>{
                     entries.forEach(ent =>{
                         if(ent.isIntersecting){
@@ -997,6 +1000,62 @@ document.addEventListener('DOMContentLoaded', function() {
                 showToast('✨ ショートカット: / または F →検索, T →先頭へ, ? →ヘルプ');
             }
         });
+    })();
+
+    // =========================
+    // iPad/タッチデバイス用ヘルプボタン
+    // =========================
+    (function(){
+        const helpBtn = document.getElementById('help-btn');
+        if(helpBtn){
+            // showToast関数を使用するため、この位置で定義
+            helpBtn.addEventListener('click', () => {
+                // 上記のshowToast関数を参照（同じスコープ内）
+                const showToastLocal = document.querySelector('#mini-toast') ? 
+                    (msg) => {
+                        let el = document.getElementById('mini-toast');
+                        if(!el){
+                            el = document.createElement('div');
+                            el.id = 'mini-toast';
+                            el.style.position = 'fixed';
+                            el.style.left = '50%';
+                            el.style.bottom = '24px';
+                            el.style.transform = 'translateX(-50%)';
+                            el.style.background = 'linear-gradient(45deg, rgba(255,154,158,0.95), rgba(168,237,234,0.95))';
+                            el.style.color = 'var(--text)';
+                            el.style.border = '1px solid rgba(255,255,255,0.2)';
+                            el.style.boxShadow = '0 8px 32px rgba(0,0,0,0.1), 0 0 20px rgba(255,154,158,0.3)';
+                            el.style.borderRadius = '15px';
+                            el.style.padding = '.7rem 1rem';
+                            el.style.zIndex = '4000';
+                            el.style.maxWidth = '90%';
+                            el.style.wordBreak = 'break-word';
+                            el.style.whiteSpace = 'pre-line';
+                            el.style.fontWeight = '500';
+                            el.style.backdropFilter = 'blur(10px)';
+                            document.body.appendChild(el);
+                        }
+                        el.textContent = msg;
+                        el.style.opacity = '0';
+                        el.style.transform = 'translateX(-50%) translateY(20px) scale(0.9)';
+                        el.style.transition = 'all .25s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+                        requestAnimationFrame(()=>{
+                            el.style.opacity = '1';
+                            el.style.transform = 'translateX(-50%) translateY(0) scale(1)';
+                        });
+                        setTimeout(()=>{
+                            el.style.opacity = '0';
+                            el.style.transform = 'translateX(-50%) translateY(10px) scale(0.95)';
+                        }, 2200);
+                    } : () => {}; // フォールバック
+                
+                showToastLocal('📱 操作方法\n' +
+                             '🔍 検索: 上部の検索ボックス\n' +
+                             '🏷️ タグ: カテゴリーで絞り込み\n' +
+                             '⬆️ 先頭へ: 右下のボタン\n' +
+                             '💻 PC: / →検索, T →先頭へ, ? →ヘルプ');
+            });
+        }
     })();
 
     // =========================

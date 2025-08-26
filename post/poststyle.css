@@ -616,6 +616,39 @@ button[onclick="history.back()"]:hover{ background: var(--accent-weak); border-c
 #to-top-btn.show{ display: inline-flex; align-items: center; justify-content: center; }
 #to-top-btn:hover{ background: var(--accent-weak); border-color: var(--accent); }
 
+/* ヘルプボタン（iPad/タッチデバイス用） */
+#help-btn{
+  position: fixed;
+  left: 16px;
+  bottom: 72px;
+  z-index: 1000;
+  width: 40px; height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--accent);
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+/* タッチデバイスでヘルプボタンを表示 */
+@media (hover: none) and (pointer: coarse) {
+  #help-btn{ display: inline-flex; }
+}
+
+/* 小さい画面でも表示（iPad縦向きなど） */
+@media (max-width: 768px) {
+  #help-btn{ display: inline-flex; }
+}
+
+#help-btn:hover{ background: var(--accent-weak); border-color: var(--accent); }
+#help-btn:active{ transform: scale(0.95); }
+
 /* ボタンのフォーカス見やすく */
 button:focus-visible, a:focus-visible, input:focus-visible{
   outline: 2px solid var(--accent);
