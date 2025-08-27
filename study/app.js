@@ -281,6 +281,32 @@
     toggleTaskForm(false);
   });
 
+  // フォーム送信（Enter含む）でも確実に保存できるようにする
+  if (taskForm) taskForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    // saveTaskBtn クリック時と同じ処理
+    const title = newTaskTitle?.value.trim();
+    if (!title) {
+      if (newTaskTitle) newTaskTitle.focus();
+      return;
+    }
+    const t = {
+      id: 't_' + Math.random().toString(36).slice(2,9),
+      title,
+      subject: newTaskSubject?.value.trim() || '',
+      notes: newTaskNotes?.value.trim() || '',
+      goalMinutes: parseInt(newTaskGoal?.value) || 0,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      archived: false,
+    };
+    db.tasks.push(t);
+    db.settings.currentTaskId = t.id;
+    saveDB(db);
+    refreshTaskUI();
+    toggleTaskForm(false);
+  });
+
   if (saveTaskBtn) saveTaskBtn.addEventListener('click', (e) => {
     e.preventDefault();
     const title = newTaskTitle?.value.trim();

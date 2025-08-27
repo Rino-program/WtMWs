@@ -2,7 +2,7 @@ const CACHE_NAME = 'studyapp-cache-v1';
 const ASSETS = [
   './',
   './index.html',
-  './style.css',
+  './study_style.css',
   './app.js',
   './manifest.webmanifest',
 ];
