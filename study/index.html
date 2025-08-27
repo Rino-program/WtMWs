@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Study Support</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1 class="app-title" aria-label="アプリ名">Study Support</h1>
+      <nav class="tabs" aria-label="主要セクション">
+        <button class="tab-button is-active" data-tab="session" aria-controls="section-session" aria-selected="true">セッション</button>
+        <button class="tab-button" data-tab="dashboard" aria-controls="section-dashboard" aria-selected="false">ダッシュボード</button>
+        <button class="tab-button" data-tab="settings" aria-controls="section-settings" aria-selected="false">設定</button>
+      </nav>
+    </header>
+
+    <main>
+      <!-- セッション -->
+      <section id="section-session" class="tab-pane is-active" role="region" aria-label="セッション">
+        <div class="card">
+          <div class="task-row">
+            <label for="task-select" class="sr-only">タスク選択</label>
+            <select id="task-select" aria-label="現在のタスク"></select>
+            <button id="add-task-btn" class="secondary">＋ タスク追加</button>
+            <button id="delete-task-btn" class="danger" title="選択中のタスクを削除">削除</button>
+          </div>
+
+          <div id="new-task-form" class="task-form hidden" aria-hidden="true">
+            <input id="new-task-title" type="text" placeholder="タスク名（必須）" aria-label="タスク名" />
+            <input id="new-task-subject" type="text" placeholder="科目/タグ（任意）" aria-label="科目またはタグ" />
+            <input id="new-task-notes" type="text" placeholder="メモ（任意）" aria-label="メモ" />
+            <button id="save-task-btn" class="primary">保存</button>
+            <button id="cancel-task-btn" class="secondary">キャンセル</button>
+          </div>
+
+          <div class="timer">
+            <div class="timer-mode" aria-live="polite">
+              <span id="mode-label">集中</span>
+              <span>・</span>
+              <span id="round-label">Round 1</span>
+            </div>
+            <div id="time-left" class="time">25:00</div>
+            <div class="controls">
+              <button id="start-btn" class="primary" aria-label="開始">開始</button>
+              <button id="pause-btn" aria-label="一時停止" disabled>一時停止</button>
+              <button id="resume-btn" class="primary" aria-label="再開" disabled>再開</button>
+              <button id="skip-btn" class="secondary" aria-label="スキップ" disabled>スキップ</button>
+              <button id="reset-btn" class="danger" aria-label="リセット">リセット</button>
+            </div>
+            <p class="hint">未選択でも記録されます（タスク名：未選択）。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ダッシュボード -->
+      <section id="section-dashboard" class="tab-pane" role="region" aria-label="ダッシュボード">
+        <div class="grid">
+          <div class="card">
+            <h2>今日</h2>
+            <div class="stats">
+              <div><span class="stat-label">合計</span><span id="today-total" class="stat-value">0 分</span></div>
+              <div><span class="stat-label">セッション</span><span id="today-count" class="stat-value">0</span></div>
+            </div>
+            <h3>タスク別</h3>
+            <ul id="today-by-task" class="list"></ul>
+          </div>
+
+          <div class="card">
+            <h2>今週（直近7日）</h2>
+            <div class="stats">
+              <div><span class="stat-label">合計</span><span id="week-total" class="stat-value">0 分</span></div>
+            </div>
+            <h3>タスク別</h3>
+            <ul id="week-by-task" class="list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 設定 -->
+      <section id="section-settings" class="tab-pane" role="region" aria-label="設定">
+        <div class="card">
+          <h2>タイマー設定</h2>
+          <div class="settings-grid">
+            <label>集中（分）<input id="focus-min" type="number" min="1" max="120" /></label>
+            <label>短休憩（分）<input id="short-min" type="number" min="1" max="60" /></label>
+            <label>長休憩（分）<input id="long-min" type="number" min="1" max="120" /></label>
+            <label>長休憩までのラウンド<input id="rounds-until-long" type="number" min="1" max="12" /></label>
+          </div>
+          <div class="row-gap">
+            <button id="save-settings-btn" class="primary">保存</button>
+            <button id="reset-settings-btn" class="secondary">既定に戻す</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>データ</h2>
+          <div class="row-gap">
+            <button id="export-btn" class="primary">エクスポート</button>
+            <label class="file-label">
+              <input id="import-file" type="file" accept="application/json" />
+              <span class="secondary">インポート</span>
+            </label>
+          </div>
+          <p class="hint">すべてのデータはこのブラウザ内に保存されます。いつでもJSONでバックアップできます。</p>
+        </div>
+
+        <div class="card">
+          <h2>テーマ</h2>
+          <div class="row-gap">
+            <select id="theme-select" aria-label="テーマ">
+              <option value="system">システム</option>
+              <option value="light">ライト</option>
+              <option value="dark">ダーク</option>
+            </select>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <small>完全ローカル保存・オフライン対応（PWA）。通知は次フェーズで導入予定。</small>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
