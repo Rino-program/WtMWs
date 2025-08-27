@@ -1,379 +1,283 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Study Support</title>
-    <link rel="manifest" href="./manifest.webmanifest">
-    <meta name="theme-color" content="#0f172a" />
-    <link rel="stylesheet" href="./style.css" />
-  </head>
-  <body>
-    <header class="app-header">
-      <h1 class="app-title" aria-label="アプリ名">Study Support</h1>
-      <nav class="tabs" aria-label="主要セクション">
-        <button class="tab-button is-active" data-tab="session" aria-controls="section-session" aria-selected="true">セッション</button>
-        <button class="tab-button" data-tab="dashboard" aria-controls="section-dashboard" aria-selected="false">ダッシュボード</button>
-        <button class="tab-button" data-tab="settings" aria-controls="section-settings" aria-selected="false">設定</button>
-      </nav>
-    </header>
-
-    <main>
-      <!-- セッション -->
-      <section id="section-session" class="tab-pane is-active" role="region" aria-label="セッション">
-        <div class="session-layout">
-          <!-- 左側：タスク管理 -->
-          <div class="task-panel">
-            <div class="panel-header">
-              <h2>📝 タスク管理</h2>
-              <div class="task-actions">
-                <button id="add-task-btn" class="btn-icon primary" title="新しいタスクを追加">➕</button>
-                <button id="toggle-view-btn" class="btn-icon secondary" title="表示切替">📊</button>
-              </div>
-            </div>
-
-            <!-- 現在選択中のタスク -->
-            <div class="current-task-card">
-              <div class="task-header">
-                <span class="current-label">現在のタスク</span>
-                <button id="change-task-btn" class="btn-small secondary">変更</button>
-              </div>
-              <div id="current-task-display" class="current-task">
-                <div class="task-title">未選択</div>
-                <div class="task-meta"></div>
-                <div class="task-notes"></div>
-              </div>
-            </div>
-
-            <!-- タスク一覧（詳細表示） -->
-            <div id="task-list" class="task-list">
-              <h3>すべてのタスク</h3>
-              <div id="task-items" class="task-items"></div>
-            </div>
-
-            <!-- タスク選択ドロップダウン（簡易表示） -->
-            <div id="task-selector" class="task-selector hidden">
-              <label for="task-select">タスク選択:</label>
-              <select id="task-select" aria-label="現在のタスク"></select>
-              <button id="delete-task-btn" class="btn-small danger" title="選択中のタスクを削除">🗑️</button>
-            </div>
-
-            <!-- タスク追加フォーム -->
-            <div id="new-task-form" class="task-form hidden" aria-hidden="true">
-              <h3>新しいタスク</h3>
-              <input id="new-task-title" type="text" placeholder="タスク名（必須）" aria-label="タスク名" />
-              <input id="new-task-subject" type="text" placeholder="科目/タグ（任意）" aria-label="科目またはタグ" />
-              <input id="new-task-notes" type="text" placeholder="メモ（任意）" aria-label="メモ" />
-              <div class="goal-setting">
-                <label>目標時間（分）:</label>
-                <input id="new-task-goal" type="number" min="0" step="15" placeholder="例: 120" />
-              </div>
-              <div class="form-actions">
-                <button id="save-task-btn" class="primary">💾 保存</button>
-                <button id="cancel-task-btn" class="secondary">❌ キャンセル</button>
-              </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Study Support</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="../img/title.png">
+</head>
+<body>
+  <header class="app-header">
+    <h1 class="app-title">Study Support</h1>
+    <nav class="tabs">
+      <button class="tab-button is-active" data-tab="session" aria-selected="true">セッション</button>
+      <button class="tab-button" data-tab="dashboard" aria-selected="false">ダッシュボード</button>
+      <button class="tab-button" data-tab="settings" aria-selected="false">設定</button>
+    </nav>
+  </header>
+  <main>
+    <section id="section-session" class="tab-pane is-active">
+      <div class="session-layout">
+        <aside class="task-panel">
+          <div class="panel-header">
+            <h2>タスク管理</h2>
+            <div class="task-actions">
+              <button id="add-task-btn" class="btn-icon" title="タスク追加">➕</button>
+              <button id="toggle-view-btn" class="btn-icon" title="選択式表示に切替">📊</button>
             </div>
           </div>
-
-          <!-- 右側：タイマー -->
-          <div class="timer-panel">
-            <div class="timer-container">
-              <div class="session-info">
-                <div class="timer-mode" aria-live="polite">
-                  <span id="mode-label">🎯 集中</span>
-                  <span class="separator">・</span>
-                  <span id="round-label">Round 1</span>
-                </div>
-                <div class="progress-ring">
-                  <svg class="progress-svg" width="200" height="200">
-                    <circle cx="100" cy="100" r="90" class="progress-bg"></circle>
-                    <circle cx="100" cy="100" r="90" class="progress-bar" id="progress-circle"></circle>
-                  </svg>
-                  <div class="timer-display">
-                    <div id="time-left" class="time">25:00</div>
-                    <div class="time-percent" id="time-percent">100%</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="controls">
-                <button id="start-btn" class="btn-large primary" aria-label="開始">
-                  <span class="btn-icon">▶️</span>
-                  <span>開始</span>
-                </button>
-                <button id="pause-btn" class="btn-large secondary" aria-label="一時停止" disabled>
-                  <span class="btn-icon">⏸️</span>
-                  <span>一時停止</span>
-                </button>
-                <button id="resume-btn" class="btn-large primary" aria-label="再開" disabled>
-                  <span class="btn-icon">▶️</span>
-                  <span>再開</span>
-                </button>
-                <button id="skip-btn" class="btn-medium secondary" aria-label="スキップ" disabled>⏭️ スキップ</button>
-                <button id="reset-btn" class="btn-medium danger" aria-label="リセット">🔄 リセット</button>
-              </div>
-
-              <div class="session-stats">
-                <div class="stat-item">
-                  <span class="stat-label">今日の集中</span>
-                  <span id="today-focus-time" class="stat-value">0分</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-label">連続セッション</span>
-                  <span id="streak-count" class="stat-value">0</span>
-                </div>
-              </div>
-
-              <div class="shortcuts-hint">
-                <small>ショートカット: <kbd>Space</kbd> 開始/停止 <kbd>S</kbd> スキップ <kbd>R</kbd> リセット</small>
-              </div>
+          <div id="current-task-display" class="current-task-card">
+            <div class="task-header">
+              <span class="current-label">現在のタスク</span>
+            </div>
+            <div class="current-task">
+              <div class="task-title"></div>
+              <div class="task-meta"></div>
+              <div class="task-notes"></div>
             </div>
           </div>
-        </div>
-      </section>
-
-      <!-- ダッシュボード -->
-      <section id="section-dashboard" class="tab-pane" role="region" aria-label="ダッシュボード">
-        <div class="dashboard-layout">
-          <!-- 概要統計 -->
-          <div class="stats-overview">
-            <div class="stat-card focus">
-              <div class="stat-icon">🎯</div>
-              <div class="stat-content">
-                <div class="stat-value" id="total-focus-time">0分</div>
-                <div class="stat-label">総集中時間</div>
+          <div id="task-list" class="task-list">
+            <h3>タスク一覧</h3>
+            <div id="task-items" class="task-items"></div>
+          </div>
+          <div id="task-selector" class="hidden">
+            <select id="task-select"></select>
+            <button id="change-task-btn" class="btn-small">詳細表示に切替</button>
+            <button id="delete-task-btn" class="btn-small danger">選択タスク削除</button>
+          </div>
+          <form id="new-task-form" class="task-form hidden" aria-hidden="true">
+            <h3>新規タスク追加</h3>
+            <input id="new-task-title" type="text" placeholder="タイトル" required>
+            <input id="new-task-subject" type="text" placeholder="科目/カテゴリ">
+            <input id="new-task-notes" type="text" placeholder="メモ">
+            <input id="new-task-goal" type="number" min="0" max="999" placeholder="目標時間(分)">
+            <div class="form-actions">
+              <button id="save-task-btn" class="primary btn-small" type="submit">保存</button>
+              <button id="cancel-task-btn" class="btn-small" type="button">キャンセル</button>
+            </div>
+          </form>
+        </aside>
+        <section class="timer-panel">
+          <div class="panel-header">
+            <h2>ポモドーロタイマー</h2>
+          </div>
+          <div class="timer-container">
+            <div class="session-info">
+              <span id="mode-label" class="timer-mode">🎯 集中</span>
+              <span class="separator">|</span>
+              <span id="round-label">Round 1</span>
+            </div>
+            <div class="progress-ring">
+              <svg class="progress-svg" width="200" height="200">
+                <circle class="progress-bg" cx="100" cy="100" r="90" />
+                <circle id="progress-circle" class="progress-bar" cx="100" cy="100" r="90" />
+              </svg>
+              <div class="timer-display">
+                <div id="time-left" class="time">25:00</div>
+                <div id="time-percent" class="time-percent">100%</div>
               </div>
             </div>
-            <div class="stat-card sessions">
-              <div class="stat-icon">📊</div>
-              <div class="stat-content">
-                <div class="stat-value" id="total-sessions">0</div>
-                <div class="stat-label">セッション数</div>
+            <div class="controls">
+              <button id="start-btn" class="primary btn-large">スタート</button>
+              <button id="pause-btn" class="btn-large">一時停止</button>
+              <button id="resume-btn" class="primary btn-large">再開</button>
+              <button id="skip-btn" class="btn-large">スキップ</button>
+              <button id="reset-btn" class="btn-large danger">リセット</button>
+            </div>
+            <div class="session-stats">
+              <div class="stat-item">
+                <span class="stat-label">今日の集中</span>
+                <span id="today-focus-time" class="stat-value">0分</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">今日の回数</span>
+                <span id="streak-count" class="stat-value">0</span>
               </div>
             </div>
-            <div class="stat-card streak">
-              <div class="stat-icon">🔥</div>
-              <div class="stat-content">
-                <div class="stat-value" id="current-streak">0</div>
-                <div class="stat-label">連続日数</div>
-              </div>
-            </div>
-            <div class="stat-card efficiency">
-              <div class="stat-icon">⚡</div>
-              <div class="stat-content">
-                <div class="stat-value" id="efficiency-rate">0%</div>
-                <div class="stat-label">完了率</div>
-              </div>
+            <div class="shortcuts-hint">
+              <span>ショートカット: <kbd>Space</kbd> 開始/一時停止, <kbd>S</kbd> スキップ, <kbd>R</kbd> リセット, <kbd>1-3</kbd> タブ切替</span>
             </div>
           </div>
-
-          <!-- 今日の詳細 -->
-          <div class="period-stats">
-            <div class="card">
-              <div class="card-header">
-                <h2>📅 今日の活動</h2>
-                <div class="period-nav">
-                  <button id="prev-day" class="btn-nav">←</button>
-                  <span id="current-date" class="current-period">今日</span>
-                  <button id="next-day" class="btn-nav">→</button>
-                </div>
-              </div>
-              <div class="today-summary">
-                <div class="summary-item">
-                  <span class="summary-label">集中時間</span>
-                  <span id="today-total" class="summary-value">0分</span>
-                </div>
-                <div class="summary-item">
-                  <span class="summary-label">セッション</span>
-                  <span id="today-count" class="summary-value">0</span>
-                </div>
-                <div class="summary-item">
-                  <span class="summary-label">目標達成</span>
-                  <span id="today-goal-progress" class="summary-value">0%</span>
-                </div>
-              </div>
-              
-              <h3>📈 タスク別進捗</h3>
-              <div id="today-task-progress" class="task-progress-list"></div>
-              
-              <h3>📋 セッション履歴</h3>
-              <div id="today-sessions" class="session-history"></div>
+        </section>
+      </div>
+    </section>
+    <section id="section-dashboard" class="tab-pane">
+      <div class="dashboard-layout">
+        <div class="stats-overview">
+          <div class="stat-card">
+            <span class="stat-icon">⏱️</span>
+            <div class="stat-content">
+              <span id="total-focus-time" class="stat-value">0分</span>
+              <span class="stat-label">総集中時間</span>
             </div>
-
-            <!-- 週間統計 -->
-            <div class="card">
-              <div class="card-header">
-                <h2>📊 週間統計（直近7日）</h2>
-              </div>
-              <div class="week-chart">
-                <div id="week-chart-bars" class="chart-bars"></div>
-                <div class="chart-labels">
-                  <span>6日前</span><span>5日前</span><span>4日前</span><span>3日前</span><span>2日前</span><span>昨日</span><span>今日</span>
-                </div>
-              </div>
-              <div class="week-summary">
-                <div class="summary-item">
-                  <span class="summary-label">週合計</span>
-                  <span id="week-total" class="summary-value">0分</span>
-                </div>
-                <div class="summary-item">
-                  <span class="summary-label">平均/日</span>
-                  <span id="week-average" class="summary-value">0分</span>
-                </div>
-                <div class="summary-item">
-                  <span class="summary-label">最長日</span>
-                  <span id="week-best" class="summary-value">0分</span>
-                </div>
-              </div>
-              
-              <h3>📝 タスク別内訳</h3>
-              <div id="week-task-breakdown" class="task-breakdown"></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">📝</span>
+            <div class="stat-content">
+              <span id="total-sessions" class="stat-value">0</span>
+              <span class="stat-label">総セッション数</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🔥</span>
+            <div class="stat-content">
+              <span id="current-streak" class="stat-value">0</span>
+              <span class="stat-label">連続日数</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🎯</span>
+            <div class="stat-content">
+              <span id="efficiency-rate" class="stat-value">0%</span>
+              <span class="stat-label">効率率</span>
             </div>
           </div>
         </div>
-      </section>
-
-      <!-- 設定 -->
-      <section id="section-settings" class="tab-pane" role="region" aria-label="設定">
-        <div class="settings-layout">
-          <div class="card">
-            <h2>⏰ タイマー設定</h2>
-            <div class="settings-grid">
-              <div class="setting-item">
-                <label for="focus-min">集中時間（分）</label>
-                <input id="focus-min" type="number" min="1" max="120" />
-              </div>
-              <div class="setting-item">
-                <label for="short-min">短休憩（分）</label>
-                <input id="short-min" type="number" min="1" max="60" />
-              </div>
-              <div class="setting-item">
-                <label for="long-min">長休憩（分）</label>
-                <input id="long-min" type="number" min="1" max="120" />
-              </div>
-              <div class="setting-item">
-                <label for="rounds-until-long">長休憩までのラウンド</label>
-                <input id="rounds-until-long" type="number" min="1" max="12" />
-              </div>
+        <div class="period-stats">
+          <div class="card today-summary">
+            <div class="summary-item">
+              <span class="summary-label">今日の合計</span>
+              <span id="today-total" class="summary-value">0分</span>
             </div>
-            <div class="setting-actions">
-              <button id="save-settings-btn" class="primary">💾 保存</button>
-              <button id="reset-settings-btn" class="secondary">🔄 既定に戻す</button>
+            <div class="summary-item">
+              <span class="summary-label">今日の回数</span>
+              <span id="today-count" class="summary-value">0</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">目標進捗</span>
+              <span id="today-goal-progress" class="summary-value">0%</span>
             </div>
           </div>
-
-          <div class="card">
-            <h2>🎯 目標設定</h2>
-            <div class="goal-settings">
-              <div class="setting-item">
-                <label for="daily-goal">1日の目標時間（分）</label>
-                <input id="daily-goal" type="number" min="0" step="15" placeholder="例: 120" />
-              </div>
-              <div class="setting-item">
-                <label for="weekly-goal">週間目標時間（分）</label>
-                <input id="weekly-goal" type="number" min="0" step="30" placeholder="例: 840" />
-              </div>
+          <div class="card week-summary">
+            <div class="summary-item">
+              <span class="summary-label">週間合計</span>
+              <span id="week-total" class="summary-value">0分</span>
             </div>
-            <div class="setting-actions">
-              <button id="save-goals-btn" class="primary">🎯 目標を保存</button>
+            <div class="summary-item">
+              <span class="summary-label">週間平均</span>
+              <span id="week-average" class="summary-value">0分</span>
             </div>
-          </div>
-
-          <div class="card">
-            <h2>🔔 通知設定</h2>
-            <div class="notification-settings">
-              <div class="setting-item">
-                <label>
-                  <input id="notify-break-start" type="checkbox" />
-                  <span class="checkbox-label">休憩開始時に通知</span>
-                </label>
-              </div>
-              <div class="setting-item">
-                <label>
-                  <input id="notify-break-end" type="checkbox" />
-                  <span class="checkbox-label">休憩終了時に通知</span>
-                </label>
-              </div>
-              <div class="setting-item">
-                <label>
-                  <input id="notify-goal-achieved" type="checkbox" />
-                  <span class="checkbox-label">目標達成時に通知</span>
-                </label>
-              </div>
-            </div>
-            <button id="test-notification" class="secondary">🔔 通知テスト</button>
-          </div>
-
-          <div class="card">
-            <h2>💾 データ管理</h2>
-            <div class="data-actions">
-              <button id="export-btn" class="primary">📤 エクスポート</button>
-              <label class="file-label">
-                <input id="import-file" type="file" accept="application/json" />
-                <span class="secondary">📥 インポート</span>
-              </label>
-              <button id="clear-data-btn" class="danger">🗑️ すべてのデータを削除</button>
-            </div>
-            <div class="data-info">
-              <div class="info-item">
-                <span class="info-label">タスク数:</span>
-                <span id="task-count" class="info-value">0</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">セッション数:</span>
-                <span id="session-count" class="info-value">0</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">データサイズ:</span>
-                <span id="data-size" class="info-value">0 KB</span>
-              </div>
-            </div>
-            <p class="hint">💡 すべてのデータはこのブラウザ内に保存されます。定期的なバックアップをお勧めします。</p>
-          </div>
-
-          <div class="card">
-            <h2>🎨 外観設定</h2>
-            <div class="appearance-settings">
-              <div class="setting-item">
-                <label for="theme-select">テーマ</label>
-                <select id="theme-select" aria-label="テーマ">
-                  <option value="system">🔄 システム設定</option>
-                  <option value="light">☀️ ライトモード</option>
-                  <option value="dark">🌙 ダークモード</option>
-                </select>
-              </div>
-              <div class="setting-item">
-                <label>
-                  <input id="show-seconds" type="checkbox" />
-                  <span class="checkbox-label">秒数を表示</span>
-                </label>
-              </div>
-              <div class="setting-item">
-                <label>
-                  <input id="compact-mode" type="checkbox" />
-                  <span class="checkbox-label">コンパクト表示</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <h2>ℹ️ アプリ情報</h2>
-            <div class="app-info">
-              <p><strong>Study Support</strong> v0.2</p>
-              <p>完全ローカル保存・オフライン対応（PWA）</p>
-              <p>🔐 プライバシー重視：データは外部に送信されません</p>
-              <p>⚡ パフォーマンス最適化済み</p>
+            <div class="summary-item">
+              <span class="summary-label">ベスト日</span>
+              <span id="week-best" class="summary-value">0分</span>
             </div>
           </div>
         </div>
-      </section>
-    </main>
-
-    <footer class="app-footer">
-      <small>完全ローカル保存・オフライン対応（PWA）。通知は次フェーズで導入予定。</small>
-    </footer>
-
-    <script src="./app.js"></script>
-  </body>
+        <div class="week-chart card">
+          <div class="card-header">
+            <h2>週間チャート</h2>
+          </div>
+          <div id="week-chart-bars" class="chart-bars"></div>
+        </div>
+        <div class="task-breakdown card">
+          <div class="card-header">
+            <h2>週間タスク内訳</h2>
+          </div>
+          <div id="week-task-breakdown"></div>
+        </div>
+        <div class="task-progress-list card">
+          <div class="card-header">
+            <h2>今日のタスク進捗</h2>
+          </div>
+          <div id="today-task-progress"></div>
+        </div>
+        <div class="session-history card">
+          <div class="card-header">
+            <h2>今日のセッション履歴</h2>
+          </div>
+          <div id="today-sessions"></div>
+        </div>
+      </div>
+    </section>
+    <section id="section-settings" class="tab-pane">
+      <div class="settings-layout">
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label for="focus-min">集中時間(分)</label>
+            <input id="focus-min" type="number" min="1" max="120">
+          </div>
+          <div class="setting-item">
+            <label for="short-min">短休憩(分)</label>
+            <input id="short-min" type="number" min="1" max="60">
+          </div>
+          <div class="setting-item">
+            <label for="long-min">長休憩(分)</label>
+            <input id="long-min" type="number" min="1" max="120">
+          </div>
+          <div class="setting-item">
+            <label for="rounds-until-long">ラウンド数(長休憩まで)</label>
+            <input id="rounds-until-long" type="number" min="1" max="12">
+          </div>
+        </div>
+        <div class="goal-settings">
+          <div class="setting-item">
+            <label for="daily-goal">日次目標(分)</label>
+            <input id="daily-goal" type="number" min="0" max="999">
+          </div>
+          <div class="setting-item">
+            <label for="weekly-goal">週次目標(分)</label>
+            <input id="weekly-goal" type="number" min="0" max="9999">
+          </div>
+          <button id="save-goals-btn" class="primary btn-small">目標保存</button>
+        </div>
+        <div class="notification-settings">
+          <div class="setting-item checkbox-label">
+            <label><input id="notify-break-start" type="checkbox">休憩開始時に通知</label>
+          </div>
+          <div class="setting-item checkbox-label">
+            <label><input id="notify-break-end" type="checkbox">休憩終了時に通知</label>
+          </div>
+          <div class="setting-item checkbox-label">
+            <label><input id="notify-goal-achieved" type="checkbox">目標達成時に通知</label>
+          </div>
+          <button id="test-notification" class="btn-small">通知テスト</button>
+        </div>
+        <div class="appearance-settings">
+          <div class="setting-item">
+            <label for="theme-select">テーマ</label>
+            <select id="theme-select">
+              <option value="system">システム</option>
+              <option value="light">ライト</option>
+              <option value="dark">ダーク</option>
+            </select>
+          </div>
+          <div class="setting-item checkbox-label">
+            <label><input id="show-seconds" type="checkbox">秒表示</label>
+          </div>
+          <div class="setting-item checkbox-label">
+            <label><input id="compact-mode" type="checkbox">コンパクト表示</label>
+          </div>
+        </div>
+        <div class="data-info">
+          <div class="info-item">
+            <span class="info-label">タスク数</span>
+            <span id="task-count" class="info-value">0</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">セッション数</span>
+            <span id="session-count" class="info-value">0</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">データ容量</span>
+            <span id="data-size" class="info-value">0 KB</span>
+          </div>
+        </div>
+        <div class="data-actions">
+          <button id="export-btn" class="btn-small">データエクスポート</button>
+          <label class="file-label"><input id="import-file" type="file" accept=".json"><span>データインポート</span></label>
+          <button id="clear-data-btn" class="danger btn-small">全データ削除</button>
+        </div>
+        <div class="app-info">
+          <p>Study Support v0.2 Enhanced<br>© 2025 Rino-program</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="app-footer">
+    <span>Study Support v0.2 Enhanced | © 2025 Rino-program</span>
+  </footer>
+  <script src="app.js"></script>
+</body>
 </html>
