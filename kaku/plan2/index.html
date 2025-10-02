@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>核兵器と未来兵器 - 高校生とAIの深い対話</title>
+    <link rel="stylesheet" href="styles.css">  <!-- CSSファイルのリンク -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Analytics (オプション) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-144HPKP3NS"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-144HPKP3NS');
+    </script>
+</head>
+<body>
+    <!-- ローディング画面: アニメーション付きで興味を引く -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2 id="loadingText">対話を読み込み中...</h2>
+            <p>人類の未来を考える深い議論が待っています</p>
+        </div>
+    </div>
+
+    <!-- ヘッダー: 固定ナビゲーション、ダークモードトグル追加 -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <h1><i class="fas fa-brain"></i> 核兵器と未来兵器の対話</h1>
+                <p>高校生プログラマー × AI Claude の考察</p>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="#intro" class="nav-link">導入</a>
+                <a href="#participants" class="nav-link">対話者</a>
+                <a href="#nuclear-debate" class="nav-link">核兵器論</a>
+                <a href="#future-weapons" class="nav-link">未来兵器</a>
+                <a href="#ethics" class="nav-link">技術倫理</a>
+                <a href="#conclusion" class="nav-link">結論</a>
+            </div>
+            <div class="nav-controls">
+                <button id="darkModeToggle" class="icon-button" aria-label="ダークモード切り替え">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div class="nav-toggle" id="navToggle">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="main">
+        <!-- ヒーローセクション: 没入型デザイン、背景アニメーションで興味を引く -->
+        <section id="intro" class="hero">
+            <div class="hero-overlay"></div>  <!-- グラデーションオーバーレイ -->
+            <div class="hero-content">
+                <h1 class="hero-title" data-aos="fade-up">核兵器は本当に悪なのか？</h1>
+                <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200">高校生プログラマーとAIが探る、未来兵器の複雑な現実と倫理</p>
+                <div class="hero-stats" data-aos="fade-up" data-aos-delay="400">
+                    <div class="stat">
+                        <div class="stat-number" data-count="2025">0</div>
+                        <div class="stat-label">現在の年</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" data-count="9">0</div>
+                        <div class="stat-label">核保有国</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number infinity">∞</div>
+                        <div class="stat-label">永遠の問い</div>
+                    </div>
+                </div>
+                <a href="#nuclear-debate" class="cta-button" data-aos="fade-up" data-aos-delay="600">
+                    <i class="fas fa-arrow-down"></i> 対話を始める
+                </a>
+            </div>
+            <div class="hero-visual">
+                <canvas id="heroCanvas"></canvas>  <!-- JSで粒子アニメーションを描画 -->
+            </div>
+        </section>
+
+        <!-- 対話者紹介: カード形式、ホバーで詳細表示 -->
+        <section id="participants" class="participants">
+            <div class="container">
+                <h2 data-aos="fade-up">対話者の紹介</h2>
+                <div class="participants-grid" data-aos="fade-up" data-aos-delay="200">
+                    <div class="participant-card" data-aos="zoom-in" data-aos-delay="300">
+                        <div class="participant-avatar"><i class="fas fa-user-graduate"></i></div>
+                        <h3>Rino-program</h3>
+                        <p class="role">高校生プログラマー</p>
+                        <p class="description">AtCoderと深層学習に没頭する高校生。技術視点から社会問題を鋭く分析。「核禁止論は正当でない」と主張。</p>
+                        <div class="skills">
+                            <span>Python</span><span>機械学習</span><span>競技プログラミング</span>
+                        </div>
+                        <div class="extra-info hidden">GitHub: <a href="https://github.com/Rino-program">Rino-program</a></div>
+                    </div>
+                    <div class="participant-card" data-aos="zoom-in" data-aos-delay="400">
+                        <div class="participant-avatar"><i class="fas fa-robot"></i></div>
+                        <h3>Claude</h3>
+                        <p class="role">AIアシスタント</p>
+                        <p class="description">多角的分析で問題を解剖。理想と現実の間で人類の未来を考察。</p>
+                        <div class="skills">
+                            <span>論理思考</span><span>倫理分析</span><span>多角視</span>
+                        </div>
+                        <div class="extra-info hidden">開発元: Anthropic</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 核兵器論: インタラクティブタイムライン、アコーディオンで展開 -->
+        <section id="nuclear-debate" class="debate-section">
+            <div class="container">
+                <h2 data-aos="fade-up">核兵器論の核心</h2>
+                <p class="section-intro" data-aos="fade-up" data-aos-delay="200">高校生の主張から始まる深い議論。クリックして詳細を展開。</p>
+                <div class="timeline" data-aos="fade-up" data-aos-delay="400">
+                    <div class="timeline-item">
+                        <div class="timeline-header rino" onclick="toggleTimeline(this)">
+                            <i class="fas fa-user-graduate"></i> Rino-program: 核禁止論への疑問
+                        </div>
+                        <div class="timeline-body hidden">
+                            <p>核兵器を禁止するという意見は正当でないと思います。仮想シナリオ: 国民が滅びの危機で核使用し生存した場合、正当か？</p>
+                            <div class="scenario">
+                                <h4>シナリオ</h4>
+                                <p>人々: 「核しか手段がない！」 大統領: 「許可する。」 結果: 「生き残った！」</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-header claude" onclick="toggleTimeline(this)">
+                            <i class="fas fa-robot"></i> Claude: 多角的分析
+                        </div>
+                        <div class="timeline-body hidden">
+                            <p>国際法(自衛権)、倫理(結果主義 vs 義務論)、戦略(抑止力)を検討。</p>
+                            <div class="analysis-grid">
+                                <div><h5>法的</h5><ul><li>国連51条</li><li>比例原則</li></ul></div>
+                                <div><h5>倫理的</h5><ul><li>結果主義</li><li>無差別殺戮</li></ul></div>
+                                <div><h5>戦略的</h5><ul><li>パワーバランス</li></ul></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 追加のタイムラインアイテムを複数追加して長さを増す -->
+                    <div class="timeline-item">
+                        <div class="timeline-header rino" onclick="toggleTimeline(this)">
+                            <i class="fas fa-user-graduate"></i> Rino-program: 現実主義的反論
+                        </div>
+                        <div class="timeline-body hidden">
+                            <p>理想論 vs 現実。戦争では本能が勝つ。「仕方ない」使用が現実。</p>
+                            <blockquote>人間の本能が理性を上回る極限状況。</blockquote>
+                        </div>
+                    </div>
+                    <!-- ... (さらにアイテムを追加可能、全体を長く) -->
+                </div>
+                <div class="paradox-grid" data-aos="fade-up" data-aos-delay="600">
+                    <!-- パラドックスカード: ホバーで拡大 -->
+                    <div class="paradox-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <h4>抑止力の矛盾</h4>
+                        <p>使わないことで平和、使うと価値崩壊。</p>
+                    </div>
+                    <!-- 追加カードで長さを増す -->
+                    <div class="paradox-card">
+                        <i class="fas fa-question-circle"></i>
+                        <h4>手段の定義問題</h4>
+                        <p>「最後の手段」は誰が決める？</p>
+                    </div>
+                    <div class="paradox-card">
+                        <i class="fas fa-brain"></i>
+                        <h4>本能 vs 理性</h4>
+                        <p>勝ちたい本能が理性を凌駕。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 未来兵器セクション: インタラクティブマップ追加 -->
+        <section id="future-weapons" class="future-section">
+            <div class="container">
+                <h2 data-aos="fade-up">核を超える未来兵器</h2>
+                <p class="section-intro" data-aos="fade-up" data-aos-delay="200">技術進化がもたらす新脅威。マップで探索。</p>
+                <div class="future-map" id="futureMap">  <!-- JSでインタラクティブマップを描画 -->
+                    <svg viewBox="0 0 100 100">
+                        <!-- マップ要素: クリックで詳細ポップアップ -->
+                        <circle cx="50" cy="50" r="40" fill="#e94560" onclick="showPopup('AI兵器')"></circle>
+                        <!-- 追加要素で詳細化 -->
+                    </svg>
+                </div>
+                <div class="weapons-grid" data-aos="fade-up" data-aos-delay="400">
+                    <div class="weapon-card">
+                        <i class="fas fa-brain"></i>
+                        <h4>AI自律兵器</h4>
+                        <p>ドローン群の攻撃。ハードウェア小型化で個人レベルに。</p>
+                        <button class="details-btn">詳細</button>
+                    </div>
+                    <!-- 追加カード -->
+                    <div class="weapon-card">
+                        <i class="fas fa-wifi"></i>
+                        <h4>サイバー兵器</h4>
+                        <p>衛星ハックで文明崩壊。</p>
+                        <button class="details-btn">詳細</button>
+                    </div>
+                    <div class="weapon-card">
+                        <i class="fas fa-dna"></i>
+                        <h4>生物兵器</h4>
+                        <p>遺伝子標的型ウイルス。</p>
+                        <button class="details-btn">詳細</button>
+                    </div>
+                </div>
+                <!-- いたちごっこサイクル: アニメーション付き -->
+                <div class="cycle" data-aos="fade-up" data-aos-delay="600">
+                    <h3>技術のいたちごっこ</h3>
+                    <div class="cycle-steps">
+                        <div>防御開発 →</div>
+                        <div>攻撃進化 →</div>
+                        <div>軍拡競争 →</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 技術倫理セクション: クイズ追加でインタラクティブ -->
+        <section id="ethics" class="ethics-section">
+            <div class="container">
+                <h2 data-aos="fade-up">技術者の倫理ジレンマ</h2>
+                <p class="section-intro" data-aos="fade-up" data-aos-delay="200">あなたならどうする？クイズで考えてみよう。</p>
+                <div class="quiz" id="ethicsQuiz">
+                    <div class="quiz-question">
+                        <p>核兵器開発に携わる？</p>
+                        <button onclick="quizAnswer('yes')">はい</button>
+                        <button onclick="quizAnswer('no')">いいえ</button>
+                    </div>
+                    <div id="quizResult" class="hidden"></div>
+                </div>
+                <div class="dilemma-grid" data-aos="fade-up" data-aos-delay="400">
+                    <div class="dilemma-card">
+                        <h4>個人ジレンマ</h4>
+                        <ul><li>平和利用が軍事転用</li><li>止めても他国が進む</li></ul>
+                    </div>
+                    <!-- 追加で長さを増す -->
+                    <div class="dilemma-card">
+                        <h4>業界ジレンマ</h4>
+                        <ul><li>競争のいたちごっこ</li><li>軍事予算の誘惑</li></ul>
+                    </div>
+                </div>
+                <blockquote data-aos="fade-up" data-aos-delay="600">"なるようにしかならない" - Rino-program</blockquote>
+            </div>
+        </section>
+
+        <!-- 結論セクション: まとめとコールトゥアクション -->
+        <section id="conclusion" class="conclusion">
+            <div class="container">
+                <h2 data-aos="fade-up">到達した結論: 永遠の問い</h2>
+                <p class="section-intro" data-aos="fade-up" data-aos-delay="200">人間の矛盾と未来への希望。</p>
+                <div class="conclusion-grid" data-aos="fade-up" data-aos-delay="400">
+                    <div class="conclusion-card">
+                        <h4>現実主義</h4>
+                        <p>抑止力で平和を維持。</p>
+                    </div>
+                    <!-- 追加カード -->
+                    <div class="conclusion-card">
+                        <h4>技術不可逆</h4>
+                        <p>超兵器の時代へ。</p>
+                    </div>
+                    <div class="conclusion-card">
+                        <h4>希望</h4>
+                        <p>次世代の賢明な選択。</p>
+                    </div>
+                </div>
+                <div class="final-cta" data-aos="fade-up" data-aos-delay="600">
+                    <p>この議論をシェアしよう</p>
+                    <button class="share-btn"><i class="fas fa-share"></i> Twitter</button>
+                    <button class="share-btn"><i class="fab fa-facebook"></i> Facebook</button>
+                </div>
+                <div class="comment-section">
+                    <h3>あなたの意見を聞かせてください</h3>
+                    <textarea placeholder="コメントを入力..."></textarea>
+                    <button>投稿</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- フッター: 参考リンク追加で長さを増す -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 核兵器と未来兵器論. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="https://un.org/disarmament">国連核軍縮</a>
+                <a href="https://futureoflife.org">未来生命研究所</a>
+                <a href="https://github.com/Rino-program">Rino-program GitHub</a>
+            </div>
+            <p>注意: このサイトは教育目的。政治的推奨ではありません。</p>
+        </div>
+    </footer>
+
+    <!-- スクロールプログレスバー -->
+    <div id="progressBar" class="progress-bar"></div>
+
+    <!-- スクリプトリンク -->
+    <script src="scripts.js"></script>  <!-- JSファイルのリンク -->
+</body>
+</html>
