@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="核兵器は本当に悪なのか？高校生プログラマーとAIの深い対話を物語形式で体験">
+    <meta name="keywords" content="核兵器,未来兵器,AI,倫理,対話,Rino-program,Claude">
+    <meta property="og:title" content="核兵器は本当に悪なのか？ - 高校生とAIの対話物語">
+    <meta property="og:description" content="答えのない問題に真摯に向き合った、二者の深い議論の記録">
+    <meta property="og:type" content="website">
+    <title>核兵器は本当に悪なのか？ - 高校生とAIの対話物語</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body data-theme="light" data-font-size="medium">
+    
+    <!-- Reading Progress Bar -->
+    <div class="reading-progress" role="progressbar" aria-label="読書進捗" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header" id="mainHeader">
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-book-open"></i>
+                <span class="logo-text">対話の記録</span>
+            </div>
+            
+            <nav class="chapter-nav" aria-label="チャプターナビゲーション">
+                <button class="chapter-btn active" data-chapter="0" aria-label="序章へ移動">
+                    <span class="chapter-num">序章</span>
+                </button>
+                <button class="chapter-btn" data-chapter="1" aria-label="第1章へ移動">
+                    <span class="chapter-num">第1章</span>
+                </button>
+                <button class="chapter-btn" data-chapter="2" aria-label="第2章へ移動">
+                    <span class="chapter-num">第2章</span>
+                </button>
+                <button class="chapter-btn" data-chapter="3" aria-label="第3章へ移動">
+                    <span class="chapter-num">第3章</span>
+                </button>
+                <button class="chapter-btn" data-chapter="4" aria-label="終章へ移動">
+                    <span class="chapter-num">終章</span>
+                </button>
+            </nav>
+            
+            <div class="header-actions">
+                <button class="icon-btn" id="bookmarkBtn" title="ブックマーク" aria-label="ブックマーク">
+                    <i class="far fa-bookmark"></i>
+                </button>
+                <button class="icon-btn" id="settingsBtn" title="設定" aria-label="設定を開く">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn" aria-label="メニューを開く">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Settings Panel -->
+    <aside class="settings-panel" id="settingsPanel" role="dialog" aria-labelledby="settingsTitle" aria-hidden="true">
+        <div class="settings-overlay" id="settingsOverlay"></div>
+        <div class="settings-content">
+            <div class="settings-header">
+                <h3 id="settingsTitle"><i class="fas fa-cog"></i> 読書設定</h3>
+                <button class="close-btn" id="closeSettingsBtn" aria-label="設定を閉じる">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="settings-body">
+                <div class="setting-group">
+                    <label>
+                        <i class="fas fa-text-height"></i> 文字サイズ
+                    </label>
+                    <div class="size-controls">
+                        <button class="size-btn" data-size="small">小</button>
+                        <button class="size-btn active" data-size="medium">中</button>
+                        <button class="size-btn" data-size="large">大</button>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label>
+                        <i class="fas fa-palette"></i> テーマ
+                    </label>
+                    <div class="theme-controls">
+                        <button class="theme-btn active" data-theme="light">
+                            <i class="fas fa-sun"></i> ライト
+                        </button>
+                        <button class="theme-btn" data-theme="dark">
+                            <i class="fas fa-moon"></i> ダーク
+                        </button>
+                        <button class="theme-btn" data-theme="sepia">
+                            <i class="fas fa-book"></i> セピア
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="autoScrollCheck">
+                        <span>自動スクロール</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="story-container">
+        
+        <!-- Prologue -->
+        <section class="chapter" id="chapter-0" data-chapter="0">
+            <div class="chapter-header">
+                <div class="chapter-decoration">
+                    <div class="deco-line"></div>
+                    <div class="chapter-icon">
+                        <i class="fas fa-feather-alt"></i>
+                    </div>
+                    <div class="deco-line"></div>
+                </div>
+                <h1 class="chapter-title">序章</h1>
+                <p class="chapter-subtitle">ある問いかけから始まった対話</p>
+            </div>
+
+            <div class="story-content">
+                <div class="narrative-text">
+                    <p class="opening-text">2025年。</p>
+                    <p>プログラミングを学ぶ一人の高校生が、AIに対して1つの問いを投げかけた。</p>
+                    <p class="highlight-text">「核兵器は、本当に悪なのか？」</p>
+                    <p>この問いかけから、二者の深い対話が始まることとなる―</p>
+                </div>
+
+                <!-- Character Introduction -->
+                <div class="characters-intro">
+                    <div class="character-card rino-card">
+                        <div class="character-avatar">
+                            <div class="avatar-circle rino-avatar">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <div class="avatar-status online"></div>
+                        </div>
+                        <div class="character-info">
+                            <h3 class="character-name">Rino-program</h3>
+                            <p class="character-role">高校生プログラマー</p>
+                            <div class="character-tags">
+                                <span class="tag">Python</span>
+                                <span class="tag">機械学習</span>
+                                <span class="tag">AtCoder</span>
+                            </div>
+                            <p class="character-description">
+                                技術的な視点から社会問題を考察する現役高校生。
+                                「理想論だけでは人は救えない」という現実主義的な視点を持つ。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="vs-divider">
+                        <div class="vs-circle">VS</div>
+                        <div class="vs-line"></div>
+                    </div>
+
+                    <div class="character-card claude-card">
+                        <div class="character-avatar">
+                            <div class="avatar-circle claude-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="avatar-status active"></div>
+                        </div>
+                        <div class="character-info">
+                            <h3 class="character-name">Claude</h3>
+                            <p class="character-role">AI アシスタント</p>
+                            <div class="character-tags">
+                                <span class="tag">論理的思考</span>
+                                <span class="tag">多角的分析</span>
+                                <span class="tag">倫理的考察</span>
+                            </div>
+                            <p class="character-description">
+                                多角的な視点から問題を分析し、人間の本質的な矛盾に
+                                焦点を当てながら対話を深めていく。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="narrative-text">
+                    <p>この対話には、簡単な答えは存在しない。</p>
+                    <p>しかし、二者は真摯に向き合い、思考を重ね、人類が直面する最も困難な問題の1つについて議論を続けた。</p>
+                    <p class="transition-text">その記録を、ここに綴る―</p>
+                </div>
+
+                <button class="next-chapter-btn" data-next="1">
+                    <span>第1章へ</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Chapter 1 -->
+        <section class="chapter" id="chapter-1" data-chapter="1">
+            <div class="chapter-header">
+                <div class="chapter-decoration">
+                    <div class="deco-line"></div>
+                    <div class="chapter-icon">
+                        <i class="fas fa-atom"></i>
+                    </div>
+                    <div class="deco-line"></div>
+                </div>
+                <h1 class="chapter-title">第1章</h1>
+                <p class="chapter-subtitle">核兵器禁止論は正当なのか</p>
+            </div>
+
+            <div class="story-content">
+                <div class="narrative-text">
+                    <p>対話は、Rinoの率直な疑問から始まった。</p>
+                </div>
+
+                <!-- Message Thread -->
+                <div class="message-thread">
+                    <!-- Rino's Message -->
+                    <div class="message-group rino-message">
+                        <div class="message-avatar">
+                            <div class="avatar-circle small">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="sender-name">Rino-program</span>
+                                <span class="message-time">10:23</span>
+                            </div>
+                            <div class="message-bubble">
+                                <p>核兵器を禁止するという意見は正当でないと思います。</p>
+                                <p>理由として以下の場面を考えてください：</p>
+                            </div>
+                            <div class="message-bubble scenario-bubble">
+                                <div class="scenario-header">
+                                    <i class="fas fa-theater-masks"></i>
+                                    <span>仮想シナリオ</span>
+                                </div>
+                                <div class="scenario-dialogue">
+                                    <div class="dialogue-line">
+                                        <span class="speaker">人々：</span>
+                                        <span class="speech">「もう兵力がない！このままでは国民全員が滅ばされてしまいます！もう核兵器しか手段が残っていません！」</span>
+                                    </div>
+                                    <div class="dialogue-line">
+                                        <span class="speaker">大統領：</span>
+                                        <span class="speech">「わかった。では核兵器の使用を許可する。」</span>
+                                    </div>
+                                    <div class="dialogue-line result">
+                                        <span class="speaker">結果：</span>
+                                        <span class="speech">「戦争に勝ちました！私たちは生き残りました！」</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="message-bubble">
+                                <p>この場合、核兵器は自己防衛のために使用され、国民は生存することができました。</p>
+                                <p class="question-text">これは正当と言えるのでしょうか？</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Typing Indicator -->
+                    <div class="typing-indicator">
+                        <div class="message-avatar">
+                            <div class="avatar-circle small">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                        </div>
+                        <div class="typing-content">
+                            <div class="typing-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                            <span class="typing-text">Claude が考えています...</span>
+                        </div>
+                    </div>
+
+                    <!-- Claude's Response -->
+                    <div class="message-group claude-message">
+                        <div class="message-avatar">
+                            <div class="avatar-circle small">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="sender-name">Claude</span>
+                                <span class="message-time">10:31</span>
+                            </div>
+                            <div class="message-bubble">
+                                <p>あなたの提起した問題は、国際法や倫理学において長年議論されている「極限状況における正当防衛」の核心を突いています。</p>
+                                <p>この問題を複数の観点から検討してみましょう。</p>
+                            </div>
+                            
+                            <!-- Expandable Cards -->
+                            <div class="analysis-cards">
+                                <div class="analysis-card">
+                                    <div class="card-header" onclick="toggleCard(this)">
+                                        <div class="card-icon law-icon">
+                                            <i class="fas fa-balance-scale"></i>
+                                        </div>
+                                        <h4>国際法的観点</h4>
+                                        <i class="fas fa-chevron-down toggle-icon"></i>
+                                    </div>
+                                    <div class="card-content">
+                                        <ul class="point-list">
+                                            <li>
+                                                <i class="fas fa-check-circle"></i>
+                                                <div>
+                                                    <strong>自衛権の承認</strong>
+                                                    <p>国連憲章51条は自衛権を認めている</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <i class="fas fa-balance-scale-right"></i>
+                                                <div>
+                                                    <strong>比例原則</strong>
+                                                    <p>攻撃に比例した自衛手段であるべき</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                <div>
+                                                    <strong>必要性の原則</strong>
+                                                    <p>他に選択肢がない場合のみ許容される</p>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="analysis-card">
+                                    <div class="card-header" onclick="toggleCard(this)">
+                                        <div class="card-icon ethics-icon">
+                                            <i class="fas fa-heart"></i>
+                                        </div>
+                                        <h4>倫理学的観点</h4>
+                                        <i class="fas fa-chevron-down toggle-icon"></i>
+                                    </div>
+                                    <div class="card-content">
+                                        <ul class="point-list">
+                                            <li>
+                                                <i class="fas fa-users"></i>
+                                                <div>
+                                                    <strong>結果主義</strong>
+                                                    <p>より多くの生命を救うなら正当化される？</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <i class="fas fa-gavel"></i>
+                                                <div>
+                                                    <strong>義務論</strong>
+                                                    <p>手段の性質そのものが重要</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <i class="fas fa-skull-crossbones"></i>
+                                                <div>
+                                                    <strong>無差別殺戮の問題</strong>
+                                                    <p>民間人を巻き込む攻撃の倫理性</p>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="analysis-card">
+                                    <div class="card-header" onclick="toggleCard(this)">
+                                        <div class="card-icon strategy-icon">
+                                            <i class="fas fa-chess"></i>
+                                        </div>
+                                        <h4>戦略的観点</h4>
+                                        <i class="fas fa-chevron-down toggle-icon"></i>
+                                    </div>
+                                    <div class="card-content">
+                                        <ul class="point-list">
+                                            <li>
+                                                <i class="fas fa-trophy"></i>
+                                                <div>
+                                                    <strong>「やり得」の問題</strong>
+                                                    <p>完全禁止は強国の一方的優位を生む？</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <i class="fas fa-shield-alt"></i>
+                                                <div>
+                                                    <strong>小国の抑止力</strong>
+                                                    <p>大国に対する最後の防衛手段</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <i class="fas fa-sync-alt"></i>
+                                                <div>
+                                                    <strong>パワーバランス</strong>
+                                                    <p>相互抑止による平和維持</p>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="message-bubble">
+                                <p>しかし、ここで重要な問題があります。</p>
+                                <div class="important-box">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <p><strong>「最後の手段」とは誰が判断するのか？</strong></p>
+                                    <p>本当に他に選択肢はなかったのか？</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rino's Counter -->
+                    <div class="message-group rino-message">
+                        <div class="message-avatar">
+                            <div class="avatar-circle small">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="sender-name">Rino-program</span>
+                                <span class="message-time">10:45</span>
+                            </div>
+                            <div class="message-bubble">
+                                <p>「非核国への使用禁止」という考えは良いですが、</p>
+                                <p class="emphasis-text">実際の戦闘においてそんなこと言っていられるのでしょうか？</p>
+                            </div>
+                            <div class="message-bubble insight-bubble">
+                                <div class="insight-header">
+                                    <i class="fas fa-brain"></i>
+                                    <span>人間の本質的な問題</span>
+                                </div>
+                                <p>人の戦いにおいて、<strong>勝つことは人の本能（欲望）として作動します</strong>。</p>
+                                <p>戦争という極限状況では、理想的な判断なんてできません。</p>
+                                <p>人は本能的に生き残ろうとし、勝とうとするものです。</p>
+                            </div>
+                            <div class="message-bubble">
+                                <p>核兵器の使用は推奨しませんが、</p>
+                                <p class="highlight-text">ただただ「仕方ない」から使用するもの</p>
+                                <p>現実的に考えて、そうはいかないのが現実だと思います。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paradox Section -->
+                <div class="narrative-section">
+                    <div class="section-title">
+                        <i class="fas fa-infinity"></i>
+                        <h3>核兵器の本質的なパラドックス</h3>
+                    </div>
+                    
+                    <div class="paradox-grid">
+                        <div class="paradox-item">
+                            <div class="paradox-number">1</div>
+                            <div class="paradox-content">
+                                <h4><i class="fas fa-shield-alt"></i> 抑止力の自己矛盾</h4>
+                                <p>核兵器は「使わない」ことで平和を保つが、「使わない」なら相手に「どうせ使えない」と思われる。</p>
+                                <p class="paradox-conclusion">「使える」ことを示すには使うしかないが、使えば全てが終わる。</p>
+                            </div>
+                        </div>
+
+                        <div class="paradox-item">
+                            <div class="paradox-number">2</div>
+                            <div class="paradox-content">
+                                <h4><i class="fas fa-question-circle"></i> 最後の手段の定義問題</h4>
+                                <p>「最後の手段」とは誰がどう判断するのか？本当に他に選択肢はないのか？</p>
+                                <p class="paradox-conclusion">戦争の当事者には「仕方ない」でも、第三者からは「まだ選択肢があった」と見える。</p>
+                            </div>
+                        </div>
+
+                        <div class="paradox-item">
+                            <div class="paradox-number">3</div>
+                            <div class="paradox-content">
+                                <h4><i class="fas fa-brain"></i> 人間の本能vs理性</h4>
+                                <p>本能的に「勝ちたい」、理性的には「核は使うべきでない」。</p>
+                                <p class="paradox-conclusion">極限状況では本能が理性を上回るが、本能に従った結果、最終的には全員が敗者となる。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="narrative-text">
+                    <p>この議論には、簡単な答えは存在しない。</p>
+                    <p>しかし、二者の対話はさらに深い領域へと進んでいく―</p>
+                </div>
+
+                <button class="next-chapter-btn" data-next="2">
+                    <span>第2章へ - 核を超える未来兵器</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Chapter 2 -->
+        <section class="chapter" id="chapter-2" data-chapter="2">
+            <div class="chapter-header">
+                <div class="chapter-decoration">
+                    <div class="deco-line"></div>
+                    <div class="chapter-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="deco-line"></div>
+                </div>
+                <h1 class="chapter-title">第2章</h1>
+                <p class="chapter-subtitle">核を超える未来兵器の脅威</p>
+            </div>
+
+            <div class="story-content">
+                <div class="narrative-text">
+                    <p>対話が深まる中、Rinoは重要な洞察に辿り着く。</p>
+                </div>
+
+                <div class="message-thread">
+                    <div class="message-group rino-message">
+                        <div class="message-avatar">
+                            <div class="avatar-circle small">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="sender-name">Rino-program</span>
+                                <span class="message-time">11:15</span>
+                            </div>
+                            <div class="message-bubble revelation-bubble">
+                                <div class="revelation-icon">
+                                    <i class="fas fa-lightbulb"></i>
+                                </div>
+                                <p class="revelation-text">技術の発達で、より危険な兵器が生まれるかもしれない。</p>
+                                <p class="revelation-text">もしも開発されたとしたら、<strong>核兵器は下の存在になり、核兵器が通常兵器の立ち位置</strong>になると考えました。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weapons Timeline -->
+                <div class="weapons-timeline">
+                    <div class="timeline-title">
+                        <i class="fas fa-history"></i>
+                        <h3>兵器の進化と相対化</h3>
+                    </div>
+                    
+                    <div class="timeline-track">
+                        <div class="timeline-era past-era">
+                            <div class="era-marker"></div>
+                            <div class="era-content">
+                                <div class="era-icon">
+                                    <i class="fas fa-crosshairs"></i>
+                                </div>
+                                <h4>過去：通常兵器時代</h4>
+                                <p class="era-description">銃、大砲、爆弾による局地的な戦闘</p>
+                                <div class="era-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-label">被害規模</span>
+                                        <span class="stat-value">数千人</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">影響範囲</span>
+                                        <span class="stat-value">戦場のみ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+
+                        <div class="timeline-era present-era">
+                            <div class="era-marker"></div>
+                            <div class="era-content">
+                                <div class="era-icon">
+                                    <i class="fas fa-radiation"></i>
+                                </div>
+                                <h4>現在：核兵器時代</h4>
+                                <p class="era-description">一発で都市を壊滅させる「最終兵器」</p>
+                                <div class="era-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-label">被害規模</span>
+                                        <span class="stat-value">数十万人</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">影響範囲</span>
+                                        <span class="stat-value">広域汚染</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+
+                        <div class="timeline-era future-era">
+                            <div class="era-marker pulsing"></div>
+                            <div class="era-content">
+                                <div class="era-icon">
+                                    <i class="fas fa-skull-crossbones"></i>
+                                </div>
+                                <h4>未来：超兵器時代</h4>
+                                <p class="era-description">核兵器が「小規模な爆弾」に見える時代</p>
+                                <div class="era-stats danger">
+                                    <div class="stat-item">
+                                        <span class="stat-label">被害規模</span>
+                                        <span class="stat-value">数億〜全人類</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">影響範囲</span>
+                                        <span class="stat-value">文明全体</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Future Weapons Showcase -->
+                <div class="weapons-showcase">
+                    <div class="showcase-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>未来の脅威：核を超える兵器</h3>
+                    </div>
+
+                    <div class="weapon-cards-grid">
+                        <!-- AI Weapons -->
+                        <div class="weapon-showcase-card ai-weapon">
+                            <div class="weapon-card-header">
+                                <div class="weapon-icon">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <h4>AI・自律型兵器</h4>
+                                <div class="danger-level level-5">
+                                    <span>危険度</span>
+                                    <div class="level-bars">
+                                        <div class="bar active"></div>
+                                        <div class="bar active"></div>
+                                        <div class="bar active"></div>
+                                        <div class="bar active"></div>
+                                        <div class="bar active"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="weapon-card-body">
+                                <div class="weapon-section">
+                                    <h5><i class="fas fa-clock"></i> 現在の状況</h5>
+                                    <ul>
+                                        <li>ドローン群による自律攻撃システム</li>
+                                        <li>AIによる標的識別・追跡</li>
+                                        <li>人間の判断を介さない自動迎撃</li>
+                                    </ul>
+                                </div>
+                                <div class="weapon-section danger-section">
+                                    <h5><i class="fas fa-skull"></i> 恐ろしい可能性</h5>
+                                    <ul>
+                                        <li>数万のドローンが群れをなして攻撃</li>
+                                        <li>継続的な「狩り」が可能</li>
+                                        <li>使用の敷居が核兵器より低い</li>
+                                    </ul>
+                                </div>
+                                <div class="tech-insight-box">
+                                    <div class="insight-author">
+                                        <i class="fas fa-user-graduate"></i>
+                                        <span>Rinoの技術的洞察</span>
+                                    </div>
+                                    <p>「AIの発達よりインターネット網とCPU、メモリ、GPUなどのさらなる<strong>小型化が重要</strong>。ドローン1機1機に高性能AIを搭載可能になれば、通信が途絶えても自律的に判断・行動できる。」</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cyber Weapons -->
+                        <div class="weapon-showcase-card cyber-weapon">
+                            <div class="weapon-card-header">
+                                <div class="weapon-icon">
+                                    <i class="fas fa-wifi"></i>
+                                </div>
+                                <h4>サイバー兵器</h4>
+                                <div class="danger-level level-5">
+                                    <span>危険度</span>
+                                    <div class="level-bars">
+                                        <div class="bar active"></div>
+                                        <div class="bar active"></div>
+                                        <div class="bar active"></div>
+                                        <div class="bar active"></div>
+                                        <div class="bar active"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="weapon-card-body">
+                                <div class="weapon-section">
+                                    <h5><i class="fas fa-exclamation-triangle"></i> 既に起きている脅威</h5>
+                                    <ul>
+                                        <li>電力網への攻撃</li>
+                                        <li>金融システムの破壊</li>
+                                        <li>医療機器のハッキング</li>
+                                        <li>人工衛星ネットワークへの侵入</li>
+                                    </ul>
+                                </div>
+                                <div class="weapon-section danger-section">
+                                    <h5><i class="fas fa-bomb"></i> 文明破壊レベルの可能性</h5>
+                                    <ul>
+                                        <li>全ての電子機器を同時無効化</li>
+                                        <li>人工衛星ネットワークの破壊</li>
+                                        <li>物理破壊なしに文明を石器時代に</li>
+                                    </ul>
+                                </div>
+                                <div class="tech-insight-box">
+                                    <div class="insight-author">
+                                        <i class="fas fa-user-graduate"></i>
+                                        <span>Rinoの技術的洞察</span>
+                                    </div>
+                                    <p>「人工衛星ネットワークの破壊については興味を持ちました。今ある衛星がハッキングなどの影響で落下などしたら、有人宇宙施設の場合、<strong>甚大な被害が出ることは容易に予想</strong>できます。」</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bio Weapons -->
+                        <div class="weapon-showcase-card bio-weapon">
+                            <div class="weapon-card-header">
+                                <div class="weapon-icon">
+                                    <i class="fas fa-dna"></i>
+                                </div>
+                                <h4>進化した生物兵器</h4>
+                                <div class="danger-level level-4">
+                                    <span>危険度</span>
+                                    <div class="level-bars">
+                                        <div class="bar active"></div>
+                                        <div class="bar active"></div>
+                                        <div class="bar active"></div>
+                                        <div class="bar active"></div>
+                                        <div class="bar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="weapon-card-body">
+                                <div class="weapon-section">
+                                    <h5><i class="fas fa-virus"></i> 従来の生物兵器</h5>
+                                    <ul>
+                                        <li>既存病原菌の散布</li>
+                                        <li>制御が困難</li>
+                                        <li>自国にも被害リスク</li>
+                                    </ul>
+                                </div>
+                                <div class="weapon-section danger-section">
+                                    <h5><i class="fas fa-dna"></i> 遺伝子工学による新生物兵器</h5>
+                                    <ul>
+                                        <li>特定遺伝的特徴の人種のみ標的</li>
+                                        <li>遅効性で発見困難</li>
+                                        <li>治療法が存在しない設計</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quantum Weapons -->
+                        <div class="weapon-showcase-card quantum-weapon">
+                            <div class="weapon-card-header">
+                                <div class="weapon-icon">
+                                    <i class="fas fa-atom"></i>
+                                </div>
+                                <h4>量子・ナノ技術兵器</h4>
+                                <div class="danger-level level-3">
+                                    <span>危険度（理論段階）</span>
+                                    <div class="level-bars">
+                                        <div class="bar active"></div>
+                                        <div class="bar active"></div>
+                                        <div class="bar active"></div>
+                                        <div class="bar"></div>
+                                        <div class="bar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="weapon-card-body">
+                                <div class="weapon-section danger-section">
+                                    <h5><i class="fas fa-flask"></i> 理論段階の脅威</h5>
+                                    <ul>
+                                        <li>量子コンピューターによる全暗号解読</li>
+                                        <li>量子もつれ利用の瞬間通信破壊</li>
+                                        <li>ナノロボットによる体内破壊</li>
+                                        <li>自己複製型の永続的脅威</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Escalation Chain -->
+                <div class="escalation-section">
+                    <div class="section-title">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>「仕方ない」の連鎖</h3>
+                    </div>
+                    
+                    <div class="escalation-chain">
+                        <div class="chain-step" data-step="1">
+                            <div class="step-marker">1</div>
+                            <div class="step-content">
+                                <p class="step-action">A国「他に手段がない。仕方ない。」</p>
+                                <p class="step-result"><i class="fas fa-arrow-right"></i> 核使用</p>
+                            </div>
+                        </div>
+                        
+                        <div class="chain-arrow"><i class="fas fa-long-arrow-alt-down"></i></div>
+                        
+                        <div class="chain-step" data-step="2">
+                            <div class="step-marker">2</div>
+                            <div class="step-content">
+                                <p class="step-action">B国「やられたからやり返す。仕方ない。」</p>
+                                <p class="step-result"><i class="fas fa-arrow-right"></i> 核報復</p>
+                            </div>
+                        </div>
+                        
+                        <div class="chain-arrow"><i class="fas fa-long-arrow-alt-down"></i></div>
+                        
+                        <div class="chain-step" data-step="3">
+                            <div class="step-marker">3</div>
+                            <div class="step-content">
+                                <p class="step-action">C国「核では勝てない。AI兵器を。仕方ない。」</p>
+                                <p class="step-result"><i class="fas fa-arrow-right"></i> エスカレーション</p>
+                            </div>
+                        </div>
+                        
+                        <div class="chain-arrow infinite"><i class="fas fa-long-arrow-alt-down"></i></div>
+                        
+                        <div class="chain-step infinite-step" data-step="∞">
+                            <div class="step-marker infinity">∞</div>
+                            <div class="step-content">
+                                <p class="step-action">終わりなき軍拡競争...</p>
+                                <p class="step-result"><i class="fas fa-skull-crossbones"></i> 人類の破滅？</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="narrative-text">
+                    <p>未来兵器の脅威は、核兵器問題をさらに複雑化させる。</p>
+                    <p>そして、この問題は技術者の倫理という新たな視点を必要とする―</p>
+                </div>
+
+                <button class="next-chapter-btn" data-next="3">
+                    <span>第3章へ - 技術者の視点と倫理</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Chapter 3 -->
+        <section class="chapter" id="chapter-3" data-chapter="3">
+            <div class="chapter-header">
+                <div class="chapter-decoration">
+                    <div class="deco-line"></div>
+                    <div class="chapter-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <div class="deco-line"></div>
+                </div>
+                <h1 class="chapter-title">第3章</h1>
+                <p class="chapter-subtitle">技術者の視点と倫理のジレンマ</p>
+            </div>
+
+            <div class="story-content">
+                <div class="narrative-text">
+                    <p>プログラマーとして、Rinoは技術の発展と倫理の関係について深く考察する。</p>
+                </div>
+
+                <!-- Tech Cycle -->
+                <div class="cycle-visualization">
+                    <div class="section-title">
+                        <i class="fas fa-sync-alt"></i>
+                        <h3>技術発展の「いたちごっこ」</h3>
+                    </div>
+                    
+                    <div class="cycle-diagram">
+                        <div class="cycle-center">
+                            <i class="fas fa-infinity"></i>
+                            <span>永遠の循環</span>
+                        </div>
+                        
+                        <div class="cycle-node defense">
+                            <div class="node-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h4>防御技術開発</h4>
+                            <p>セキュリティ対策<br>ファイアウォール<br>暗号化</p>
+                        </div>
+                        
+                        <div class="cycle-node attack">
+                            <div class="node-icon">
+                                <i class="fas fa-bug"></i>
+                            </div>
+                            <h4>攻撃手法の進化</h4>
+                            <p>バックドア攻撃<br>量子解読<br>AI生成攻撃</p>
+                        </div>
+                        
+                        <div class="cycle-node arms-race">
+                            <div class="node-icon">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <h4>軍拡競争</h4>
+                            <p>より強力な攻撃<br>vs<br>より強力な防御</p>
+                        </div>
+                    </div>
+                    
+                    <div class="cycle-examples">
+                        <div class="example-card">
+                            <i class="fas fa-globe"></i>
+                            <h5>インターネットの例</h5>
+                            <div class="example-flow">
+                                <span>軍事技術</span>
+                                <i class="fas fa-arrow-right"></i>
+                                <span>民間普及</span>
+                                <i class="fas fa-arrow-right"></i>
+                                <span>サイバー兵器の温床</span>
+                            </div>
+                        </div>
+                        
+                        <div class="example-card">
+                            <i class="fas fa-satellite"></i>
+                            <h5>GPSの例</h5>
+                            <div class="example-flow">
+                                <span>軍事技術</span>
+                                <i class="fas fa-arrow-right"></i>
+                                <span>民間普及</span>
+                                <i class="fas fa-arrow-right"></i>
+                                <span>精密誘導兵器</span>
+                            </div>
+                        </div>
+                        
+                        <div class="example-card">
+                            <i class="fas fa-brain"></i>
+                            <h5>機械学習の例</h5>
+                            <div class="example-flow">
+                                <span>画像認識</span>
+                                <i class="fas fa-arrow-right"></i>
+                                <span>自動運転</span>
+                                <i class="fas fa-arrow-right"></i>
+                                <span>自律型兵器</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Developer Dilemma -->
+                <div class="dilemma-section">
+                    <div class="section-title">
+                        <i class="fas fa-balance-scale"></i>
+                        <h3>技術者のジレンマ</h3>
+                    </div>
+                    
+                    <div class="dilemma-grid">
+                        <div class="dilemma-card individual">
+                            <div class="dilemma-header">
+                                <i class="fas fa-user"></i>
+                                <h4>個人レベルのジレンマ</h4>
+                            </div>
+                            <ul class="dilemma-list">
+                                <li>
+                                    <i class="fas fa-heart-broken"></i>
+                                    <span>平和利用のつもりで開発 → 軍事転用される</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-stop-circle"></i>
+                                    <span>研究を止めても、他国が開発を続ける</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-hand-paper"></i>
+                                    <span>個人の意志では技術の流れを止められない</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-question-circle"></i>
+                                    <span>「良い意図」が「悪い結果」を生む可能性</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="dilemma-card collective">
+                            <div class="dilemma-header">
+                                <i class="fas fa-users"></i>
+                                <h4>業界レベルのジレンマ</h4>
+                            </div>
+                            <ul class="dilemma-list">
+                                <li>
+                                    <i class="fas fa-flag"></i>
+                                    <span>「使わなければ他国が先に開発する」競争</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-dollar-sign"></i>
+                                    <span>軍事予算の潤沢さによる研究促進</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-gavel"></i>
+                                    <span>技術の中立性 vs 責任の所在</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-code-branch"></i>
+                                    <span>オープンソース vs セキュリティ</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rino's Philosophy -->
+                <div class="philosophy-section">
+                    <div class="philosophy-card">
+                        <div class="philosophy-header">
+                            <div class="author-avatar">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <div class="author-info">
+                                <h4>Rino-programの哲学</h4>
+                                <p>技術者としての覚悟</p>
+                            </div>
+                        </div>
+                        
+                        <div class="philosophy-quote">
+                            <i class="fas fa-quote-left quote-icon-left"></i>
+                            <p class="main-quote">少なくともAIなどの情報分野では発達に合わせて悪用が発生します。</p>
+                            <p class="main-quote">コンピューターウイルスが例になりますが、<strong>技術が発達しても防御手段は後手になるんですよね</strong>。</p>
+                            <p class="main-quote emphasis">これまで予想外の発見が数々発見されたように、どうするべきなのかは見当もつきませんが、</p>
+                            <p class="main-quote final">この平和だと思っている世界も近い未来に崩壊するかもしれないし、このままの状態が続くかもしれない。</p>
+                            <p class="philosophy-conclusion">「<strong>なるようにしかならない</strong>」ですね。</p>
+                            <i class="fas fa-quote-right quote-icon-right"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="interpretation-grid">
+                        <div class="interpretation-card pessimistic">
+                            <div class="interpretation-icon">
+                                <i class="fas fa-frown"></i>
+                            </div>
+                            <h5>諦めとしての解釈</h5>
+                            <p>個人では止められない大きな流れがある。技術の発展も、戦争も、平和も、人間の意志を超えている。</p>
+                        </div>
+                        
+                        <div class="interpretation-or">OR</div>
+                        
+                        <div class="interpretation-card acceptance">
+                            <div class="interpretation-icon">
+                                <i class="fas fa-smile"></i>
+                            </div>
+                            <h5>受容としての解釈</h5>
+                            <p>不確実な未来に過度に不安になっても意味がない。できることをやって、後は流れに任せる。今を大切に生きることが重要。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="narrative-text">
+                    <p>技術者として、現実主義者として、そして一人の人間として。</p>
+                    <p>Rinoの言葉には、答えのない問題に向き合う誠実さが表れている。</p>
+                    <p>そして、対話は最終章へ―</p>
+                </div>
+
+                <button class="next-chapter-btn" data-next="4">
+                    <span>終章へ - 到達した結論</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Epilogue -->
+        <section class="chapter" id="chapter-4" data-chapter="4">
+            <div class="chapter-header">
+                <div class="chapter-decoration">
+                    <div class="deco-line"></div>
+                    <div class="chapter-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="deco-line"></div>
+                </div>
+                <h1 class="chapter-title">終章</h1>
+                <p class="chapter-subtitle">答えのない問題に向き合い続けること</p>
+            </div>
+
+            <div class="story-content">
+                <div class="narrative-text">
+                    <p>長い対話を経て、二者は1つの理解に到達する。</p>
+                    <p class="highlight-text">それは「答え」ではなく、「答えがない理由」だった。</p>
+                </div>
+
+                <!-- Infinite Dialogue -->
+                <div class="infinite-dialogue">
+                    <div class="infinity-symbol">
+                        <svg viewBox="0 0 200 100" class="infinity-svg">
+                            <path d="M 10 50 Q 40 10, 70 50 T 130 50 Q 160 90, 190 50" 
+                                  fill="none" 
+                                  stroke="url(#gradient)" 
+                                  stroke-width="3">
+                            </path>
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    
+                    <div class="infinity-explanation">
+                        <h3>なぜこの議論が永遠に続くのか</h3>
+                        <div class="final-insight">
+                            <div class="insight-box">
+                                <div class="insight-icon">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <h4>理性と本能の矛盾</h4>
+                                <div class="contradiction-comparison">
+                                    <div class="side rational">
+                                        <h5><i class="fas fa-brain"></i> 理性</h5>
+                                        <ul>
+                                            <li>「核兵器は人類を滅ぼしかねない」</li>
+                                            <li>「暴力では真の解決にならない」</li>
+                                            <li>「平和的解決を目指すべき」</li>
+                                        </ul>
+                                    </div>
+                                    <div class="vs">VS</div>
+                                    <div class="side instinct">
+                                        <h5><i class="fas fa-heart"></i> 本能</h5>
+                                        <ul>
+                                            <li>「自分と家族、仲間を守りたい」</li>
+                                            <li>「攻撃されたら反撃したい」</li>
+                                            <li>「負けたくない、生き残りたい」</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <p class="contradiction-result">
+                                    この2つが同じ人間の中で戦っているから、個人レベルでも結論が出ない。
+                                    それが何十億人集まった国際社会で結論が出るわけがない。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Final Insights -->
+                <div class="final-insights">
+                    <h3>私たちが到達した理解</h3>
+                    
+                    <div class="insight-cards">
+                        <div class="insight-card realism">
+                            <div class="insight-icon">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <h4>現実主義の必要性</h4>
+                            <p>理想論では人は死ぬ。綺麗事を言っている間に、実際に人が殺されてしまう現実がある。核兵器禁止論より、現実的な抑止力の方が実際には多くの命を救っているかもしれない。</p>
+                        </div>
+                        
+                        <div class="insight-card technology">
+                            <div class="insight-icon">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <h4>技術発展の不可逆性</h4>
+                            <p>技術は一度生まれると止められない。核兵器の次には、さらに危険な超兵器が待っている。ハードウェアの小型化により、個人でも大規模破壊が可能な未来が来るかもしれない。</p>
+                        </div>
+                        
+                        <div class="insight-card paradox">
+                            <div class="insight-icon">
+                                <i class="fas fa-infinity"></i>
+                            </div>
+                            <h4>「仕方ない」の連鎖</h4>
+                            <p>一見合理的な「仕方ない」の論理が、実は際限のない破滅への道筋を作ってしまう。短期的には正しくても、長期的には全員が敗者となる。</p>
+                        </div>
+                        
+                        <div class="insight-card hope">
+                            <div class="insight-icon">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <h4>次世代への希望</h4>
+                            <p>プログラミングスキルと深い思考力を持った若い世代が、技術の危険性を最初から知って学んでいる。これは人類史上初めてのことかもしれない。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Value of Dialogue -->
+                <div class="dialogue-value">
+                    <h3>答えが出なくても議論し続ける理由</h3>
+                    <div class="value-points">
+                        <div class="value-point">
+                            <h4><i class="fas fa-clock"></i> 具体的状況への対応</h4>
+                            <p>一つ一つの具体的状況には答えを出さなければならない。完璧な答えはなくても、より良い判断はできるかもしれない。</p>
+                        </div>
+                        <div class="value-point">
+                            <h4><i class="fas fa-users"></i> 集合知の蓄積</h4>
+                            <p>今の議論が、将来の人類の判断材料になるかもしれない。科学技術の発達で、今とは違う選択肢が生まれるかもしれない。</p>
+                        </div>
+                        <div class="value-point">
+                            <h4><i class="fas fa-heart"></i> 人間性の維持</h4>
+                            <p>考えることをやめた瞬間に、私たちは人間としての大切な何かを失ってしまう。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Final Message -->
+                <div class="final-message">
+                    <div class="message-content">
+                        <h3>この対話から学んだこと</h3>
+                        <p>核兵器問題に「正解」はないのかもしれません。でも、だからといって考えることをやめていいわけではありません。</p>
+                        <p>高校生プログラマーのRino-programさんの現実的な視点と、AIの多角的な分析を組み合わせることで、この複雑な問題の本質が少し見えてきたように思います。</p>
+                        <p><strong>「なるようにしかならない」</strong>現実を受け入れながらも、同時にその現実をより良い方向に導く努力を続けていく。それが、私たちにできることなのかもしれません。</p>
+                        
+                        <div class="future-outlook">
+                            <h4>未来への展望</h4>
+                            <p>私たちは今、人類史上最も重要な分岐点にいます。核時代から超兵器時代への移行期。この転換点で、技術と倫理の両方を理解した世代が育っていることに、希望があるのかもしれません。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="narrative-text closing">
+                    <p class="final-line">対話は終わった。</p>
+                    <p class="final-line">しかし、考えることは終わらない。</p>
+                    <p class="final-line">この記録が、あなたの思考の一助となれば幸いです。</p>
+                </div>
+
+                <div class="end-mark">
+                    <i class="fas fa-book"></i>
+                    <span>完</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-info">
+                <h3>この対話について</h3>
+                <p>2025年に行われた、高校生プログラマーRino-programとAI Claudeの真剣な議論の記録</p>
+            </div>
+            <div class="footer-links">
+                <h4>参加者</h4>
+                <div class="participant-links">
+                    <a href="https://github.com/Rino-program" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-github"></i>
+                        Rino-program
+                    </a>
+                    <div class="ai-info">
+                        <i class="fas fa-robot"></i>
+                        Claude (Anthropic AI)
+                    </div>
+                </div>
+            </div>
+            <div class="footer-note">
+                <p><strong>注意:</strong> この記事は議論のための思考実験であり、特定の政治的立場を推奨するものではありません。</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 核兵器と未来兵器論 - 高校生とAIの対話</p>
+        </div>
+    </footer>
+
+    <!-- Scroll to Top Button -->
+    <button class="scroll-to-top" id="scrollToTop" aria-label="トップへ戻る">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script src="script.js"></script>
+</body>
+</html>
