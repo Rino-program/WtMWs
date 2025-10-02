@@ -62,31 +62,57 @@
   </div>
 
   <!-- ヘッダー / ナビ -->
-  <header class="site-header" id="top">
-    <div class="header-inner">
-      <div class="brand">
-        <span class="brand__logo" aria-hidden="true">⚛</span>
-        <div class="brand__text">
-          <h1>核兵器と未来兵器論</h1>
-          <p class="subtitle">高校生 × AI の多層対話アーカイブ</p>
-        </div>
+  <!-- 変更済みヘッダー部のみ抜粋（他セクションは既存のままでOK） -->
+<header class="site-header" id="top">
+  <!-- Progress bar をここに移動 -->
+  <div class="reading-progress" aria-hidden="true">
+    <div class="reading-progress__bar"></div>
+  </div>
+
+  <!-- Utility bar を header 内部に統合 -->
+  <div class="utility-bar utility-bar--embedded" role="toolbar" aria-label="表示設定">
+    <div class="utility-left">
+      <button class="btn-utility" id="themeToggle" aria-pressed="false" aria-label="テーマ切替">🌓</button>
+      <button class="btn-utility" id="contrastToggle" aria-pressed="false" aria-label="ハイコントラスト">⬛</button>
+      <div class="font-size-control" role="group" aria-label="フォントサイズ">
+        <button id="fontDec" class="btn-utility" aria-label="縮小">A-</button>
+        <button id="fontInc" class="btn-utility" aria-label="拡大">A+</button>
       </div>
-      <nav class="main-nav" aria-label="主要ナビゲーション">
-        <ul>
-          <li><a href="#intro" class="nav-link">概要</a></li>
-          <li><a href="#core-views" class="nav-link">4つの視座</a></li>
-          <li><a href="#dialogue-timeline" class="nav-link">対話タイムライン</a></li>
-          <li><a href="#future-weapons" class="nav-link">未来兵器</a></li>
-          <li><a href="#ethics" class="nav-link">倫理とジレンマ</a></li>
-          <li><a href="#meta" class="nav-link">なぜ終わらないか</a></li>
-          <li><a href="#insights" class="nav-link">結論/示唆</a></li>
-        </ul>
-      </nav>
-      <button id="mobileNavToggle" class="mobile-nav-toggle" aria-expanded="false" aria-label="メニュー開閉">
-        <span></span><span></span><span></span>
-      </button>
     </div>
-  </header>
+    <div class="utility-right">
+      <label class="search-wrapper" aria-label="本文検索">
+        <span class="sr-only">検索</span>
+        <input id="siteSearch" type="search" placeholder="キーワード…" autocomplete="off">
+        <button id="clearSearch" class="clear-search" aria-label="検索クリア" hidden>&times;</button>
+      </label>
+      <button class="btn-utility" id="openToc" aria-haspopup="dialog" aria-label="目次">☰ 目次</button>
+    </div>
+  </div>
+
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand__logo" aria-hidden="true">⚛</span>
+      <div class="brand__text">
+        <h1>核兵器と未来兵器論</h1>
+        <p class="subtitle">高校生 × AI アーカイブ</p>
+      </div>
+    </div>
+    <nav class="main-nav" aria-label="主要ナビ">
+      <ul>
+        <li><a href="#intro" class="nav-link">概要</a></li>
+        <li><a href="#core-views" class="nav-link">視座</a></li>
+        <li><a href="#dialogue-timeline" class="nav-link">対話</a></li>
+        <li><a href="#future-weapons" class="nav-link">未来兵器</a></li>
+        <li><a href="#ethics" class="nav-link">倫理</a></li>
+        <li><a href="#meta" class="nav-link">構造</a></li>
+        <li><a href="#insights" class="nav-link">示唆</a></li>
+      </ul>
+    </nav>
+    <button id="mobileNavToggle" class="mobile-nav-toggle" aria-expanded="false" aria-label="メニュー">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
 
   <!-- モバイル ナビドロワ -->
   <div id="mobileDrawer" class="mobile-drawer" hidden>
