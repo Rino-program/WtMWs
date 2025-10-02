@@ -1,0 +1,615 @@
+/* リセットとベース */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+html {
+    scroll-behavior: smooth;
+}
+body {
+    font-family: 'Noto Sans JP', sans-serif;
+    line-height: 1.6;
+    color: #f0f0f0;
+    background: #1a1a2e;
+    transition: background 0.3s, color 0.3s;
+}
+body.light {
+    background: #f0f0f0;
+    color: #1a1a2e;
+}
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ローディング画面 */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a2e 0%, #e94560 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.5s;
+}
+.loading-screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid #f0f0f0;
+    border-top: 4px solid #e94560;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+#loadingText {
+    color: #f0f0f0;
+    font-size: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* ヘッダー */
+.header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: rgba(26, 26, 46, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    transition: background 0.3s;
+}
+body.light .header {
+    background: rgba(240, 240, 240, 0.8);
+}
+.nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+.nav-brand h1 {
+    font-size: 1.4rem;
+    color: #e94560;
+}
+.nav-menu {
+    display: flex;
+    gap: 1.5rem;
+}
+.nav-link {
+    color: #f0f0f0;
+    text-decoration: none;
+    font-weight: 500;
+    position: relative;
+    transition: color 0.3s;
+}
+body.light .nav-link {
+    color: #1a1a2e;
+}
+.nav-link:hover {
+    color: #e94560;
+}
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #e94560;
+    transition: width 0.3s;
+}
+.nav-link:hover::after {
+    width: 100%;
+}
+.nav-controls {
+    display: flex;
+    gap: 1rem;
+}
+.icon-button {
+    background: none;
+    border: none;
+    color: #f0f0f0;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+body.light .icon-button {
+    color: #1a1a2e;
+}
+.nav-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 0.3rem;
+    cursor: pointer;
+}
+.nav-toggle span {
+    width: 25px;
+    height: 3px;
+    background: #f0f0f0;
+    transition: 0.3s;
+}
+body.light .nav-toggle span {
+    background: #1a1a2e;
+}
+
+/* ヒーローセクション */
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+body.light .hero {
+    background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+}
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(233,69,96,0.3) 0%, transparent 70%);
+    animation: pulse 5s infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+.hero-content {
+    text-align: center;
+    z-index: 2;
+}
+.hero-title {
+    font-size: 3rem;
+    color: #f0f0f0;
+    margin-bottom: 1rem;
+}
+body.light .hero-title {
+    color: #1a1a2e;
+}
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: #ccc;
+    margin-bottom: 2rem;
+}
+body.light .hero-subtitle {
+    color: #666;
+}
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+.stat {
+    text-align: center;
+}
+.stat-number {
+    font-size: 2.5rem;
+    color: #e94560;
+}
+.stat-label {
+    font-size: 0.9rem;
+    color: #ccc;
+}
+body.light .stat-label {
+    color: #666;
+}
+.cta-button {
+    background: #e94560;
+    color: #f0f0f0;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.3s;
+}
+.cta-button:hover {
+    transform: scale(1.05);
+}
+.hero-visual {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+#heroCanvas {
+    width: 100%;
+    height: 100%;
+}  /* JSで粒子を描画 */
+
+/* 対話者セクション */
+.participants {
+    padding: 4rem 0;
+}
+h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+}
+.participants-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+.participant-card {
+    background: rgba(22, 33, 62, 0.8);
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+body.light .participant-card {
+    background: rgba(240, 240, 240, 0.8);
+}
+.participant-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+.participant-avatar {
+    font-size: 3rem;
+    color: #e94560;
+    margin-bottom: 1rem;
+}
+.role {
+    font-weight: 600;
+    color: #e94560;
+}
+.description {
+    color: #ccc;
+}
+body.light .description {
+    color: #666;
+}
+.skills {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+.skills span {
+    background: #e94560;
+    color: #f0f0f0;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+.extra-info {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #ccc;
+}
+body.light .extra-info {
+    color: #666;
+}
+
+/* タイムラインセクション */
+.debate-section, .future-section, .ethics-section, .conclusion {
+    padding: 4rem 0;
+    background: linear-gradient(to bottom, #16213e 0%, #1a1a2e 100%);
+}
+body.light .debate-section, body.light .future-section, body.light .ethics-section, body.light .conclusion {
+    background: linear-gradient(to bottom, #e0e0e0 0%, #f0f0f0 100%);
+}
+.section-intro {
+    text-align: center;
+    color: #ccc;
+    margin-bottom: 2rem;
+}
+body.light .section-intro {
+    color: #666;
+}
+.timeline {
+    max-width: 800px;
+    margin: 0 auto;
+}
+.timeline-item {
+    margin-bottom: 1rem;
+}
+.timeline-header {
+    background: #e94560;
+    color: #f0f0f0;
+    padding: 1rem;
+    border-radius: 10px 10px 0 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background 0.3s;
+}
+.timeline-header:hover {
+    background: #d32f4a;
+}
+.timeline-body {
+    background: rgba(22, 33, 62, 0.8);
+    padding: 1rem;
+    border-radius: 0 0 10px 10px;
+    color: #f0f0f0;
+}
+body.light .timeline-body {
+    background: rgba(240, 240, 240, 0.8);
+    color: #1a1a2e;
+}
+.hidden {
+    display: none;
+}
+.analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+.paradox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+.paradox-card {
+    background: rgba(22, 33, 62, 0.8);
+    padding: 1.5rem;
+    border-radius: 15px;
+    text-align: center;
+    transition: transform 0.3s;
+}
+body.light .paradox-card {
+    background: rgba(240, 240, 240, 0.8);
+}
+.paradox-card:hover {
+    transform: scale(1.05);
+}
+.paradox-card i {
+    font-size: 2rem;
+    color: #e94560;
+    margin-bottom: 1rem;
+}
+
+/* 未来兵器 */
+.future-map {
+    height: 300px;
+    background: #16213e;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+body.light .future-map {
+    background: #e0e0e0;
+}
+.weapons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+.weapon-card {
+    background: rgba(22, 33, 62, 0.8);
+    padding: 1.5rem;
+    border-radius: 15px;
+    text-align: center;
+}
+body.light .weapon-card {
+    background: rgba(240, 240, 240, 0.8);
+}
+.details-btn {
+    background: #e94560;
+    color: #f0f0f0;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+.cycle {
+    margin-top: 2rem;
+    text-align: center;
+}
+.cycle-steps {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    animation: cycleAnimation 10s infinite linear;
+}
+@keyframes cycleAnimation {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+/* 倫理セクション */
+.quiz {
+    background: rgba(22, 33, 62, 0.8);
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+body.light .quiz {
+    background: rgba(240, 240, 240, 0.8);
+}
+.quiz-question {
+    text-align: center;
+}
+.quiz-question button {
+    background: #e94560;
+    color: #f0f0f0;
+    border: none;
+    padding: 0.5rem 1rem;
+    margin: 0.5rem;
+    border-radius: 20px;
+    cursor: pointer;
+}
+.dilemma-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+.dilemma-card {
+    background: rgba(22, 33, 62, 0.8);
+    padding: 1.5rem;
+    border-radius: 15px;
+}
+body.light .dilemma-card {
+    background: rgba(240, 240, 240, 0.8);
+}
+blockquote {
+    font-style: italic;
+    color: #e94560;
+    text-align: center;
+    margin-top: 2rem;
+}
+
+/* 結論 */
+.conclusion-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+.conclusion-card {
+    background: rgba(22, 33, 62, 0.8);
+    padding: 1.5rem;
+    border-radius: 15px;
+    text-align: center;
+}
+body.light .conclusion-card {
+    background: rgba(240, 240, 240, 0.8);
+}
+.final-cta {
+    text-align: center;
+    margin-top: 2rem;
+}
+.share-btn {
+    background: #e94560;
+    color: #f0f0f0;
+    border: none;
+    padding: 0.5rem 1rem;
+    margin: 0.5rem;
+    border-radius: 20px;
+    cursor: pointer;
+}
+.comment-section {
+    margin-top: 2rem;
+}
+.comment-section textarea {
+    width: 100%;
+    height: 100px;
+    background: rgba(22, 33, 62, 0.8);
+    color: #f0f0f0;
+    border: none;
+    padding: 1rem;
+    border-radius: 10px;
+}
+body.light .comment-section textarea {
+    background: rgba(240, 240, 240, 0.8);
+    color: #1a1a2e;
+}
+.comment-section button {
+    background: #e94560;
+    color: #f0f0f0;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+/* フッター */
+.footer {
+    background: #16213e;
+    color: #f0f0f0;
+    padding: 2rem 0;
+    text-align: center;
+}
+body.light .footer {
+    background: #e0e0e0;
+    color: #1a1a2e;
+}
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+.footer-links a {
+    color: #e94560;
+    text-decoration: none;
+}
+
+/* プログレスバー */
+.progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 4px;
+    background: #e94560;
+    width: 0;
+    z-index: 1001;
+    transition: width 0.3s;
+}
+
+/* AOSアニメーション (ライブラリ想定、JSで実装) */
+[data-aos="fade-up"] {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s, transform 0.6s;
+}
+[data-aos="fade-up"].visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+[data-aos="zoom-in"] {
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.6s, transform 0.6s;
+}
+[data-aos="zoom-in"].visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+    .nav-menu {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: #1a1a2e;
+        padding: 1rem;
+    }
+    body.light .nav-menu {
+        background: #f0f0f0;
+    }
+    .nav-toggle {
+        display: flex;
+    }
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    .participants-grid, .paradox-grid, .weapons-grid, .dilemma-grid, .conclusion-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* アクセシビリティ */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+@media (prefers-contrast: high) {
+    body {
+        filter: contrast(150%);
+    }
+}
