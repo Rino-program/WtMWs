@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ja" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <title>核兵器と未来兵器論 対話アーカイブ | 高校生とAIの多層的考察</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="高校生プログラマーとAIによる核兵器・未来兵器・技術倫理・抑止のジレンマに関する多層的対話アーカイブ。">
+  <meta name="theme-color" content="#1d2030">
+  <meta name="color-scheme" content="light dark">
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Article",
+    "headline":"核兵器と未来兵器論 対話アーカイブ",
+    "inLanguage":"ja",
+    "author":[
+      {"@type":"Person","name":"Rino-program","url":"https://github.com/Rino-program"},
+      {"@type":"Organization","name":"Anthropic Claude","url":"https://www.anthropic.com"}
+    ],
+    "about":["核兵器","未来兵器","倫理","AI","抑止力","技術的ジレンマ"],
+    "dateCreated":"2025-01-01",
+    "dateModified":"2025-10-02"
+  }
+  </script>
+  <meta name="robots" content="index,follow">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='58' fill='%232a3959' stroke='white' stroke-width='4'/%3E%3Cpath d='M60 20c-8 10-13 20-15 30 10-2 20-2 30 0-2-10-7-20-15-30zM35 55c-8 2-15 5-20 10 10 8 20 13 30 15-2-10-5-18-10-25zM85 55c5 7 8 15 10 25 10-2 20-7 30-15-5-5-12-8-20-10-5 7-8 13-10 25-2-12-5-20-10-25zM45 85c5 8 10 15 15 25 5-10 10-17 15-25-10 2-20 2-30 0z' fill='%23ffb347'/%3E%3C/svg%3E">
+</head>
+<body class="no-js">
+  <noscript>
+    <div class="noscript-warning" role="alert">
+      JavaScriptが無効です。インタラクティブ機能（検索・フィルタ・モーダル等）は利用できませんが、本文は読めます。
+    </div>
+  </noscript>
+
+  <!-- グローバル進捗バー -->
+  <div id="readingProgress" class="reading-progress" aria-hidden="true">
+    <div class="reading-progress__bar"></div>
+  </div>
+
+  <!-- アクセシビリティ / ユーティリティバー -->
+  <div class="utility-bar" role="banner">
+    <div class="utility-left">
+      <button class="btn-utility" id="themeToggle" aria-pressed="false" aria-label="テーマ切り替え">🌓</button>
+      <button class="btn-utility" id="contrastToggle" aria-pressed="false" aria-label="ハイコントラスト切り替え">⬛</button>
+      <div class="font-size-control" role="group" aria-label="フォントサイズ変更">
+        <button id="fontDec" class="btn-utility" aria-label="フォント縮小">A-</button>
+        <button id="fontInc" class="btn-utility" aria-label="フォント拡大">A+</button>
+      </div>
+    </div>
+    <div class="utility-right">
+      <label class="search-wrapper" aria-label="本文検索">
+        <span class="sr-only">検索</span>
+        <input id="siteSearch" type="search" placeholder="キーワード検索…" autocomplete="off">
+        <button id="clearSearch" class="clear-search" aria-label="検索クリア" hidden>&times;</button>
+      </label>
+      <button class="btn-utility" id="openToc" aria-haspopup="dialog" aria-label="目次を開く">☰ 目次</button>
+    </div>
+  </div>
+
+  <!-- ヘッダー / ナビ -->
+  <header class="site-header" id="top">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand__logo" aria-hidden="true">⚛</span>
+        <div class="brand__text">
+          <h1>核兵器と未来兵器論</h1>
+          <p class="subtitle">高校生 × AI の多層対話アーカイブ</p>
+        </div>
+      </div>
+      <nav class="main-nav" aria-label="主要ナビゲーション">
+        <ul>
+          <li><a href="#intro" class="nav-link">概要</a></li>
+          <li><a href="#core-views" class="nav-link">4つの視座</a></li>
+          <li><a href="#dialogue-timeline" class="nav-link">対話タイムライン</a></li>
+          <li><a href="#future-weapons" class="nav-link">未来兵器</a></li>
+          <li><a href="#ethics" class="nav-link">倫理とジレンマ</a></li>
+          <li><a href="#meta" class="nav-link">なぜ終わらないか</a></li>
+          <li><a href="#insights" class="nav-link">結論/示唆</a></li>
+        </ul>
+      </nav>
+      <button id="mobileNavToggle" class="mobile-nav-toggle" aria-expanded="false" aria-label="メニュー開閉">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- モバイル ナビドロワ -->
+  <div id="mobileDrawer" class="mobile-drawer" hidden>
+    <nav aria-label="モバイルメニュー">
+      <ul>
+        <li><a href="#intro" class="nav-link">概要</a></li>
+        <li><a href="#core-views" class="nav-link">4つの視座</a></li>
+        <li><a href="#dialogue-timeline" class="nav-link">対話タイムライン</a></li>
+        <li><a href="#future-weapons" class="nav-link">未来兵器</a></li>
+        <li><a href="#ethics" class="nav-link">倫理とジレンマ</a></li>
+        <li><a href="#meta" class="nav-link">終わらない理由</a></li>
+        <li><a href="#insights" class="nav-link">結論/示唆</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- 目次ダイアログ -->
+  <dialog id="tocDialog" class="toc-dialog" aria-labelledby="tocTitle">
+    <form method="dialog" class="dialog-header">
+      <h2 id="tocTitle">目次</h2>
+      <button aria-label="閉じる" class="dialog-close">×</button>
+    </form>
+    <div class="toc-body">
+      <ol class="toc-list" id="tocList"></ol>
+    </div>
+  </dialog>
+
+  <!-- モーダル（汎用） -->
+  <dialog id="modal" class="modal" aria-labelledby="modalTitle">
+    <form method="dialog" class="dialog-header">
+      <h3 id="modalTitle">詳細</h3>
+      <button aria-label="閉じる" class="dialog-close">×</button>
+    </form>
+    <div class="modal-content" id="modalContent"></div>
+  </dialog>
+
+  <!-- メインコンテンツ -->
+  <main id="mainContent">
+    <!-- INTRO -->
+    <section id="intro" class="section intro-section" aria-labelledby="introHeading">
+      <div class="section-inner">
+        <div class="intro-grid">
+          <div class="intro-lead">
+            <h2 id="introHeading">議論の焦点と背景</h2>
+            <p class="lead">
+              本サイトは、高校生プログラマーとAIアシスタントとの対話を再構成し、
+              核兵器の「抑止」「使用の正当性」「倫理的パラドックス」「未来兵器による相対化」などを多層的に探究するアーカイブです。
+            </p>
+            <div class="intro-highlight">
+              <p>
+                核兵器は「悪」なのか？それとも極限状況では「やむを得ぬ防御手段」なのか？  
+                技術が進化し核そのものが相対化される未来、私たちはどの軸で判断し続けるべきなのか。
+              </p>
+            </div>
+            <ul class="pill-points" aria-label="テーマ要点">
+              <li>抑止力とその自己矛盾</li>
+              <li>「仕方ない」が重なるエスカレーション</li>
+              <li>未来技術による核の相対化</li>
+              <li>人間の本能 vs 理性</li>
+              <li>倫理・戦略・技術・時間軸の交差</li>
+            </ul>
+            <div class="meta-note" role="note">
+              <strong>注意:</strong> 本コンテンツは特定の政策や使用を推奨するものではなく、思考実験と倫理的考察の素材です。
+            </div>
+          </div>
+          <aside class="intro-aside" aria-label="概要補足">
+            <div class="stat-panel">
+              <h3>コンテキスト統計</h3>
+              <ul class="stat-list">
+                <li><span class="label">想定年:</span><span class="value" data-stat="year">2025</span></li>
+                <li><span class="label">核保有国数:</span><span class="value" data-stat="nuclearStates">9</span></li>
+                <li><span class="label">議論カテゴリ:</span><span class="value" data-stat="categories">7+</span></li>
+                <li><span class="label">根本解決:</span><span class="value badge-critical">未確定</span></li>
+              </ul>
+              <canvas id="miniChart" aria-label="概念図" height="120"></canvas>
+              <p class="chart-caption">概念的配置（倫理 / 戦略 / 技術 / 不確実性）</p>
+            </div>
+            <div class="action-group">
+              <button class="btn-primary" data-scroll-to="#dialogue-timeline">タイムラインを見る</button>
+              <button class="btn-secondary" data-scroll-to="#future-weapons">未来兵器へ</button>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- CORE VIEWS -->
+    <section id="core-views" class="section core-views-section" aria-labelledby="coreViewsHeading">
+      <div class="section-inner">
+        <h2 id="coreViewsHeading">4つの主要視座</h2>
+        <p class="section-intro">
+          同じ問題でも「観点」を変えることで評価や判断が逆転する。本アーカイブでは特に重要な4軸を整理し再提示する。
+        </p>
+        <div class="views-grid">
+          <article class="view-card" tabindex="0">
+            <h3>1. 倫理的観点</h3>
+            <p>「無差別性」「不可逆な被害」「人間の尊厳」「正当防衛の限界」。結果主義 vs 義務論。</p>
+            <button class="btn-inline" data-view-detail="ethics">詳しく見る</button>
+          </article>
+          <article class="view-card" tabindex="0">
+            <h3>2. 戦略・抑止力観点</h3>
+            <p>「持つことで使わない」「使わないと信じられれば抑止は崩れる」抑止のゲーム理論的脆さ。</p>
+            <button class="btn-inline" data-view-detail="deterrence">詳しく見る</button>
+          </article>
+          <article class="view-card" tabindex="0">
+            <h3>3. 技術進化観点</h3>
+            <p>小型化/自律化/衛星依存/サイバー攻撃性/AI群制御。核が“中規模兵器”化する可能性。</p>
+            <button class="btn-inline" data-view-detail="technology">詳しく見る</button>
+          </article>
+          <article class="view-card" tabindex="0">
+            <h3>4. 長期時間軸観点</h3>
+            <p>短期合理性が長期破滅シナリオを誘発する「割引率」と「連鎖的リスク増大」。</p>
+            <button class="btn-inline" data-view-detail="time">詳しく見る</button>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIALOGUE TIMELINE -->
+    <section id="dialogue-timeline" class="section timeline-section" aria-labelledby="timelineHeading">
+      <div class="section-inner">
+        <div class="section-header-flex">
+          <h2 id="timelineHeading">対話タイムライン</h2>
+          <div class="timeline-controls" role="group" aria-label="タイムラインフィルタ">
+            <label>
+              <span class="sr-only">話者フィルタ</span>
+              <select id="speakerFilter">
+                <option value="all">全話者</option>
+                <option value="rino">Rino-program</option>
+                <option value="ai">Claude(AI)</option>
+              </select>
+            </label>
+            <label>
+              <span class="sr-only">カテゴリフィルタ</span>
+              <select id="categoryFilter">
+                <option value="all">全カテゴリ</option>
+              </select>
+            </label>
+            <button id="expandAll" class="btn-small">全展開</button>
+            <button id="collapseAll" class="btn-small">全折畳</button>
+          </div>
+        </div>
+        <p class="section-intro">
+          対話は要素化され、カテゴリ・話者・キーワードで探索できる。クリックして詳細を展開。
+        </p>
+        <ol id="timelineList" class="timeline-list" aria-live="polite"></ol>
+        <div id="timelineEmpty" class="empty-state" hidden>
+          条件に一致する発言がありません。
+        </div>
+      </div>
+    </section>
+
+    <!-- FUTURE WEAPONS -->
+    <section id="future-weapons" class="section future-weapons-section" aria-labelledby="futureWeaponsHeading">
+      <div class="section-inner">
+        <h2 id="futureWeaponsHeading">未来兵器とリスク相対化</h2>
+        <p class="section-intro">
+          「より危険/制御困難/使用閾値低下」をもたらす技術群が、核の位置づけ自体を再配置する可能性。
+        </p>
+
+        <div class="weapon-filters">
+          <div class="tag-filter" id="weaponTags" aria-label="兵器タグフィルタ"></div>
+          <div class="risk-legend">
+            リスク指標:
+            <span class="risk-dot risk-low">低</span>
+            <span class="risk-dot risk-mid">中</span>
+            <span class="risk-dot risk-high">高</span>
+            <span class="risk-dot risk-extreme">極</span>
+          </div>
+        </div>
+
+        <div id="weaponGrid" class="weapon-grid" aria-live="polite"></div>
+        <div class="risk-radar-wrapper">
+          <canvas id="riskRadar" height="300" aria-label="リスクレーダーチャート"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ETHICS & DILEMMAS -->
+    <section id="ethics" class="section ethics-section" aria-labelledby="ethicsHeading">
+      <div class="section-inner">
+        <h2 id="ethicsHeading">倫理とジレンマの構造</h2>
+        <p class="section-intro">
+          「理性が導くべき道」と「瞬間的に駆動する防衛本能」の葛藤。正当性は条件依存か絶対性か。
+        </p>
+        <div class="dilemma-grid">
+          <div class="dilemma-panel">
+            <h3>理性的側面</h3>
+            <ul class="check-list">
+              <li>被害の不可逆性と世代間影響</li>
+              <li>無差別性の倫理的限界</li>
+              <li>外交・信頼構築の長期利益</li>
+              <li>拡散による閾値低下の危険</li>
+            </ul>
+          </div>
+            <div class="dilemma-panel">
+              <h3>本能的側面</h3>
+              <ul class="check-list">
+                <li>即時的自己/共同体防衛欲求</li>
+                <li>反撃衝動と報復心理</li>
+                <li>劣勢時の「最後の一手」期待</li>
+                <li>スパイラル的抑止競争</li>
+              </ul>
+            </div>
+          <div class="dilemma-panel merge">
+            <h3>交差する結果</h3>
+            <p>
+              短期合理性が長期不合理を誘発する「時間的不整合」。  
+              個別意思決定の集合が全体最適を破壊する「構造的ジレンマ」。  
+            </p>
+            <button class="btn-inline" data-open-modal="escalationChain">「仕方ない」連鎖モデルを見る</button>
+          </div>
+        </div>
+
+        <div class="escalation-graph">
+          <h3 class="graph-title">概念モデル：エスカレーション速度</h3>
+          <canvas id="escalationChart" height="220" aria-label="エスカレーション速度グラフ"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- META (WHY NO END) -->
+    <section id="meta" class="section meta-section" aria-labelledby="metaHeading">
+      <div class="section-inner">
+        <h2 id="metaHeading">なぜ議論は終わらないのか</h2>
+        <p class="section-intro">
+          視点の非対称性 / インセンティブの非同期 / 技術予測の不確実性 / 道徳基準の多元性 が永久討議構造を作る。
+        </p>
+        <div class="meta-grid">
+          <article class="meta-box">
+            <h3>立場依存性</h3>
+            <p>核保有国・非保有国・被爆経験を持つ国・紛争当事国など、初期条件の違いが価値判断を分岐。</p>
+          </article>
+          <article class="meta-box">
+            <h3>時間軸の断層</h3>
+            <p>短期「抑止の安定」 vs 長期「累積リスク」。割引率の違いが政策判断を割る。</p>
+          </article>
+          <article class="meta-box">
+            <h3>技術的加速度</h3>
+            <p>指数的進歩が制度対応を凌駕し、規制→迂回→拡散→相対化の反復ループ。</p>
+          </article>
+          <article class="meta-box">
+            <h3>心理バイアス</h3>
+            <p>正常性バイアス／過度な楽観／サバイバーシップ／恐怖誘導の短絡。</p>
+          </article>
+        </div>
+        <blockquote class="featured-quote">
+          <p>「理性と本能の振り子が止まらない限り、完全な合意は訪れない」</p>
+          <cite>- 対話再構成より</cite>
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- INSIGHTS / CONCLUSION -->
+    <section id="insights" class="section insights-section" aria-labelledby="insightsHeading">
+      <div class="section-inner">
+        <h2 id="insightsHeading">得られた示唆と作業仮説</h2>
+        <div class="insight-cards">
+          <article class="insight-card">
+            <h3>現実主義的視点の必要性</h3>
+            <p>理想だけでは短期の被害抑制に失敗することがある。現実的抑止枠組＋透明性が最低限の土台。</p>
+          </article>
+          <article class="insight-card">
+            <h3>技術発展の不可逆性</h3>
+            <p>発明後の完全隠匿は困難。初期設計段階から濫用リスクを内在評価するプロセスが重要。</p>
+          </article>
+          <article class="insight-card">
+            <h3>「仕方ない」の連鎖警告</h3>
+            <p>個別合理の累積が全体破局に繋がる “微分的合理 / 積分的不合理” パターンの可視化が必須。</p>
+          </article>
+          <article class="insight-card">
+            <h3>次世代リテラシー</h3>
+            <p>若年層が初期から「倫理 × 実装」を並行学習する価値。早期メタ認知が危険閾値を引き上げる可能性。</p>
+          </article>
+        </div>
+        <div class="callout">
+          <p>
+            完全な解答は存在しなくとも「議論を継続する文化」自体が最大のセーフティレイヤーになる。  
+            曖昧なまま保留するのではなく、不確実性を構造化し、再検証可能にするコミュニティ知が重要。
+          </p>
+        </div>
+        <div class="final-actions">
+          <button class="btn-primary" data-open-modal="howToUse">このアーカイブの活かし方</button>
+          <button class="btn-secondary" data-scroll-to="#top">ページ上部へ戻る</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- フッター -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <div class="footer-cols">
+        <div class="footer-col">
+          <h3>このサイトについて</h3>
+            <p>
+              核兵器・未来兵器・倫理的ジレンマに関する多層対話の再構成。特定の政治的立場や軍事利用を推奨しません。
+            </p>
+        </div>
+        <div class="footer-col">
+          <h3>参加者</h3>
+          <ul class="plain-list">
+            <li><a href="https://github.com/Rino-program" rel="noopener" target="_blank">Rino-program (GitHub)</a></li>
+            <li>Claude (AI Assistant)</li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>機能</h3>
+          <ul class="plain-list">
+            <li>対話フィルタ・検索</li>
+            <li>ダーク/コントラストモード</li>
+            <li>アクセシビリティ配慮</li>
+            <li>設定永続化</li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>免責</h3>
+          <p>内容は教育的・分析的目的の抽象化。悪用を意図した実用情報は含まれていません。</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <small>&copy; 2025 核兵器と未来兵器論 対話アーカイブ</small>
+      </div>
+    </div>
+  </footer>
+
+  <div id="backToTop" class="back-to-top" role="button" aria-label="トップへ戻る">↑</div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
