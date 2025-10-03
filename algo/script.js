@@ -2105,10 +2105,69 @@ class AlgorithmRunner {
         } catch (error) {
             console.error('エラーが発生しました:', error);
             alert(`❌ エラーが発生しました: ${error.message}`);
+            if (window.app && window.app.soundManager) {
+                window.app.soundManager.playErrorSound();
+            }
         }
         
         appState.stats.endTime = Date.now();
         updateStats();
+        
+        // Show export buttons for last run
+        const exportButtons = document.getElementById('last-run-export');
+        if (exportButtons && appState.mode === 'single') {
+            exportButtons.style.display = 'flex';
+        }
+        
+        // Add to history for single mode
+        if (appState.mode === 'single' && window.app && window.app.historyManager) {
+            const duration = appState.stats.endTime - appState.stats.startTime;
+            window.app.historyManager.addEntry({
+                mode: 'single',
+                algorithms: this.getAlgorithmName(algorithm),
+                arraySize: array.length,
+                duration: duration,
+                comparisons: appState.stats.comparisons,
+                swaps: appState.stats.swaps,
+                arrayAccesses: appState.stats.arrayAccesses
+            });
+        }
+        
+        // Update performance graph
+        if (appState.mode === 'single' && window.app && window.app.performanceGraph) {
+            const duration = appState.stats.endTime - appState.stats.startTime;
+            window.app.performanceGraph.updateGraph(
+                this.getAlgorithmName(algorithm),
+                duration,
+                appState.stats.comparisons,
+                appState.stats.swaps
+            );
+        }
+        
+        // Play completion sound
+        if (window.app && window.app.soundManager && appState.category === 'sorting') {
+            window.app.soundManager.playSortedSound();
+        }
+    }
+    
+    getAlgorithmName(algo) {
+        const names = {
+            bubble: 'バブルソート',
+            selection: '選択ソート',
+            insertion: '挿入ソート',
+            merge: 'マージソート',
+            quick: 'クイックソート',
+            heap: 'ヒープソート',
+            tim: 'ティムソート',
+            linear: '線形探索',
+            binary: '二分探索',
+            jump: 'ジャンプ探索',
+            bfs: '幅優先探索',
+            dfs: '深さ優先探索',
+            dijkstra: 'ダイクストラ法',
+            astar: 'A*アルゴリズム'
+        };
+        return names[algo] || algo;
     }
     
     async animateCompletion() {
@@ -2268,6 +2327,9 @@ class UIController {
         
         document.getElementById('sound-enabled').addEventListener('change', (e) => {
             appState.soundEnabled = e.target.checked;
+            if (window.app && window.app.soundManager) {
+                window.app.soundManager.setEnabled(e.target.checked);
+            }
         });
         
         // コードコピーボタン
@@ -2410,13 +2472,357 @@ class UIController {
     }
     
     async runCompareMode() {
-        // 比較モードは現在の実装では簡略化
-        alert('⚔️ 比較モードは現在開発中です！\n\n近日公開予定です。お楽しみに！');
+        try {
+            // Get selected algorithms
+            const algo1 = document.getElementById('algorithm-select-1').value;
+            const algo2 = document.getElementById('algorithm-select-2').value;
+            
+            if (!algo1 || !algo2) {
+                alert('比較するアルゴリズムを選択してください');
+                return;
+            }
+            
+            // Update titles
+            document.getElementById('compare-title-1').textContent = this.getAlgorithmName(algo1);
+            document.getElementById('compare-title-2').textContent = this.getAlgorithmName(algo2);
+            
+            // Deep copy array for fairness
+            const originalArray = [...appState.array];
+            const array1 = [...originalArray];
+            const array2 = [...originalArray];
+            
+            // Setup canvas managers for compare mode
+            const canvas1 = new CanvasManager('canvas-compare-1');
+            const canvas2 = new CanvasManager('canvas-compare-2');
+            
+            // Draw initial arrays
+            canvas1.drawArray(array1);
+            canvas2.drawArray(array2);
+            
+            // Setup algorithm runners
+            const runner1 = new AlgorithmRunner();
+            runner1.canvasSingle = canvas1;
+            runner1.sortingAlgo = new SortingAlgorithms(canvas1);
+            
+            const runner2 = new AlgorithmRunner();
+            runner2.canvasSingle = canvas2;
+            runner2.sortingAlgo = new SortingAlgorithms(canvas2);
+            
+            // Reset stats for both
+            appState.compareStats1 = appState.createStatsObject();
+            appState.compareStats2 = appState.createStatsObject();
+            appState.compareStats1.startTime = Date.now();
+            appState.compareStats2.startTime = Date.now();
+            
+            // Update live status
+            const liveStatus = document.getElementById('live-status');
+            if (liveStatus) {
+                liveStatus.textContent = `比較モード開始: ${this.getAlgorithmName(algo1)} vs ${this.getAlgorithmName(algo2)}`;
+            }
+            
+            // Run both algorithms in parallel
+            const promises = [
+                this.runCompareAlgorithm(runner1, algo1, array1, appState.compareStats1, 'compare-1'),
+                this.runCompareAlgorithm(runner2, algo2, array2, appState.compareStats2, 'compare-2')
+            ];
+            
+            await Promise.all(promises);
+            
+            // Determine winner
+            const duration1 = appState.compareStats1.endTime - appState.compareStats1.startTime;
+            const duration2 = appState.compareStats2.endTime - appState.compareStats2.startTime;
+            
+            const winner = duration1 < duration2 ? 1 : 2;
+            const winnerName = winner === 1 ? this.getAlgorithmName(algo1) : this.getAlgorithmName(algo2);
+            
+            // Show compare summary
+            this.showCompareSummary(algo1, algo2, appState.compareStats1, appState.compareStats2, winner);
+            
+            // Update graph with both results
+            if (window.app && window.app.performanceGraph) {
+                window.app.performanceGraph.updateGraph(
+                    this.getAlgorithmName(algo1), 
+                    duration1, 
+                    appState.compareStats1.comparisons, 
+                    appState.compareStats1.swaps
+                );
+                window.app.performanceGraph.updateGraph(
+                    this.getAlgorithmName(algo2), 
+                    duration2, 
+                    appState.compareStats2.comparisons, 
+                    appState.compareStats2.swaps
+                );
+            }
+            
+            // Add to history
+            if (window.app && window.app.historyManager) {
+                window.app.historyManager.addEntry({
+                    mode: 'compare',
+                    algorithms: [this.getAlgorithmName(algo1), this.getAlgorithmName(algo2)],
+                    arraySize: originalArray.length,
+                    duration: Math.min(duration1, duration2),
+                    comparisons: appState.compareStats1.comparisons + appState.compareStats2.comparisons,
+                    swaps: appState.compareStats1.swaps + appState.compareStats2.swaps,
+                    result: `勝者: ${winnerName}`
+                });
+            }
+            
+            // Update live status
+            if (liveStatus) {
+                liveStatus.textContent = `比較完了: ${winnerName} が勝利しました！`;
+            }
+            
+        } catch (error) {
+            console.error('比較モードエラー:', error);
+            ErrorHandler.handle(error, 'Compare Mode');
+        }
+    }
+    
+    async runCompareAlgorithm(runner, algorithm, array, stats, prefix) {
+        // Store current stats reference
+        const originalStats = appState.stats;
+        appState.stats = stats;
+        
+        try {
+            await runner.run(algorithm, array);
+            stats.endTime = Date.now();
+            updateStats(stats);
+        } finally {
+            // Restore original stats
+            appState.stats = originalStats;
+        }
+    }
+    
+    showCompareSummary(algo1, algo2, stats1, stats2, winner) {
+        const summarySection = document.getElementById('compare-summary');
+        if (!summarySection) return;
+        
+        const duration1 = stats1.endTime - stats1.startTime;
+        const duration2 = stats2.endTime - stats2.startTime;
+        
+        const winnerName = winner === 1 ? this.getAlgorithmName(algo1) : this.getAlgorithmName(algo2);
+        
+        const announcement = document.getElementById('winner-announcement');
+        if (announcement) {
+            announcement.innerHTML = `
+                <div class="winner-ribbon">🏆 勝者: ${winnerName}</div>
+                <p style="margin-top: 10px; font-size: 1rem;">
+                    ${duration1 < duration2 ? '左側' : '右側'}のアルゴリズムが
+                    ${Math.abs(duration1 - duration2).toFixed(0)}ms 速く完了しました！
+                </p>
+            `;
+        }
+        
+        const details = document.getElementById('comparison-details');
+        if (details) {
+            details.innerHTML = `
+                <div class="comparison-metric">
+                    <div class="comparison-metric-label">実行時間の差</div>
+                    <div class="comparison-metric-value">${Math.abs(duration1 - duration2).toFixed(0)}ms</div>
+                    <div class="comparison-metric-delta ${duration1 < duration2 ? 'positive' : 'negative'}">
+                        ${duration1 < duration2 ? '▼' : '▲'} ${((Math.abs(duration1 - duration2) / Math.max(duration1, duration2)) * 100).toFixed(1)}%
+                    </div>
+                </div>
+                <div class="comparison-metric">
+                    <div class="comparison-metric-label">比較回数の差</div>
+                    <div class="comparison-metric-value">${Math.abs(stats1.comparisons - stats2.comparisons).toLocaleString()}</div>
+                </div>
+                <div class="comparison-metric">
+                    <div class="comparison-metric-label">スワップ回数の差</div>
+                    <div class="comparison-metric-value">${Math.abs(stats1.swaps - stats2.swaps).toLocaleString()}</div>
+                </div>
+                <div class="comparison-metric">
+                    <div class="comparison-metric-label">${this.getAlgorithmName(algo1)} 実行時間</div>
+                    <div class="comparison-metric-value">${duration1.toFixed(0)}ms</div>
+                </div>
+                <div class="comparison-metric">
+                    <div class="comparison-metric-label">${this.getAlgorithmName(algo2)} 実行時間</div>
+                    <div class="comparison-metric-value">${duration2.toFixed(0)}ms</div>
+                </div>
+            `;
+        }
+        
+        summarySection.style.display = 'block';
     }
     
     async runBenchmarkMode() {
-        // ベンチマークモードは現在の実装では簡略化
-        alert('📊 ベンチマークモードは現在開発中です！\n\n近日公開予定です。お楽しみに！');
+        try {
+            // Get selected algorithms
+            const checkboxes = document.querySelectorAll('.benchmark-algo:checked');
+            const algorithms = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (algorithms.length === 0) {
+                alert('少なくとも1つのアルゴリズムを選択してください');
+                return;
+            }
+            
+            // Get run count
+            const runsInput = document.getElementById('benchmark-runs-count');
+            const runs = parseInt(runsInput.value) || 10;
+            
+            if (runs < 1 || runs > 100) {
+                alert('実行回数は1〜100の間で指定してください');
+                return;
+            }
+            
+            // Show progress bar
+            const progressFill = document.getElementById('benchmark-progress-fill');
+            const progressStatus = document.getElementById('benchmark-status');
+            
+            const totalRuns = algorithms.length * runs;
+            let completedRuns = 0;
+            
+            // Update live status
+            const liveStatus = document.getElementById('live-status');
+            if (liveStatus) {
+                liveStatus.textContent = `ベンチマーク開始: ${algorithms.length}個のアルゴリズム × ${runs}回`;
+            }
+            
+            const results = [];
+            
+            // Run benchmark for each algorithm
+            for (const algo of algorithms) {
+                const algoResults = {
+                    algorithm: this.getAlgorithmName(algo),
+                    times: [],
+                    comparisons: [],
+                    swaps: [],
+                    arrayAccesses: []
+                };
+                
+                // Run multiple times
+                for (let i = 0; i < runs; i++) {
+                    // Generate fresh array for each run
+                    const testArray = generateArray(appState.arraySize);
+                    
+                    // Reset stats
+                    appState.resetStats();
+                    
+                    // Run algorithm (without visualization for speed)
+                    const savedDelay = appState.delay;
+                    appState.delay = 0; // No delay for benchmark
+                    
+                    await this.runner.run(algo, testArray);
+                    
+                    appState.delay = savedDelay;
+                    
+                    // Collect metrics
+                    const duration = appState.stats.endTime - appState.stats.startTime;
+                    algoResults.times.push(duration);
+                    algoResults.comparisons.push(appState.stats.comparisons);
+                    algoResults.swaps.push(appState.stats.swaps);
+                    algoResults.arrayAccesses.push(appState.stats.arrayAccesses);
+                    
+                    // Update progress
+                    completedRuns++;
+                    const progress = (completedRuns / totalRuns) * 100;
+                    if (progressFill) {
+                        progressFill.style.width = progress + '%';
+                    }
+                    if (progressStatus) {
+                        progressStatus.textContent = `実行中: ${completedRuns} / ${totalRuns} (${progress.toFixed(0)}%)`;
+                    }
+                }
+                
+                // Calculate statistics
+                const stats = {
+                    algorithm: algoResults.algorithm,
+                    avgTime: this.calculateAverage(algoResults.times),
+                    minTime: Math.min(...algoResults.times),
+                    maxTime: Math.max(...algoResults.times),
+                    stdDevTime: this.calculateStdDev(algoResults.times),
+                    avgComparisons: this.calculateAverage(algoResults.comparisons),
+                    avgSwaps: this.calculateAverage(algoResults.swaps),
+                    avgArrayAccesses: this.calculateAverage(algoResults.arrayAccesses)
+                };
+                
+                results.push(stats);
+            }
+            
+            // Show results table
+            this.showBenchmarkResults(results);
+            
+            // Update graph
+            if (window.app && window.app.performanceGraph) {
+                window.app.performanceGraph.updateGraphBenchmark(results);
+            }
+            
+            // Store for export
+            window.lastBenchmarkResults = results;
+            
+            // Add to history
+            if (window.app && window.app.historyManager) {
+                window.app.historyManager.addEntry({
+                    mode: 'benchmark',
+                    algorithms: results.map(r => r.algorithm),
+                    arraySize: appState.arraySize,
+                    result: `${algorithms.length}個のアルゴリズム × ${runs}回実行`
+                });
+            }
+            
+            // Update live status
+            if (liveStatus) {
+                liveStatus.textContent = 'ベンチマーク完了！';
+            }
+            
+            if (progressStatus) {
+                progressStatus.textContent = '完了！';
+            }
+            
+        } catch (error) {
+            console.error('ベンチマークモードエラー:', error);
+            ErrorHandler.handle(error, 'Benchmark Mode');
+        }
+    }
+    
+    calculateAverage(arr) {
+        return arr.reduce((a, b) => a + b, 0) / arr.length;
+    }
+    
+    calculateStdDev(arr) {
+        const avg = this.calculateAverage(arr);
+        const squareDiffs = arr.map(value => Math.pow(value - avg, 2));
+        const avgSquareDiff = this.calculateAverage(squareDiffs);
+        return Math.sqrt(avgSquareDiff);
+    }
+    
+    showBenchmarkResults(results) {
+        const resultsSection = document.getElementById('benchmark-results');
+        const tableBody = document.getElementById('benchmark-table-body');
+        
+        if (!resultsSection || !tableBody) return;
+        
+        // Find best values for highlighting
+        const bestTime = Math.min(...results.map(r => r.avgTime));
+        const bestComparisons = Math.min(...results.map(r => r.avgComparisons));
+        const bestSwaps = Math.min(...results.map(r => r.avgSwaps));
+        
+        tableBody.innerHTML = results.map(result => `
+            <tr>
+                <td><strong>${result.algorithm}</strong></td>
+                <td class="${result.avgTime === bestTime ? 'best-value' : ''}">${result.avgTime.toFixed(2)}</td>
+                <td>${result.minTime.toFixed(2)}</td>
+                <td>${result.maxTime.toFixed(2)}</td>
+                <td>${result.stdDevTime.toFixed(2)}</td>
+                <td class="${result.avgComparisons === bestComparisons ? 'best-value' : ''}">${result.avgComparisons.toFixed(0)}</td>
+                <td class="${result.avgSwaps === bestSwaps ? 'best-value' : ''}">${result.avgSwaps.toFixed(0)}</td>
+            </tr>
+        `).join('');
+        
+        resultsSection.style.display = 'block';
+    }
+    
+    getAlgorithmName(algo) {
+        const names = {
+            bubble: 'バブルソート',
+            selection: '選択ソート',
+            insertion: '挿入ソート',
+            merge: 'マージソート',
+            quick: 'クイックソート',
+            heap: 'ヒープソート',
+            tim: 'ティムソート'
+        };
+        return names[algo] || algo;
     }
     
     resetVisualization() {
@@ -2871,6 +3277,13 @@ function calcMinRun(n) {
 class PerformanceGraph {
     constructor() {
         this.chart = null;
+        this.currentDataType = 'time';
+        this.datasets = {
+            time: [],
+            comparisons: [],
+            swaps: []
+        };
+        this.labels = [];
         this.initChart();
     }
     
@@ -2916,38 +3329,116 @@ class PerformanceGraph {
     }
     
     updateGraph(algorithmName, timeMs, comparisons, swaps) {
-        // データ追加
-        this.chart.data.labels.push(algorithmName);
-        this.chart.data.datasets[0].data.push(timeMs);
+        // Add data to all datasets
+        this.labels.push(algorithmName);
+        this.datasets.time.push(timeMs);
+        this.datasets.comparisons.push(comparisons);
+        this.datasets.swaps.push(swaps);
         
-        // 最大10個まで表示
-        if (this.chart.data.labels.length > 10) {
-            this.chart.data.labels.shift();
-            this.chart.data.datasets[0].data.shift();
+        // Keep only last 10 entries
+        if (this.labels.length > 10) {
+            this.labels.shift();
+            this.datasets.time.shift();
+            this.datasets.comparisons.shift();
+            this.datasets.swaps.shift();
         }
+        
+        // Update chart with current data type
+        this.refreshChart();
+    }
+    
+    updateGraphCompare(algo1Name, algo2Name, stats1, stats2) {
+        // For compare mode, show both algorithms side by side
+        const label = `${algo1Name} vs ${algo2Name}`;
+        this.labels.push(label);
+        
+        // Store both values (we'll show them as grouped bars)
+        const currentData = this.currentDataType;
+        if (currentData === 'time') {
+            this.datasets.time.push(stats1.duration);
+            this.datasets.time.push(stats2.duration);
+        } else if (currentData === 'comparisons') {
+            this.datasets.comparisons.push(stats1.comparisons);
+            this.datasets.comparisons.push(stats2.comparisons);
+        } else if (currentData === 'swaps') {
+            this.datasets.swaps.push(stats1.swaps);
+            this.datasets.swaps.push(stats2.swaps);
+        }
+        
+        // Update chart
+        this.refreshChart();
+    }
+    
+    updateGraphBenchmark(results) {
+        // For benchmark mode, show average values for each algorithm
+        results.forEach(result => {
+            this.labels.push(result.algorithm);
+            this.datasets.time.push(result.avgTime);
+            this.datasets.comparisons.push(result.avgComparisons);
+            this.datasets.swaps.push(result.avgSwaps);
+        });
+        
+        // Keep only last 10 entries
+        while (this.labels.length > 10) {
+            this.labels.shift();
+            this.datasets.time.shift();
+            this.datasets.comparisons.shift();
+            this.datasets.swaps.shift();
+        }
+        
+        this.refreshChart();
+    }
+    
+    refreshChart() {
+        this.chart.data.labels = [...this.labels];
+        
+        // Get data for current type
+        let data = [];
+        let label = '';
+        let yAxisLabel = '';
+        
+        switch(this.currentDataType) {
+            case 'time':
+                data = [...this.datasets.time];
+                label = '実行時間 (ms)';
+                yAxisLabel = 'ミリ秒 (ms)';
+                break;
+            case 'comparisons':
+                data = [...this.datasets.comparisons];
+                label = '比較回数';
+                yAxisLabel = '回数';
+                break;
+            case 'swaps':
+                data = [...this.datasets.swaps];
+                label = 'スワップ回数';
+                yAxisLabel = '回数';
+                break;
+        }
+        
+        this.chart.data.datasets[0].data = data;
+        this.chart.data.datasets[0].label = label;
+        this.chart.options.scales.y.title.text = yAxisLabel;
         
         this.chart.update();
     }
     
     switchDataType(type) {
-        switch(type) {
-            case 'time':
-                this.chart.data.datasets[0].label = '実行時間 (ms)';
-                break;
-            case 'comparisons':
-                this.chart.data.datasets[0].label = '比較回数';
-                break;
-            case 'swaps':
-                this.chart.data.datasets[0].label = 'スワップ回数';
-                break;
-        }
-        this.chart.update();
+        this.currentDataType = type;
+        this.refreshChart();
     }
     
     clear() {
-        this.chart.data.labels = [];
-        this.chart.data.datasets[0].data = [];
-        this.chart.update();
+        this.labels = [];
+        this.datasets.time = [];
+        this.datasets.comparisons = [];
+        this.datasets.swaps = [];
+        this.refreshChart();
+    }
+    
+    saveAsImage() {
+        const canvas = document.getElementById('performance-graph');
+        const filename = `performance-graph-${Date.now()}.png`;
+        DataExporter.exportGraphPNG('performance-graph', filename);
     }
 }
 
@@ -2967,36 +3458,57 @@ class SoundManager {
         }
     }
     
-    playTone(frequency, duration = 50) {
+    playTone(frequency, duration = 50, waveType = 'sine') {
         if (!this.enabled || !this.audioContext) return;
         
-        const oscillator = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
-        
-        oscillator.frequency.value = frequency;
-        oscillator.type = 'sine';
-        
-        gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration / 1000);
-        
-        oscillator.start(this.audioContext.currentTime);
-        oscillator.stop(this.audioContext.currentTime + duration / 1000);
+        try {
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = waveType;
+            
+            gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration / 1000);
+            
+            oscillator.start(this.audioContext.currentTime);
+            oscillator.stop(this.audioContext.currentTime + duration / 1000);
+        } catch (error) {
+            console.warn('Sound playback failed:', error);
+        }
     }
     
     playCompareSound(value) {
         const frequency = 200 + (value * 5);
-        this.playTone(frequency, 30);
+        this.playTone(frequency, 30, 'sine');
     }
     
     playSwapSound() {
-        this.playTone(440, 50);
+        this.playTone(440, 50, 'square');
     }
     
     playSortedSound() {
-        this.playTone(880, 100);
+        // Play ascending triad (C-E-G)
+        if (!this.enabled || !this.audioContext) return;
+        
+        const notes = [261.63, 329.63, 392.00]; // C4, E4, G4
+        notes.forEach((freq, index) => {
+            setTimeout(() => {
+                this.playTone(freq, 150, 'sine');
+            }, index * 100);
+        });
+    }
+    
+    playErrorSound() {
+        this.playTone(100, 200, 'sawtooth');
+    }
+    
+    setEnabled(enabled) {
+        this.enabled = enabled;
+        appState.soundEnabled = enabled;
     }
 }
 
@@ -3406,6 +3918,327 @@ class PerformanceMonitor {
 }
 
 // ==========================================
+// Code Highlighter
+// ==========================================
+
+class CodeHighlighter {
+    constructor() {
+        this.lineMaps = this.getLineMaps();
+        this.currentLine = null;
+    }
+    
+    getLineMaps() {
+        return {
+            bubble: {
+                comparing: { line: 3, text: "隣接要素を比較中..." },
+                swapping: { line: 5, text: "要素を交換中..." },
+                sorted: { line: 11, text: "ソート完了!" }
+            },
+            selection: {
+                finding: { line: 3, text: "最小値を探索中..." },
+                comparing: { line: 4, text: "要素を比較中..." },
+                swapping: { line: 8, text: "最小値と交換中..." }
+            },
+            insertion: {
+                selecting: { line: 2, text: "挿入位置を探索中..." },
+                comparing: { line: 4, text: "要素を比較中..." },
+                inserting: { line: 5, text: "要素を挿入中..." }
+            },
+            merge: {
+                dividing: { line: 2, text: "配列を分割中..." },
+                merging: { line: 6, text: "配列を統合中..." },
+                comparing: { line: 8, text: "要素を比較中..." }
+            },
+            quick: {
+                partitioning: { line: 2, text: "パーティション中..." },
+                pivot: { line: 3, text: "ピボット選択中..." },
+                comparing: { line: 5, text: "要素を比較中..." },
+                swapping: { line: 7, text: "要素を交換中..." }
+            },
+            heap: {
+                heapifying: { line: 2, text: "ヒープ構築中..." },
+                comparing: { line: 4, text: "要素を比較中..." },
+                swapping: { line: 6, text: "要素を交換中..." }
+            },
+            tim: {
+                runIdentify: { line: 3, text: "Run識別中..." },
+                inserting: { line: 5, text: "挿入ソート実行中..." },
+                merging: { line: 10, text: "Runをマージ中..." }
+            }
+        };
+    }
+    
+    highlight(algorithm, action) {
+        if (!appState.showCodeHighlight) return;
+        
+        const lineMap = this.lineMaps[algorithm];
+        if (!lineMap || !lineMap[action]) return;
+        
+        const { line, text } = lineMap[action];
+        this.currentLine = line;
+        
+        const lineTextEl = document.getElementById('current-line-text-single');
+        if (lineTextEl) {
+            lineTextEl.textContent = text;
+        }
+        
+        // Update live status for screen readers
+        this.updateLiveStatus(text);
+    }
+    
+    updateLiveStatus(text) {
+        const liveStatus = document.getElementById('live-status');
+        if (liveStatus) {
+            liveStatus.textContent = text;
+        }
+    }
+    
+    clear() {
+        this.currentLine = null;
+        const lineTextEl = document.getElementById('current-line-text-single');
+        if (lineTextEl) {
+            lineTextEl.textContent = '';
+        }
+    }
+}
+
+// ==========================================
+// Data Exporter
+// ==========================================
+
+class DataExporter {
+    static exportJSON(data, filename) {
+        const json = JSON.stringify(data, null, 2);
+        this.downloadFile(json, filename, 'application/json');
+    }
+    
+    static exportCSV(data, filename) {
+        // Add UTF-8 BOM for Excel compatibility
+        const BOM = '\uFEFF';
+        let csv = BOM;
+        
+        if (Array.isArray(data) && data.length > 0) {
+            // Extract headers
+            const headers = Object.keys(data[0]);
+            csv += headers.join(',') + '\n';
+            
+            // Add rows
+            data.forEach(row => {
+                const values = headers.map(header => {
+                    let value = row[header];
+                    if (value === null || value === undefined) return '';
+                    // Escape quotes and wrap in quotes if contains comma or quote
+                    value = String(value);
+                    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+                        value = '"' + value.replace(/"/g, '""') + '"';
+                    }
+                    return value;
+                });
+                csv += values.join(',') + '\n';
+            });
+        }
+        
+        this.downloadFile(csv, filename, 'text/csv;charset=utf-8');
+    }
+    
+    static exportGraphPNG(canvasId, filename) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) {
+            console.error('Canvas not found:', canvasId);
+            return;
+        }
+        
+        // Use toDataURL to get PNG
+        const dataURL = canvas.toDataURL('image/png');
+        
+        // Create download link
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = dataURL;
+        link.click();
+    }
+    
+    static downloadFile(content, filename, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        
+        // Clean up
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+    }
+}
+
+// ==========================================
+// History Manager
+// ==========================================
+
+class HistoryManager {
+    constructor() {
+        this.storageKey = 'algorithmVisualizerHistory';
+        this.maxEntries = 50;
+    }
+    
+    addEntry(entry) {
+        const history = this.getHistory();
+        
+        // Add timestamp and ID
+        entry.timestamp = new Date().toISOString();
+        entry.id = Date.now() + Math.random().toString(36).substr(2, 9);
+        
+        history.unshift(entry);
+        
+        // Keep only max entries
+        if (history.length > this.maxEntries) {
+            history.splice(this.maxEntries);
+        }
+        
+        this.saveHistory(history);
+        this.updateUI();
+    }
+    
+    getHistory() {
+        try {
+            const stored = localStorage.getItem(this.storageKey);
+            return stored ? JSON.parse(stored) : [];
+        } catch (error) {
+            console.error('Failed to load history:', error);
+            return [];
+        }
+    }
+    
+    saveHistory(history) {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(history));
+        } catch (error) {
+            console.error('Failed to save history:', error);
+        }
+    }
+    
+    clearHistory() {
+        localStorage.removeItem(this.storageKey);
+        this.updateUI();
+    }
+    
+    updateUI() {
+        const history = this.getHistory();
+        const historyList = document.getElementById('history-list');
+        const historyPanel = document.getElementById('history-panel');
+        
+        if (!historyList || !historyPanel) return;
+        
+        if (history.length === 0) {
+            historyList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">履歴がありません</p>';
+            historyPanel.style.display = 'none';
+            return;
+        }
+        
+        historyPanel.style.display = 'block';
+        
+        // Show last 5 entries
+        const recentHistory = history.slice(0, 5);
+        
+        historyList.innerHTML = recentHistory.map(entry => {
+            const date = new Date(entry.timestamp);
+            const timeStr = date.toLocaleString('ja-JP');
+            
+            return `
+                <div class="history-item">
+                    <div class="history-item-header">
+                        <span class="history-item-mode">${this.getModeLabel(entry.mode)}</span>
+                        <span class="history-item-time">${timeStr}</span>
+                    </div>
+                    <div class="history-item-details">
+                        ${this.getDetailsHTML(entry)}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    getModeLabel(mode) {
+        const labels = {
+            single: '🎯 シングルモード',
+            compare: '⚔️ 比較モード',
+            benchmark: '📊 ベンチマーク'
+        };
+        return labels[mode] || mode;
+    }
+    
+    getDetailsHTML(entry) {
+        let html = '';
+        
+        if (entry.algorithms) {
+            const algoNames = Array.isArray(entry.algorithms) 
+                ? entry.algorithms.join(', ') 
+                : entry.algorithms;
+            html += `
+                <div class="history-item-detail">
+                    <span class="history-item-detail-label">アルゴリズム:</span>
+                    <span class="history-item-detail-value">${algoNames}</span>
+                </div>
+            `;
+        }
+        
+        if (entry.arraySize) {
+            html += `
+                <div class="history-item-detail">
+                    <span class="history-item-detail-label">配列サイズ:</span>
+                    <span class="history-item-detail-value">${entry.arraySize}</span>
+                </div>
+            `;
+        }
+        
+        if (entry.duration !== undefined) {
+            html += `
+                <div class="history-item-detail">
+                    <span class="history-item-detail-label">実行時間:</span>
+                    <span class="history-item-detail-value">${entry.duration}ms</span>
+                </div>
+            `;
+        }
+        
+        if (entry.comparisons !== undefined) {
+            html += `
+                <div class="history-item-detail">
+                    <span class="history-item-detail-label">比較回数:</span>
+                    <span class="history-item-detail-value">${entry.comparisons.toLocaleString()}</span>
+                </div>
+            `;
+        }
+        
+        if (entry.swaps !== undefined) {
+            html += `
+                <div class="history-item-detail">
+                    <span class="history-item-detail-label">スワップ回数:</span>
+                    <span class="history-item-detail-value">${entry.swaps.toLocaleString()}</span>
+                </div>
+            `;
+        }
+        
+        if (entry.result) {
+            html += `
+                <div class="history-item-detail">
+                    <span class="history-item-detail-label">結果:</span>
+                    <span class="history-item-detail-value">${entry.result}</span>
+                </div>
+            `;
+        }
+        
+        return html;
+    }
+    
+    exportHistory() {
+        const history = this.getHistory();
+        const filename = `algorithm-visualizer-history-${Date.now()}.json`;
+        DataExporter.exportJSON(history, filename);
+    }
+}
+
+// ==========================================
 // アプリケーション初期化
 // ==========================================
 
@@ -3416,6 +4249,8 @@ class Application {
         this.soundManager = null;
         this.storageManager = null;
         this.performanceMonitor = null;
+        this.codeHighlighter = null;
+        this.historyManager = null;
     }
     
     async init() {
@@ -3433,6 +4268,13 @@ class Application {
             this.soundManager = new SoundManager();
             this.soundManager.init();
             
+            // Code Highlighter初期化
+            this.codeHighlighter = new CodeHighlighter();
+            
+            // History Manager初期化
+            this.historyManager = new HistoryManager();
+            this.historyManager.updateUI();
+            
             // パフォーマンスグラフ初期化
             this.performanceGraph = new PerformanceGraph();
             
@@ -3444,6 +4286,12 @@ class Application {
             
             // グラフタブイベント
             this.setupGraphTabs();
+            
+            // Export button events
+            this.setupExportButtons();
+            
+            // History button events
+            this.setupHistoryButtons();
             
             // ページ離脱時に設定を保存
             window.addEventListener('beforeunload', () => {
@@ -3479,6 +4327,121 @@ class Application {
                 this.performanceGraph.switchDataType(graphType);
             });
         });
+    }
+    
+    setupExportButtons() {
+        // Last run export
+        const exportLastJSON = document.getElementById('export-last-json');
+        const exportLastCSV = document.getElementById('export-last-csv');
+        
+        if (exportLastJSON) {
+            exportLastJSON.addEventListener('click', () => {
+                this.exportLastRun('json');
+            });
+        }
+        
+        if (exportLastCSV) {
+            exportLastCSV.addEventListener('click', () => {
+                this.exportLastRun('csv');
+            });
+        }
+        
+        // Benchmark export
+        const exportBenchJSON = document.getElementById('export-benchmark-json');
+        const exportBenchCSV = document.getElementById('export-benchmark-csv');
+        
+        if (exportBenchJSON) {
+            exportBenchJSON.addEventListener('click', () => {
+                this.exportBenchmarkResults('json');
+            });
+        }
+        
+        if (exportBenchCSV) {
+            exportBenchCSV.addEventListener('click', () => {
+                this.exportBenchmarkResults('csv');
+            });
+        }
+        
+        // Graph controls
+        const clearGraphBtn = document.getElementById('clear-graph-btn');
+        const saveGraphBtn = document.getElementById('save-graph-btn');
+        
+        if (clearGraphBtn) {
+            clearGraphBtn.addEventListener('click', () => {
+                this.performanceGraph.clear();
+            });
+        }
+        
+        if (saveGraphBtn) {
+            saveGraphBtn.addEventListener('click', () => {
+                this.performanceGraph.saveAsImage();
+            });
+        }
+    }
+    
+    setupHistoryButtons() {
+        const exportHistoryBtn = document.getElementById('export-history-json');
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+        const toggleHistoryBtn = document.getElementById('toggle-history');
+        
+        if (exportHistoryBtn) {
+            exportHistoryBtn.addEventListener('click', () => {
+                this.historyManager.exportHistory();
+            });
+        }
+        
+        if (clearHistoryBtn) {
+            clearHistoryBtn.addEventListener('click', () => {
+                if (confirm('実行履歴をすべて削除しますか？')) {
+                    this.historyManager.clearHistory();
+                }
+            });
+        }
+        
+        if (toggleHistoryBtn) {
+            toggleHistoryBtn.addEventListener('click', () => {
+                const historyPanel = document.getElementById('history-panel');
+                historyPanel.classList.toggle('collapsed');
+            });
+        }
+    }
+    
+    exportLastRun(format) {
+        const stats = appState.stats;
+        const data = {
+            mode: appState.mode,
+            algorithm: appState.currentAlgorithm,
+            arraySize: appState.arraySize,
+            comparisons: stats.comparisons,
+            swaps: stats.swaps,
+            arrayAccesses: stats.arrayAccesses,
+            duration: stats.endTime ? stats.endTime - stats.startTime : 0,
+            timestamp: new Date().toISOString()
+        };
+        
+        const filename = `algorithm-run-${appState.currentAlgorithm}-${Date.now()}`;
+        
+        if (format === 'json') {
+            DataExporter.exportJSON(data, filename + '.json');
+        } else {
+            DataExporter.exportCSV([data], filename + '.csv');
+        }
+    }
+    
+    exportBenchmarkResults(format) {
+        // Get benchmark results from global variable (set during benchmark run)
+        if (!window.lastBenchmarkResults) {
+            alert('ベンチマーク結果がありません。先にベンチマークを実行してください。');
+            return;
+        }
+        
+        const filename = `benchmark-results-${Date.now()}`;
+        
+        if (format === 'json') {
+            DataExporter.exportJSON(window.lastBenchmarkResults, filename + '.json');
+        } else {
+            DataExporter.exportCSV(window.lastBenchmarkResults, filename + '.csv');
+        }
     }
     
     handleResize() {

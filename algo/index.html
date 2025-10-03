@@ -37,6 +37,9 @@
     <main class="main-container">
         <div class="container">
             
+            <!-- Live Status Region for Screen Readers -->
+            <div id="live-status" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+            
             <!-- ===== モード選択 ===== -->
             <section class="mode-selector">
                 <h2 class="section-title">🎮 モード選択</h2>
@@ -436,6 +439,18 @@
             <section class="stats-section">
                 <h2 class="section-title">📊 統計情報</h2>
                 
+                <!-- Export Buttons for Last Run -->
+                <div class="export-buttons last-run-export" id="last-run-export" style="display: none;">
+                    <button id="export-last-json" class="btn btn-secondary btn-sm">
+                        <span class="btn-icon">📥</span>
+                        結果をJSON出力
+                    </button>
+                    <button id="export-last-csv" class="btn btn-secondary btn-sm">
+                        <span class="btn-icon">📊</span>
+                        結果をCSV出力
+                    </button>
+                </div>
+                
                 <!-- シングルモード用統計 -->
                 <div id="stats-single" class="stats-container active">
                     <div class="stat-card">
@@ -512,6 +527,47 @@
                 </div>
             </section>
 
+            <!-- ===== 比較モード結果サマリー ===== -->
+            <section id="compare-summary" class="compare-summary" style="display: none;">
+                <h2 class="section-title">🏆 比較結果</h2>
+                <div class="compare-summary-content">
+                    <div class="winner-announcement" id="winner-announcement"></div>
+                    <div class="comparison-details" id="comparison-details"></div>
+                </div>
+            </section>
+
+            <!-- ===== ベンチマーク結果 ===== -->
+            <section id="benchmark-results" class="benchmark-results" style="display: none;">
+                <h2 class="section-title">📊 ベンチマーク結果</h2>
+                <div class="benchmark-table-container">
+                    <table id="benchmark-result-table" class="benchmark-table">
+                        <thead>
+                            <tr>
+                                <th>アルゴリズム</th>
+                                <th>平均時間 (ms)</th>
+                                <th>最小時間 (ms)</th>
+                                <th>最大時間 (ms)</th>
+                                <th>標準偏差</th>
+                                <th>平均比較回数</th>
+                                <th>平均スワップ回数</th>
+                            </tr>
+                        </thead>
+                        <tbody id="benchmark-table-body">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="export-buttons">
+                    <button id="export-benchmark-json" class="btn btn-secondary">
+                        <span class="btn-icon">📥</span>
+                        結果をJSON出力
+                    </button>
+                    <button id="export-benchmark-csv" class="btn btn-secondary">
+                        <span class="btn-icon">📊</span>
+                        結果をCSV出力
+                    </button>
+                </div>
+            </section>
+
             <!-- ===== グラフエリア ===== -->
             <section class="graph-section">
                 <h2 class="section-title">📈 パフォーマンスグラフ</h2>
@@ -524,6 +580,37 @@
                     <canvas id="performance-graph"></canvas>
                 </div>
                 <div class="graph-legend" id="graph-legend"></div>
+                <div class="graph-controls">
+                    <button id="clear-graph-btn" class="btn btn-secondary">
+                        <span class="btn-icon">🗑️</span>
+                        グラフをクリア
+                    </button>
+                    <button id="save-graph-btn" class="btn btn-secondary">
+                        <span class="btn-icon">💾</span>
+                        グラフを保存 (PNG)
+                    </button>
+                </div>
+            </section>
+
+            <!-- ===== 実行履歴 ===== -->
+            <section id="history-panel" class="history-panel" style="display: none;">
+                <h2 class="section-title">
+                    📜 実行履歴
+                    <button id="toggle-history" class="btn-icon-only">▼</button>
+                </h2>
+                <div class="history-content" id="history-content">
+                    <div class="history-list" id="history-list"></div>
+                    <div class="history-controls">
+                        <button id="export-history-json" class="btn btn-secondary">
+                            <span class="btn-icon">📥</span>
+                            履歴をJSON出力
+                        </button>
+                        <button id="clear-history-btn" class="btn btn-danger">
+                            <span class="btn-icon">🗑️</span>
+                            履歴をクリア
+                        </button>
+                    </div>
+                </div>
             </section>
 
             <!-- ===== アルゴリズム情報 ===== -->
