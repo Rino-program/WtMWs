@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithm Visualizer - アルゴリズム可視化ツール</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>🎨 Algorithm Visualizer</h1>
+        <p>様々なアルゴリズムをリアルタイムで可視化</p>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- アルゴリズムカテゴリ選択 -->
+            <div class="category-selector">
+                <button class="category-btn active" data-category="sorting">ソートアルゴリズム</button>
+                <button class="category-btn" data-category="searching">探索アルゴリズム</button>
+                <button class="category-btn" data-category="graph">グラフアルゴリズム</button>
+                <button class="category-btn" data-category="tree">木構造</button>
+                <button class="category-btn" data-category="recursive">再帰アルゴリズム</button>
+            </div>
+
+            <!-- アルゴリズム選択 -->
+            <div class="algorithm-selector">
+                <label for="algorithm-select">アルゴリズムを選択:</label>
+                <select id="algorithm-select">
+                    <!-- ソートアルゴリズム -->
+                    <optgroup label="ソートアルゴリズム" id="sorting-group">
+                        <option value="bubble">バブルソート (O(n²))</option>
+                        <option value="selection">選択ソート (O(n²))</option>
+                        <option value="insertion">挿入ソート (O(n²))</option>
+                        <option value="merge">マージソート (O(n log n))</option>
+                        <option value="quick">クイックソート (O(n log n))</option>
+                        <option value="heap">ヒープソート (O(n log n))</option>
+                    </optgroup>
+                    <!-- 探索アルゴリズム -->
+                    <optgroup label="探索アルゴリズム" id="searching-group" style="display:none;">
+                        <option value="linear">線形探索 (O(n))</option>
+                        <option value="binary">二分探索 (O(log n))</option>
+                        <option value="jump">ジャンプ探索 (O(√n))</option>
+                    </optgroup>
+                    <!-- グラフアルゴリズム -->
+                    <optgroup label="グラフアルゴリズム" id="graph-group" style="display:none;">
+                        <option value="bfs">幅優先探索 (BFS)</option>
+                        <option value="dfs">深さ優先探索 (DFS)</option>
+                        <option value="dijkstra">ダイクストラ法</option>
+                        <option value="astar">A*アルゴリズム</option>
+                    </optgroup>
+                    <!-- 木構造 -->
+                    <optgroup label="木構造" id="tree-group" style="display:none;">
+                        <option value="bst-insert">二分探索木 - 挿入</option>
+                        <option value="bst-search">二分探索木 - 探索</option>
+                        <option value="bst-delete">二分探索木 - 削除</option>
+                    </optgroup>
+                    <!-- 再帰アルゴリズム -->
+                    <optgroup label="再帰アルゴリズム" id="recursive-group" style="display:none;">
+                        <option value="fibonacci">フィボナッチ数列</option>
+                        <option value="hanoi">ハノイの塔</option>
+                        <option value="factorial">階乗計算</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <!-- コントロールパネル -->
+            <div class="controls">
+                <div class="control-group">
+                    <label for="array-size">配列サイズ: <span id="size-value">50</span></label>
+                    <input type="range" id="array-size" min="10" max="100" value="50">
+                </div>
+                <div class="control-group">
+                    <label for="speed">速度: <span id="speed-value">50</span>ms</label>
+                    <input type="range" id="speed" min="1" max="200" value="50">
+                </div>
+                <div class="control-buttons">
+                    <button id="generate-btn" class="btn btn-secondary">🔄 新しい配列生成</button>
+                    <button id="start-btn" class="btn btn-primary">▶️ 開始</button>
+                    <button id="pause-btn" class="btn btn-warning" disabled>⏸️ 一時停止</button>
+                    <button id="reset-btn" class="btn btn-danger">⏹️ リセット</button>
+                </div>
+            </div>
+
+            <!-- 可視化エリア -->
+            <div class="visualization-area">
+                <canvas id="canvas"></canvas>
+            </div>
+
+            <!-- 統計情報 -->
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">比較回数:</span>
+                    <span class="stat-value" id="comparisons">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">スワップ回数:</span>
+                    <span class="stat-value" id="swaps">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">配列アクセス:</span>
+                    <span class="stat-value" id="array-accesses">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">経過時間:</span>
+                    <span class="stat-value" id="elapsed-time">0ms</span>
+                </div>
+            </div>
+
+            <!-- アルゴリズム説明 -->
+            <div class="algorithm-info">
+                <h2>アルゴリズムについて</h2>
+                <div id="algorithm-description">
+                    <h3>バブルソート</h3>
+                    <p><strong>時間計算量:</strong> O(n²) - 最悪・平均、O(n) - 最良</p>
+                    <p><strong>空間計算量:</strong> O(1)</p>
+                    <p><strong>安定性:</strong> 安定</p>
+                    <p><strong>説明:</strong> 隣接する要素を比較し、順序が逆であれば交換する操作を繰り返します。最大の要素が徐々に配列の末尾に「浮かび上がる」様子から「バブル」という名前がついています。</p>
+                    <p><strong>特徴:</strong></p>
+                    <ul>
+                        <li>実装が非常にシンプル</li>
+                        <li>小規模なデータセットに適している</li>
+                        <li>ほぼソート済みのデータに対しては効率的</li>
+                        <li>大規模なデータには不向き</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- コード例 -->
+            <div class="code-section">
+                <h2>実装例 (JavaScript)</h2>
+                <pre id="code-example"><code>async function bubbleSort(array) {
+    const n = array.length;
+    
+    for (let i = 0; i < n - 1; i++) {
+        for (let j = 0; j < n - i - 1; j++) {
+            // 隣接要素を比較
+            comparisons++;
+            
+            if (array[j] > array[j + 1]) {
+                // 交換
+                [array[j], array[j + 1]] = [array[j + 1], array[j]];
+                swaps++;
+                
+                // 可視化のための待機
+                await sleep(delay);
+            }
+        }
+    }
+    
+    return array;
+}</code></pre>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Made with ❤️ for learning algorithms | © 2025 Algorithm Visualizer</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
