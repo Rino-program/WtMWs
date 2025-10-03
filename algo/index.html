@@ -3,161 +3,645 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Algorithm Visualizer - アルゴリズム可視化ツール</title>
+    <title>🎨 Ultimate Algorithm Visualizer - 究極のアルゴリズム可視化ツール</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <h1>🎨 Algorithm Visualizer</h1>
-        <p>様々なアルゴリズムをリアルタイムで可視化</p>
+    <!-- ローディング画面 -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>🎨 Algorithm Visualizer</h2>
+            <p>読み込み中...</p>
+        </div>
+    </div>
+
+    <!-- メインヘッダー -->
+    <header class="main-header">
+        <div class="header-content">
+            <h1>🎨 Ultimate Algorithm Visualizer</h1>
+            <p class="subtitle">様々なアルゴリズムをリアルタイムで可視化 - 学習から研究まで</p>
+            <div class="header-stats">
+                <span class="stat-badge">📊 15+ アルゴリズム</span>
+                <span class="stat-badge">🎯 5 カテゴリ</span>
+                <span class="stat-badge">⚡ リアルタイム可視化</span>
+                <span class="stat-badge">📈 統計グラフ</span>
+            </div>
+        </div>
     </header>
 
-    <main>
+    <!-- メインコンテナ -->
+    <main class="main-container">
         <div class="container">
-            <!-- アルゴリズムカテゴリ選択 -->
-            <div class="category-selector">
-                <button class="category-btn active" data-category="sorting">ソートアルゴリズム</button>
-                <button class="category-btn" data-category="searching">探索アルゴリズム</button>
-                <button class="category-btn" data-category="graph">グラフアルゴリズム</button>
-                <button class="category-btn" data-category="tree">木構造</button>
-                <button class="category-btn" data-category="recursive">再帰アルゴリズム</button>
-            </div>
-
-            <!-- アルゴリズム選択 -->
-            <div class="algorithm-selector">
-                <label for="algorithm-select">アルゴリズムを選択:</label>
-                <select id="algorithm-select">
-                    <!-- ソートアルゴリズム -->
-                    <optgroup label="ソートアルゴリズム" id="sorting-group">
-                        <option value="bubble">バブルソート (O(n²))</option>
-                        <option value="selection">選択ソート (O(n²))</option>
-                        <option value="insertion">挿入ソート (O(n²))</option>
-                        <option value="merge">マージソート (O(n log n))</option>
-                        <option value="quick">クイックソート (O(n log n))</option>
-                        <option value="heap">ヒープソート (O(n log n))</option>
-                    </optgroup>
-                    <!-- 探索アルゴリズム -->
-                    <optgroup label="探索アルゴリズム" id="searching-group" style="display:none;">
-                        <option value="linear">線形探索 (O(n))</option>
-                        <option value="binary">二分探索 (O(log n))</option>
-                        <option value="jump">ジャンプ探索 (O(√n))</option>
-                    </optgroup>
-                    <!-- グラフアルゴリズム -->
-                    <optgroup label="グラフアルゴリズム" id="graph-group" style="display:none;">
-                        <option value="bfs">幅優先探索 (BFS)</option>
-                        <option value="dfs">深さ優先探索 (DFS)</option>
-                        <option value="dijkstra">ダイクストラ法</option>
-                        <option value="astar">A*アルゴリズム</option>
-                    </optgroup>
-                    <!-- 木構造 -->
-                    <optgroup label="木構造" id="tree-group" style="display:none;">
-                        <option value="bst-insert">二分探索木 - 挿入</option>
-                        <option value="bst-search">二分探索木 - 探索</option>
-                        <option value="bst-delete">二分探索木 - 削除</option>
-                    </optgroup>
-                    <!-- 再帰アルゴリズム -->
-                    <optgroup label="再帰アルゴリズム" id="recursive-group" style="display:none;">
-                        <option value="fibonacci">フィボナッチ数列</option>
-                        <option value="hanoi">ハノイの塔</option>
-                        <option value="factorial">階乗計算</option>
-                    </optgroup>
-                </select>
-            </div>
-
-            <!-- コントロールパネル -->
-            <div class="controls">
-                <div class="control-group">
-                    <label for="array-size">配列サイズ: <span id="size-value">50</span></label>
-                    <input type="range" id="array-size" min="10" max="100" value="50">
-                </div>
-                <div class="control-group">
-                    <label for="speed">速度: <span id="speed-value">50</span>ms</label>
-                    <input type="range" id="speed" min="1" max="200" value="50">
-                </div>
-                <div class="control-buttons">
-                    <button id="generate-btn" class="btn btn-secondary">🔄 新しい配列生成</button>
-                    <button id="start-btn" class="btn btn-primary">▶️ 開始</button>
-                    <button id="pause-btn" class="btn btn-warning" disabled>⏸️ 一時停止</button>
-                    <button id="reset-btn" class="btn btn-danger">⏹️ リセット</button>
-                </div>
-            </div>
-
-            <!-- 可視化エリア -->
-            <div class="visualization-area">
-                <canvas id="canvas"></canvas>
-            </div>
-
-            <!-- 統計情報 -->
-            <div class="stats">
-                <div class="stat-item">
-                    <span class="stat-label">比較回数:</span>
-                    <span class="stat-value" id="comparisons">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">スワップ回数:</span>
-                    <span class="stat-value" id="swaps">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">配列アクセス:</span>
-                    <span class="stat-value" id="array-accesses">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">経過時間:</span>
-                    <span class="stat-value" id="elapsed-time">0ms</span>
-                </div>
-            </div>
-
-            <!-- アルゴリズム説明 -->
-            <div class="algorithm-info">
-                <h2>アルゴリズムについて</h2>
-                <div id="algorithm-description">
-                    <h3>バブルソート</h3>
-                    <p><strong>時間計算量:</strong> O(n²) - 最悪・平均、O(n) - 最良</p>
-                    <p><strong>空間計算量:</strong> O(1)</p>
-                    <p><strong>安定性:</strong> 安定</p>
-                    <p><strong>説明:</strong> 隣接する要素を比較し、順序が逆であれば交換する操作を繰り返します。最大の要素が徐々に配列の末尾に「浮かび上がる」様子から「バブル」という名前がついています。</p>
-                    <p><strong>特徴:</strong></p>
-                    <ul>
-                        <li>実装が非常にシンプル</li>
-                        <li>小規模なデータセットに適している</li>
-                        <li>ほぼソート済みのデータに対しては効率的</li>
-                        <li>大規模なデータには不向き</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- コード例 -->
-            <div class="code-section">
-                <h2>実装例 (JavaScript)</h2>
-                <pre id="code-example"><code>async function bubbleSort(array) {
-    const n = array.length;
-    
-    for (let i = 0; i < n - 1; i++) {
-        for (let j = 0; j < n - i - 1; j++) {
-            // 隣接要素を比較
-            comparisons++;
             
-            if (array[j] > array[j + 1]) {
-                // 交換
-                [array[j], array[j + 1]] = [array[j + 1], array[j]];
-                swaps++;
+            <!-- ===== モード選択 ===== -->
+            <section class="mode-selector">
+                <h2 class="section-title">🎮 モード選択</h2>
+                <div class="mode-buttons">
+                    <button class="mode-btn active" data-mode="single">
+                        <span class="mode-icon">🎯</span>
+                        <span class="mode-text">シングルモード</span>
+                        <span class="mode-desc">1つのアルゴリズムを詳しく</span>
+                    </button>
+                    <button class="mode-btn" data-mode="compare">
+                        <span class="mode-icon">⚔️</span>
+                        <span class="mode-text">比較モード</span>
+                        <span class="mode-desc">2つのアルゴリズムを比較</span>
+                    </button>
+                    <button class="mode-btn" data-mode="benchmark">
+                        <span class="mode-icon">📊</span>
+                        <span class="mode-text">ベンチマークモード</span>
+                        <span class="mode-desc">複数実行して統計取得</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ===== カテゴリ選択 ===== -->
+            <section class="category-section">
+                <h2 class="section-title">📚 カテゴリ選択</h2>
+                <div class="category-selector">
+                    <button class="category-btn active" data-category="sorting">
+                        <span class="category-icon">🔀</span>
+                        <span class="category-name">ソート</span>
+                        <span class="category-count">7種類</span>
+                    </button>
+                    <button class="category-btn" data-category="searching">
+                        <span class="category-icon">🔍</span>
+                        <span class="category-name">探索</span>
+                        <span class="category-count">3種類</span>
+                    </button>
+                    <button class="category-btn" data-category="graph">
+                        <span class="category-icon">🕸️</span>
+                        <span class="category-name">グラフ</span>
+                        <span class="category-count">4種類</span>
+                    </button>
+                    <button class="category-btn" data-category="tree">
+                        <span class="category-icon">🌳</span>
+                        <span class="category-name">木構造</span>
+                        <span class="category-count">3種類</span>
+                    </button>
+                    <button class="category-btn" data-category="recursive">
+                        <span class="category-icon">🔄</span>
+                        <span class="category-name">再帰</span>
+                        <span class="category-count">3種類</span>
+                    </button>
+                    <button class="category-btn" data-category="dynamic">
+                        <span class="category-icon">💎</span>
+                        <span class="category-name">動的計画法</span>
+                        <span class="category-count">2種類</span>
+                    </button>
+                    <button class="category-btn" data-category="string">
+                        <span class="category-icon">📝</span>
+                        <span class="category-name">文字列</span>
+                        <span class="category-count">2種類</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ===== アルゴリズム選択エリア（シングル/比較で切り替え） ===== -->
+            <section class="algorithm-selection">
                 
-                // 可視化のための待機
-                await sleep(delay);
-            }
-        }
-    }
-    
-    return array;
-}</code></pre>
-            </div>
+                <!-- シングルモード用 -->
+                <div id="single-mode-selection" class="selection-mode active">
+                    <h2 class="section-title">🎯 アルゴリズム選択</h2>
+                    <div class="algorithm-selector-wrapper">
+                        <label for="algorithm-select">アルゴリズム:</label>
+                        <select id="algorithm-select" class="algorithm-select">
+                            <!-- ソートアルゴリズム -->
+                            <optgroup label="🔀 ソートアルゴリズム" id="sorting-group">
+                                <option value="bubble">バブルソート (Bubble Sort) - O(n²)</option>
+                                <option value="selection">選択ソート (Selection Sort) - O(n²)</option>
+                                <option value="insertion">挿入ソート (Insertion Sort) - O(n²)</option>
+                                <option value="merge">マージソート (Merge Sort) - O(n log n)</option>
+                                <option value="quick">クイックソート (Quick Sort) - O(n log n)</option>
+                                <option value="heap">ヒープソート (Heap Sort) - O(n log n)</option>
+                                <option value="tim">ティムソート (Tim Sort) - O(n log n) ⭐NEW</option>
+                            </optgroup>
+                            
+                            <!-- 探索アルゴリズム -->
+                            <optgroup label="🔍 探索アルゴリズム" id="searching-group" style="display:none;">
+                                <option value="linear">線形探索 (Linear Search) - O(n)</option>
+                                <option value="binary">二分探索 (Binary Search) - O(log n)</option>
+                                <option value="jump">ジャンプ探索 (Jump Search) - O(√n)</option>
+                            </optgroup>
+                            
+                            <!-- グラフアルゴリズム -->
+                            <optgroup label="🕸️ グラフアルゴリズム" id="graph-group" style="display:none;">
+                                <option value="bfs">幅優先探索 (BFS) ⭐NEW</option>
+                                <option value="dfs">深さ優先探索 (DFS) ⭐NEW</option>
+                                <option value="dijkstra">ダイクストラ法 (Dijkstra) ⭐NEW</option>
+                                <option value="astar">A*アルゴリズム (A-Star) ⭐NEW</option>
+                            </optgroup>
+                            
+                            <!-- 木構造 -->
+                            <optgroup label="🌳 木構造" id="tree-group" style="display:none;">
+                                <option value="bst-insert">二分探索木 - 挿入 (BST Insert) ⭐NEW</option>
+                                <option value="bst-search">二分探索木 - 探索 (BST Search) ⭐NEW</option>
+                                <option value="bst-delete">二分探索木 - 削除 (BST Delete) ⭐NEW</option>
+                            </optgroup>
+                            
+                            <!-- 再帰アルゴリズム -->
+                            <optgroup label="🔄 再帰アルゴリズム" id="recursive-group" style="display:none;">
+                                <option value="fibonacci">フィボナッチ数列 (Fibonacci) ⭐NEW</option>
+                                <option value="hanoi">ハノイの塔 (Tower of Hanoi) ⭐NEW</option>
+                                <option value="factorial">階乗計算 (Factorial) ⭐NEW</option>
+                            </optgroup>
+                            
+                            <!-- 動的計画法 -->
+                            <optgroup label="💎 動的計画法" id="dynamic-group" style="display:none;">
+                                <option value="knapsack">0-1ナップサック問題 (0-1 Knapsack) ⭐NEW</option>
+                                <option value="lcs">最長共通部分列 (LCS) ⭐NEW</option>
+                            </optgroup>
+                            
+                            <!-- 文字列アルゴリズム -->
+                            <optgroup label="📝 文字列アルゴリズム" id="string-group" style="display:none;">
+                                <option value="kmp">KMP法 (Knuth-Morris-Pratt) ⭐NEW</option>
+                                <option value="boyer-moore">Boyer-Moore法 ⭐NEW</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 比較モード用 -->
+                <div id="compare-mode-selection" class="selection-mode">
+                    <h2 class="section-title">⚔️ アルゴリズム比較選択</h2>
+                    <div class="compare-selectors">
+                        <div class="compare-selector-item">
+                            <label for="algorithm-select-1">アルゴリズム 1 (左側):</label>
+                            <select id="algorithm-select-1" class="algorithm-select">
+                                <!-- 同じオプションを後でJSで生成 -->
+                            </select>
+                        </div>
+                        <div class="vs-divider">VS</div>
+                        <div class="compare-selector-item">
+                            <label for="algorithm-select-2">アルゴリズム 2 (右側):</label>
+                            <select id="algorithm-select-2" class="algorithm-select">
+                                <!-- 同じオプションを後でJSで生成 -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ベンチマークモード用 -->
+                <div id="benchmark-mode-selection" class="selection-mode">
+                    <h2 class="section-title">📊 ベンチマーク設定</h2>
+                    <div class="benchmark-settings">
+                        <div class="benchmark-option">
+                            <label>
+                                <input type="checkbox" class="benchmark-algo" value="bubble" checked>
+                                バブルソート
+                            </label>
+                        </div>
+                        <div class="benchmark-option">
+                            <label>
+                                <input type="checkbox" class="benchmark-algo" value="selection" checked>
+                                選択ソート
+                            </label>
+                        </div>
+                        <div class="benchmark-option">
+                            <label>
+                                <input type="checkbox" class="benchmark-algo" value="insertion" checked>
+                                挿入ソート
+                            </label>
+                        </div>
+                        <div class="benchmark-option">
+                            <label>
+                                <input type="checkbox" class="benchmark-algo" value="merge" checked>
+                                マージソート
+                            </label>
+                        </div>
+                        <div class="benchmark-option">
+                            <label>
+                                <input type="checkbox" class="benchmark-algo" value="quick" checked>
+                                クイックソート
+                            </label>
+                        </div>
+                        <div class="benchmark-option">
+                            <label>
+                                <input type="checkbox" class="benchmark-algo" value="heap" checked>
+                                ヒープソート
+                            </label>
+                        </div>
+                        <div class="benchmark-option">
+                            <label>
+                                <input type="checkbox" class="benchmark-algo" value="tim" checked>
+                                ティムソート
+                            </label>
+                        </div>
+                    </div>
+                    <div class="benchmark-runs">
+                        <label for="benchmark-runs-count">実行回数:</label>
+                        <input type="number" id="benchmark-runs-count" min="1" max="100" value="10">
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== 配列入力エリア ===== -->
+            <section class="input-section">
+                <h2 class="section-title">📥 配列入力・生成</h2>
+                <div class="input-tabs">
+                    <button class="input-tab active" data-tab="random">ランダム生成</button>
+                    <button class="input-tab" data-tab="preset">プリセット</button>
+                    <button class="input-tab" data-tab="custom">カスタム入力</button>
+                </div>
+
+                <!-- ランダム生成タブ -->
+                <div id="tab-random" class="input-tab-content active">
+                    <div class="control-group">
+                        <label for="array-size">
+                            配列サイズ: 
+                            <span id="size-value" class="value-display">50</span>
+                        </label>
+                        <input type="range" id="array-size" min="5" max="100" value="50" class="slider">
+                    </div>
+                    <div class="control-group">
+                        <label for="value-range-min">値の範囲:</label>
+                        <div class="range-inputs">
+                            <input type="number" id="value-range-min" value="1" min="1" max="1000">
+                            <span>〜</span>
+                            <input type="number" id="value-range-max" value="100" min="1" max="1000">
+                        </div>
+                    </div>
+                    <button id="generate-random-btn" class="btn btn-primary">
+                        <span class="btn-icon">🎲</span>
+                        ランダム配列生成
+                    </button>
+                </div>
+
+                <!-- プリセットタブ -->
+                <div id="tab-preset" class="input-tab-content">
+                    <div class="preset-buttons">
+                        <button class="preset-btn" data-preset="sorted">
+                            <span class="preset-icon">📈</span>
+                            <span class="preset-name">昇順</span>
+                        </button>
+                        <button class="preset-btn" data-preset="reversed">
+                            <span class="preset-icon">📉</span>
+                            <span class="preset-name">降順</span>
+                        </button>
+                        <button class="preset-btn" data-preset="nearly-sorted">
+                            <span class="preset-icon">📊</span>
+                            <span class="preset-name">ほぼソート済み</span>
+                        </button>
+                        <button class="preset-btn" data-preset="few-unique">
+                            <span class="preset-icon">🎯</span>
+                            <span class="preset-name">重複多め</span>
+                        </button>
+                        <button class="preset-btn" data-preset="mountain">
+                            <span class="preset-icon">⛰️</span>
+                            <span class="preset-name">山型</span>
+                        </button>
+                        <button class="preset-btn" data-preset="valley">
+                            <span class="preset-icon">🏔️</span>
+                            <span class="preset-name">谷型</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- カスタム入力タブ -->
+                <div id="tab-custom" class="input-tab-content">
+                    <div class="custom-input-area">
+                        <label for="custom-array-input">配列を入力（カンマ区切り）:</label>
+                        <textarea id="custom-array-input" rows="4" placeholder="例: 64, 34, 25, 12, 22, 11, 90, 88, 45, 50"></textarea>
+                        <button id="apply-custom-btn" class="btn btn-primary">
+                            <span class="btn-icon">✅</span>
+                            配列を適用
+                        </button>
+                        <div id="custom-input-error" class="error-message"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== コントロールパネル ===== -->
+            <section class="controls-section">
+                <h2 class="section-title">🎮 コントロール</h2>
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="speed">
+                            アニメーション速度: 
+                            <span id="speed-value" class="value-display">50ms</span>
+                        </label>
+                        <input type="range" id="speed" min="1" max="200" value="50" class="slider">
+                        <div class="speed-presets">
+                            <button class="speed-preset-btn" data-speed="1">超高速</button>
+                            <button class="speed-preset-btn" data-speed="25">高速</button>
+                            <button class="speed-preset-btn" data-speed="50">標準</button>
+                            <button class="speed-preset-btn" data-speed="100">低速</button>
+                            <button class="speed-preset-btn" data-speed="200">超低速</button>
+                        </div>
+                    </div>
+
+                    <div class="control-buttons">
+                        <button id="start-btn" class="btn btn-success btn-large">
+                            <span class="btn-icon">▶️</span>
+                            開始
+                        </button>
+                        <button id="pause-btn" class="btn btn-warning" disabled>
+                            <span class="btn-icon">⏸️</span>
+                            一時停止
+                        </button>
+                        <button id="step-btn" class="btn btn-info">
+                            <span class="btn-icon">⏭️</span>
+                            1ステップ実行
+                        </button>
+                        <button id="reset-btn" class="btn btn-danger">
+                            <span class="btn-icon">⏹️</span>
+                            リセット
+                        </button>
+                    </div>
+
+                    <!-- 表示オプション -->
+                    <div class="display-options">
+                        <h3 class="options-title">表示オプション</h3>
+                        <div class="option-checkboxes">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="show-values" checked>
+                                <span>値を表示</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="show-indices">
+                                <span>インデックスを表示</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="show-code-highlight" checked>
+                                <span>コードハイライト</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="sound-enabled">
+                                <span>効果音</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== 可視化エリア ===== -->
+            <section class="visualization-section">
+                <h2 class="section-title">🎨 可視化エリア</h2>
+                
+                <!-- シングルモード用キャンバス -->
+                <div id="single-visualization" class="visualization-container active">
+                    <div class="canvas-wrapper">
+                        <canvas id="canvas-single"></canvas>
+                    </div>
+                    <!-- コードハイライトエリア -->
+                    <div class="code-highlight-area" id="code-highlight-single">
+                        <h3>実行中のコード</h3>
+                        <pre id="running-code-single"><code></code></pre>
+                        <div class="current-line-indicator">
+                            <span class="line-arrow">➤</span>
+                            <span id="current-line-text-single"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 比較モード用キャンバス -->
+                <div id="compare-visualization" class="visualization-container compare-mode">
+                    <div class="compare-split">
+                        <div class="compare-panel">
+                            <h3 id="compare-title-1">アルゴリズム 1</h3>
+                            <div class="canvas-wrapper">
+                                <canvas id="canvas-compare-1"></canvas>
+                            </div>
+                        </div>
+                        <div class="compare-divider"></div>
+                        <div class="compare-panel">
+                            <h3 id="compare-title-2">アルゴリズム 2</h3>
+                            <div class="canvas-wrapper">
+                                <canvas id="canvas-compare-2"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ベンチマークモード用 -->
+                <div id="benchmark-visualization" class="visualization-container">
+                    <div class="benchmark-progress">
+                        <h3>ベンチマーク実行中...</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="benchmark-progress-fill"></div>
+                        </div>
+                        <p id="benchmark-status">準備中...</p>
+                    </div>
+                    <div class="canvas-wrapper">
+                        <canvas id="canvas-benchmark"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== 統計情報エリア ===== -->
+            <section class="stats-section">
+                <h2 class="section-title">📊 統計情報</h2>
+                
+                <!-- シングルモード用統計 -->
+                <div id="stats-single" class="stats-container active">
+                    <div class="stat-card">
+                        <div class="stat-icon">🔄</div>
+                        <div class="stat-content">
+                            <div class="stat-label">比較回数</div>
+                            <div class="stat-value" id="comparisons-single">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔀</div>
+                        <div class="stat-content">
+                            <div class="stat-label">スワップ回数</div>
+                            <div class="stat-value" id="swaps-single">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📍</div>
+                        <div class="stat-content">
+                            <div class="stat-label">配列アクセス</div>
+                            <div class="stat-value" id="array-accesses-single">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-content">
+                            <div class="stat-label">経過時間</div>
+                            <div class="stat-value" id="elapsed-time-single">0ms</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-content">
+                            <div class="stat-label">現在のステップ</div>
+                            <div class="stat-value" id="current-step-single">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 比較モード用統計 -->
+                <div id="stats-compare" class="stats-container compare-stats">
+                    <div class="compare-stats-grid">
+                        <div class="compare-stats-column">
+                            <h3>アルゴリズム 1</h3>
+                            <div class="stat-card">
+                                <div class="stat-label">比較回数</div>
+                                <div class="stat-value" id="comparisons-compare-1">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">スワップ回数</div>
+                                <div class="stat-value" id="swaps-compare-1">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">経過時間</div>
+                                <div class="stat-value" id="elapsed-time-compare-1">0ms</div>
+                            </div>
+                        </div>
+                        <div class="compare-stats-column">
+                            <h3>アルゴリズム 2</h3>
+                            <div class="stat-card">
+                                <div class="stat-label">比較回数</div>
+                                <div class="stat-value" id="comparisons-compare-2">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">スワップ回数</div>
+                                <div class="stat-value" id="swaps-compare-2">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">経過時間</div>
+                                <div class="stat-value" id="elapsed-time-compare-2">0ms</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== グラフエリア ===== -->
+            <section class="graph-section">
+                <h2 class="section-title">📈 パフォーマンスグラフ</h2>
+                <div class="graph-tabs">
+                    <button class="graph-tab active" data-graph="time">実行時間</button>
+                    <button class="graph-tab" data-graph="comparisons">比較回数</button>
+                    <button class="graph-tab" data-graph="swaps">スワップ回数</button>
+                </div>
+                <div class="graph-container">
+                    <canvas id="performance-graph"></canvas>
+                </div>
+                <div class="graph-legend" id="graph-legend"></div>
+            </section>
+
+            <!-- ===== アルゴリズム情報 ===== -->
+            <section class="algorithm-info-section">
+                <h2 class="section-title">📖 アルゴリズム詳細情報</h2>
+                <div class="algorithm-info" id="algorithm-description">
+                    <!-- JavaScriptで動的に生成 -->
+                </div>
+            </section>
+
+            <!-- ===== コード表示エリア ===== -->
+            <section class="code-section">
+                <h2 class="section-title">💻 実装コード</h2>
+                <div class="code-language-tabs">
+                    <button class="code-lang-tab active" data-lang="javascript">JavaScript</button>
+                    <button class="code-lang-tab" data-lang="python">Python</button>
+                    <button class="code-lang-tab" data-lang="cpp">C++</button>
+                    <button class="code-lang-tab" data-lang="java">Java</button>
+                </div>
+                <div class="code-wrapper">
+                    <button class="code-copy-btn" id="copy-code-btn">
+                        <span class="btn-icon">📋</span>
+                        コピー
+                    </button>
+                    <pre id="code-example"><code id="code-content"></code></pre>
+                </div>
+            </section>
+
+            <!-- ===== 学習リソース ===== -->
+            <section class="learning-section">
+                <h2 class="section-title">📚 学習リソース</h2>
+                <div class="learning-cards">
+                    <div class="learning-card">
+                        <h3>🎓 アルゴリズムの選び方</h3>
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>データ量</th>
+                                    <th>データの状態</th>
+                                    <th>おすすめ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>小（~50）</td>
+                                    <td>任意</td>
+                                    <td>挿入ソート</td>
+                                </tr>
+                                <tr>
+                                    <td>中（~1000）</td>
+                                    <td>ランダム</td>
+                                    <td>クイックソート</td>
+                                </tr>
+                                <tr>
+                                    <td>大（1000~）</td>
+                                    <td>任意</td>
+                                    <td>ティムソート</td>
+                                </tr>
+                                <tr>
+                                    <td>任意</td>
+                                    <td>ほぼソート済み</td>
+                                    <td>挿入ソート / ティムソート</td>
+                                </tr>
+                                <tr>
+                                    <td>任意</td>
+                                    <td>最悪ケース保証</td>
+                                    <td>マージソート / ヒープソート</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="learning-card">
+                        <h3>⚡ 時間計算量チートシート</h3>
+                        <div class="complexity-chart">
+                            <div class="complexity-item excellent">
+                                <span class="complexity-label">O(1)</span>
+                                <span class="complexity-name">定数時間</span>
+                            </div>
+                            <div class="complexity-item excellent">
+                                <span class="complexity-label">O(log n)</span>
+                                <span class="complexity-name">対数時間</span>
+                            </div>
+                            <div class="complexity-item good">
+                                <span class="complexity-label">O(n)</span>
+                                <span class="complexity-name">線形時間</span>
+                            </div>
+                            <div class="complexity-item good">
+                                <span class="complexity-label">O(n log n)</span>
+                                <span class="complexity-name">線形対数時間</span>
+                            </div>
+                            <div class="complexity-item fair">
+                                <span class="complexity-label">O(n²)</span>
+                                <span class="complexity-name">二乗時間</span>
+                            </div>
+                            <div class="complexity-item poor">
+                                <span class="complexity-label">O(2ⁿ)</span>
+                                <span class="complexity-name">指数時間</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </div>
     </main>
 
-    <footer>
-        <p>Made with ❤️ for learning algorithms | © 2025 Algorithm Visualizer</p>
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <p>Made with ❤️ for learning algorithms</p>
+            <p class="footer-info">Ultimate Algorithm Visualizer v2.0 | Created by Rino-program</p>
+            <p class="footer-tech">HTML5 • CSS3 • Vanilla JavaScript • Canvas API • Chart.js</p>
+        </div>
     </footer>
 
+    <!-- JavaScriptファイル -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
