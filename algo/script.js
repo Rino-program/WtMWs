@@ -47,7 +47,9 @@ class AppState {
             swaps: 0,
             arrayAccesses: 0,
             startTime: 0,
-            currentStep: 0
+            endTime: 0,
+            currentStep: 0,
+            actualElapsedMs: 0
         };
         
         // 比較モード用
@@ -76,7 +78,8 @@ class AppState {
             swaps: 0,
             arrayAccesses: 0,
             startTime: 0,
-            endTime: 0
+            endTime: 0,
+            actualElapsedMs: 0
         };
     }
     
@@ -85,7 +88,9 @@ class AppState {
         this.stats.swaps = 0;
         this.stats.arrayAccesses = 0;
         this.stats.startTime = Date.now();
+        this.stats.endTime = 0;
         this.stats.currentStep = 0;
+        this.stats.actualElapsedMs = 0;
     }
 }
 
@@ -472,7 +477,14 @@ function updateStats(statsObj = null) {
     if (accessesEl) accessesEl.textContent = stats.arrayAccesses.toLocaleString();
     
     if (timeEl && stats.startTime > 0) {
-        const elapsed = stats.endTime || Date.now() - stats.startTime;
+        let elapsed;
+        if (appState.delay <= 1) {
+            // For fastest speed, use actual elapsed time
+            elapsed = stats.actualElapsedMs || (Date.now() - stats.startTime);
+        } else {
+            // For normal speeds, use wall clock time
+            elapsed = stats.endTime || Date.now() - stats.startTime;
+        }
         timeEl.textContent = elapsed + 'ms';
     }
     
@@ -493,15 +505,24 @@ class SortingAlgorithms {
         const n = array.length;
         
         for (let i = 0; i < n - 1; i++) {
+            if (!appState.isRunning) return array; // Check if stopped
             let swapped = false;
             
             for (let j = 0; j < n - i - 1; j++) {
+                if (!appState.isRunning) return array; // Check if stopped
+                
                 appState.stats.comparisons++;
                 appState.stats.arrayAccesses += 2;
                 appState.stats.currentStep++;
                 updateStats();
                 
                 this.canvas.drawArray(array, [j, j + 1], [COLORS.COMPARING, COLORS.COMPARING]);
+                
+                // Play compare sound
+                if (window.app && window.app.soundManager) {
+                    window.app.soundManager.playCompareSound(array[j]);
+                }
+                
                 await sleep(appState.delay);
                 
                 if (array[j] > array[j + 1]) {
@@ -512,6 +533,12 @@ class SortingAlgorithms {
                     updateStats();
                     
                     this.canvas.drawArray(array, [j, j + 1], [COLORS.SWAPPING, COLORS.SWAPPING]);
+                    
+                    // Play swap sound
+                    if (window.app && window.app.soundManager) {
+                        window.app.soundManager.playSwapSound();
+                    }
+                    
                     await sleep(appState.delay);
                 }
             }
@@ -530,9 +557,12 @@ class SortingAlgorithms {
         const n = array.length;
         
         for (let i = 0; i < n - 1; i++) {
+            if (!appState.isRunning) return array; // Check if stopped
             let minIdx = i;
             
             for (let j = i + 1; j < n; j++) {
+                if (!appState.isRunning) return array; // Check if stopped
+                
                 appState.stats.comparisons++;
                 appState.stats.arrayAccesses += 2;
                 appState.stats.currentStep++;
@@ -540,6 +570,12 @@ class SortingAlgorithms {
                 
                 this.canvas.drawArray(array, [i, j, minIdx], 
                     [COLORS.SORTED, COLORS.COMPARING, COLORS.SWAPPING]);
+                
+                // Play compare sound
+                if (window.app && window.app.soundManager) {
+                    window.app.soundManager.playCompareSound(array[j]);
+                }
+                
                 await sleep(appState.delay);
                 
                 if (array[j] < array[minIdx]) {
@@ -554,6 +590,12 @@ class SortingAlgorithms {
                 updateStats();
                 
                 this.canvas.drawArray(array, [i, minIdx], [COLORS.SWAPPING, COLORS.SWAPPING]);
+                
+                // Play swap sound
+                if (window.app && window.app.soundManager) {
+                    window.app.soundManager.playSwapSound();
+                }
+                
                 await sleep(appState.delay);
             }
             
@@ -569,6 +611,8 @@ class SortingAlgorithms {
         const n = array.length;
         
         for (let i = 1; i < n; i++) {
+            if (!appState.isRunning) return array; // Check if stopped
+            
             let key = array[i];
             let j = i - 1;
             appState.stats.arrayAccesses++;
@@ -578,6 +622,8 @@ class SortingAlgorithms {
             await sleep(appState.delay);
             
             while (j >= 0 && array[j] > key) {
+                if (!appState.isRunning) return array; // Check if stopped
+                
                 appState.stats.comparisons++;
                 appState.stats.arrayAccesses += 2;
                 updateStats();
@@ -587,6 +633,12 @@ class SortingAlgorithms {
                 appState.stats.arrayAccesses += 2;
                 
                 this.canvas.drawArray(array, [j, j + 1], [COLORS.SWAPPING, COLORS.SWAPPING]);
+                
+                // Play swap sound
+                if (window.app && window.app.soundManager) {
+                    window.app.soundManager.playSwapSound();
+                }
+                
                 await sleep(appState.delay);
                 
                 j--;
@@ -1901,6 +1953,9 @@ class AlgorithmRunner {
     async run(algorithm, array) {
         appState.resetStats();
         
+        // Track actual execution time (excluding delays)
+        const actualStartTime = Date.now();
+        
         try {
             switch(algorithm) {
                 // ソートアルゴリズム
@@ -2108,6 +2163,11 @@ class AlgorithmRunner {
             if (window.app && window.app.soundManager) {
                 window.app.soundManager.playErrorSound();
             }
+        }
+        
+        // Calculate actual elapsed time (excluding delays for fastest speed)
+        if (appState.delay <= 1) {
+            appState.stats.actualElapsedMs = Date.now() - actualStartTime;
         }
         
         appState.stats.endTime = Date.now();
@@ -2447,7 +2507,7 @@ class UIController {
         // ボタン状態変更
         document.getElementById('start-btn').disabled = true;
         document.getElementById('pause-btn').disabled = false;
-        document.getElementById('reset-btn').disabled = true;
+        document.getElementById('reset-btn').disabled = false;
         
         try {
             if (appState.mode === 'single') {
@@ -2826,6 +2886,7 @@ class UIController {
     }
     
     resetVisualization() {
+        // Stop any running algorithm
         appState.isRunning = false;
         appState.isPaused = false;
         
@@ -2834,7 +2895,9 @@ class UIController {
         document.getElementById('reset-btn').disabled = false;
         document.getElementById('pause-btn').innerHTML = '<span class="btn-icon">⏸️</span>一時停止';
         
+        // Reset stats and regenerate array
         appState.resetStats();
+        appState.array = generateArray(appState.arraySize);
         updateStats();
         
         this.runner.canvasSingle.drawArray(appState.array);
