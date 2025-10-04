@@ -904,6 +904,7 @@ class SortingAlgorithms {
         
         // 各Runを挿入ソートでソート
         for (let start = 0; start < n; start += minRun) {
+            if (!appState.isRunning) return array; // Check if stopped
             const end = Math.min(start + minRun - 1, n - 1);
             await this.insertionSortRange(array, start, end);
         }
@@ -911,7 +912,9 @@ class SortingAlgorithms {
         // Runをマージ
         let size = minRun;
         while (size < n) {
+            if (!appState.isRunning) return array; // Check if stopped
             for (let start = 0; start < n; start += size * 2) {
+                if (!appState.isRunning) return array; // Check if stopped
                 const mid = start + size - 1;
                 const end = Math.min(start + size * 2 - 1, n - 1);
                 
@@ -936,6 +939,8 @@ class SortingAlgorithms {
     
     async insertionSortRange(array, left, right) {
         for (let i = left + 1; i <= right; i++) {
+            if (!appState.isRunning) return; // Check if stopped
+            
             let key = array[i];
             let j = i - 1;
             appState.stats.arrayAccesses++;
@@ -945,6 +950,8 @@ class SortingAlgorithms {
             await sleep(appState.delay / 2);
             
             while (j >= left && array[j] > key) {
+                if (!appState.isRunning) return; // Check if stopped
+                
                 appState.stats.comparisons++;
                 appState.stats.arrayAccesses += 2;
                 updateStats();
@@ -952,6 +959,11 @@ class SortingAlgorithms {
                 array[j + 1] = array[j];
                 appState.stats.swaps++;
                 appState.stats.arrayAccesses += 2;
+                
+                // Play swap sound
+                if (window.app && window.app.soundManager) {
+                    window.app.soundManager.playSwapSound();
+                }
                 
                 j--;
             }
