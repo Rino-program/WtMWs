@@ -355,6 +355,21 @@
                             リセット
                         </button>
                     </div>
+                    
+                    <!-- 🎓 新機能: 学習&プロファイリングボタン -->
+                    <div class="special-features">
+                        <h3 class="options-title">🚀 特別機能</h3>
+                        <div class="special-buttons">
+                            <button id="learning-mode-btn" class="btn btn-special" onclick="window.learningManager.toggle()">
+                                <span class="btn-icon">📚</span>
+                                学習モード
+                            </button>
+                            <button id="profiling-mode-btn" class="btn btn-special" onclick="window.profilingManager.toggle()">
+                                <span class="btn-icon">⚡</span>
+                                プロファイリング
+                            </button>
+                        </div>
+                    </div>
 
                     <!-- 表示オプション -->
                     <div class="display-options">
@@ -524,6 +539,22 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <!-- 🎓 学習モードパネル -->
+            <section id="learning-panel" class="learning-section" style="display: none;">
+                <div class="learning-content">
+                    <h3>📚 学習ガイドが表示されます</h3>
+                    <p>学習モードを有効にしてアルゴリズムを選択すると、詳細な解説が表示されます。</p>
+                </div>
+            </section>
+
+            <!-- ⚡ プロファイリングモードパネル -->
+            <section id="profiling-panel" class="profiling-section" style="display: none;">
+                <div class="profiling-content">
+                    <h3>⚡ パフォーマンス分析が表示されます</h3>
+                    <p>プロファイリングモードを有効にすると、リアルタイムパフォーマンス分析が表示されます。</p>
                 </div>
             </section>
 

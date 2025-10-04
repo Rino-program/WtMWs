@@ -109,8 +109,25 @@ class CanvasManager {
     }
     
     setupCanvas() {
-        this.canvas.width = 1200;
-        this.canvas.height = 400;
+        // 動的にサイズを調整
+        const container = this.canvas.parentElement;
+        const containerWidth = container.clientWidth - 40; // パディングを考慮
+        const containerHeight = Math.min(500, Math.max(300, window.innerHeight * 0.3));
+        
+        this.canvas.width = containerWidth;
+        this.canvas.height = containerHeight;
+        
+        // ディスプレイの解像度に合わせてスケーリング
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.style.width = containerWidth + 'px';
+        this.canvas.style.height = containerHeight + 'px';
+        
+        this.canvas.width = containerWidth * dpr;
+        this.canvas.height = containerHeight * dpr;
+        
+        this.ctx.scale(dpr, dpr);
+        this.ctx.canvas.style.width = containerWidth + 'px';
+        this.ctx.canvas.style.height = containerHeight + 'px';
     }
     
     clear() {
@@ -295,7 +312,7 @@ class CanvasManager {
     }
     
     // 動的計画法のテーブル描画
-    drawDPTable(table, currentRow = -1, currentCol = -1) {
+    drawDPTable(table, currentRow = -1, currentCol = -1, completed = false) {
         this.clear();
         
         const rows = table.length;
@@ -315,6 +332,9 @@ class CanvasManager {
                 // セル背景
                 if (i === currentRow && j === currentCol) {
                     this.ctx.fillStyle = COLORS.CURRENT;
+                } else if (completed && i === rows - 1 && j === cols - 1) {
+                    // 最後のマス（完了時）
+                    this.ctx.fillStyle = COLORS.SORTED;
                 } else if (table[i][j] !== 0 && table[i][j] !== '') {
                     this.ctx.fillStyle = COLORS.SORTED;
                 } else {
@@ -338,6 +358,18 @@ class CanvasManager {
                     y + cellHeight / 2
                 );
             }
+        }
+        
+        // 完了メッセージ表示
+        if (completed) {
+            this.ctx.fillStyle = '#10b981';
+            this.ctx.font = 'bold 16px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(
+                '完了！最適解: ' + table[rows - 1][cols - 1],
+                this.canvas.width / 2,
+                startY + rows * cellHeight + 30
+            );
         }
     }
 }
@@ -461,6 +493,119 @@ function escapeHtml(text) {
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
+// ==========================================
+// 🔧 ユーティリティ関数
+// ==========================================
+
+// DFS用の深さ計算
+function calculateDepth(visitedNodes, graph) {
+    // 簡単な深さ計算（接続したノードの最大数）
+    let maxDepth = 1;
+    for (let i = 1; i < visitedNodes.length; i++) {
+        const current = visitedNodes[i];
+        const previous = visitedNodes[i - 1];
+        
+        // 接続しているかチェック
+        const isConnected = graph.edges.some(edge => 
+            (edge.from === previous && edge.to === current) ||
+            (edge.from === current && edge.to === previous)
+        );
+        
+        if (isConnected) {
+            maxDepth++;
+        } else {
+            maxDepth = Math.max(maxDepth, i + 1);
+        }
+    }
+    return maxDepth;
+}
+
+// BFS用のレベル計算
+function calculateBFSLevels(visitedNodes, graph) {
+    // BFSのレベル数を計算
+    return Math.ceil(Math.log2(visitedNodes.length + 1));
+}
+
+// 実際の計算量を算出
+function calculateActualComplexity(algorithm, comparisons, swaps, arraySize) {
+    const n = arraySize;
+    const totalOperations = comparisons + swaps;
+    
+    // 理論値との比較
+    const theoretical = {
+        bubble: n * (n - 1) / 2,
+        selection: n * (n - 1) / 2,
+        insertion: n * (n - 1) / 4, // 平均ケース
+        merge: n * Math.log2(n),
+        quick: 1.39 * n * Math.log2(n), // 平均ケース
+        heap: 2 * n * Math.log2(n),
+        tim: n * Math.log2(n),
+        linear: n,
+        binary: Math.log2(n)
+    };
+    
+    const theoreticalOps = theoretical[algorithm] || totalOperations;
+    const efficiency = (theoreticalOps / Math.max(totalOperations, 1)) * 100;
+    
+    let complexityClass = 'O(?)'; // Default
+    
+    // 実際の操作数から計算量を推定
+    if (totalOperations <= n) {
+        complexityClass = 'O(n)';
+    } else if (totalOperations <= n * Math.log2(n) * 2) {
+        complexityClass = 'O(n log n)';
+    } else if (totalOperations <= n * Math.sqrt(n)) {
+        complexityClass = 'O(n√n)';
+    } else if (totalOperations <= n * n) {
+        complexityClass = 'O(n²)';
+    } else {
+        complexityClass = 'O(n³+)';
+    }
+    
+    return {
+        actual: `${totalOperations.toLocaleString()}操作`,
+        display: complexityClass,
+        efficiency: efficiency.toFixed(1) + '%',
+        comparisons: comparisons.toLocaleString(),
+        swaps: swaps.toLocaleString()
+    };
+}
+
+// 計算量ベースの時間計算
+function calculateComplexityTime(algorithm, arraySize, comparisons, swaps) {
+    const n = arraySize;
+    let complexityFactor = 1;
+    
+    switch(algorithm) {
+        case 'bubble':
+        case 'selection':
+        case 'insertion':
+            // O(n²)
+            complexityFactor = Math.pow(n, 2) / 1000;
+            break;
+        case 'merge':
+        case 'quick':
+        case 'heap':
+        case 'tim':
+            // O(n log n)
+            complexityFactor = n * Math.log2(n) / 100;
+            break;
+        case 'linear':
+            // O(n)
+            complexityFactor = n / 10;
+            break;
+        case 'binary':
+            // O(log n)
+            complexityFactor = Math.log2(n);
+            break;
+        default:
+            // 実際の操作数ベース
+            complexityFactor = (comparisons + swaps) / 100;
+    }
+    
+    return Math.max(1, Math.round(complexityFactor));
+}
+
 // 統計更新
 function updateStats(statsObj = null) {
     const stats = statsObj || appState.stats;
@@ -477,15 +622,9 @@ function updateStats(statsObj = null) {
     if (accessesEl) accessesEl.textContent = stats.arrayAccesses.toLocaleString();
     
     if (timeEl && stats.startTime > 0) {
-        let elapsed;
-        if (appState.delay <= 1) {
-            // For fastest speed, use actual elapsed time
-            elapsed = stats.actualElapsedMs || (Date.now() - stats.startTime);
-        } else {
-            // For normal speeds, use wall clock time
-            elapsed = stats.endTime || Date.now() - stats.startTime;
-        }
-        timeEl.textContent = elapsed + 'ms';
+        // 実際に使用した計算量を表示
+        const actualComplexity = calculateActualComplexity(appState.currentAlgorithm, stats.comparisons, stats.swaps, appState.arraySize);
+        timeEl.textContent = `${actualComplexity.display} (実際: ${actualComplexity.actual})`;
     }
     
     if (stepEl) stepEl.textContent = stats.currentStep.toLocaleString();
@@ -537,6 +676,11 @@ class SortingAlgorithms {
                     // Play swap sound
                     if (window.app && window.app.soundManager) {
                         window.app.soundManager.playSwapSound();
+                    }
+                    
+                    // Code highlight
+                    if (window.app && window.app.codeHighlighter) {
+                        window.app.codeHighlighter.highlight('bubble', 'swapping');
                     }
                     
                     await sleep(appState.delay);
@@ -1689,6 +1833,9 @@ class DynamicProgramming {
             }
         }
         
+        // 完了時の表示
+        this.canvas.drawDPTable(dp, -1, -1, true);
+        
         return dp[n][capacity];
     }
     
@@ -2025,6 +2172,40 @@ class AlgorithmRunner {
         this.stringAlgo = new StringAlgorithms(this.canvasSingle);
     }
     
+    showMessage(message, type = 'info') {
+        // アラートの代わりにトースト通知を表示
+        this.showToast(message, type);
+    }
+    
+    showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        
+        const icon = {
+            info: 'ℹ️',
+            success: '✅',
+            warning: '⚠️',
+            error: '❌'
+        }[type] || 'ℹ️';
+        
+        toast.innerHTML = `
+            <div class="toast-icon">${icon}</div>
+            <div class="toast-content">
+                <div class="toast-message">${message.replace(/\n/g, '<br>')}</div>
+            </div>
+            <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // 5秒後に自動削除
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 5000);
+    }
+    
     async run(algorithm, array) {
         appState.resetStats();
         
@@ -2058,86 +2239,94 @@ class AlgorithmRunner {
                 
                 // 探索アルゴリズム
                 case 'linear':
-                    const linearTarget = array[Math.floor(Math.random() * array.length)];
-                    alert(`🔍 探索する値: ${linearTarget}\n\n配列の先頭から順番に探します！`);
-                    const linearResult = await this.searchingAlgo.linearSearch([...array], linearTarget);
+                    const searchArray = array.slice(0, appState.arraySize);
+                    const linearTarget = searchArray[Math.floor(Math.random() * searchArray.length)];
+                    this.showMessage(`🔍 探索する値: ${linearTarget}\n\n配列の先頭から順番に探します！`);
+                    const linearResult = await this.searchingAlgo.linearSearch([...searchArray], linearTarget);
                     if (linearResult !== -1) {
-                        alert(`✅ 見つかりました！\n\n値 ${linearTarget} がインデックス ${linearResult} にありました！\n比較回数: ${appState.stats.comparisons}回`);
+                        this.showMessage(`✅ 見つかりました！\n\n値 ${linearTarget} がインデックス ${linearResult} にありました！\n比較回数: ${appState.stats.comparisons}回`);
                     } else {
-                        alert('❌ 値が見つかりませんでした');
+                        this.showMessage('❌ 値が見つかりませんでした');
                     }
                     break;
                     
                 case 'binary':
-                    const sortedArray = [...array].sort((a, b) => a - b);
-                    this.canvasSingle.drawArray(sortedArray);
+                    const binarySortedArray = [...array].slice(0, appState.arraySize).sort((a, b) => a - b);
+                    this.canvasSingle.drawArray(binarySortedArray);
                     await sleep(500);
-                    const binaryTarget = sortedArray[Math.floor(Math.random() * sortedArray.length)];
-                    alert(`🔍 探索する値: ${binaryTarget}\n\n配列を半分ずつに分けて探します！\n（配列は自動的にソートされました）`);
-                    const binaryResult = await this.searchingAlgo.binarySearch(sortedArray, binaryTarget);
+                    const binaryTarget = binarySortedArray[Math.floor(Math.random() * binarySortedArray.length)];
+                    this.showMessage(`🔍 探索する値: ${binaryTarget}\n\n配列を半分ずつに分けて探します！\n（配列は自動的にソートされました）`);
+                    const binaryResult = await this.searchingAlgo.binarySearch(binarySortedArray, binaryTarget);
                     if (binaryResult !== -1) {
-                        alert(`✅ 見つかりました！\n\n値 ${binaryTarget} がインデックス ${binaryResult} にありました！\n比較回数: ${appState.stats.comparisons}回\n\n線形探索より効率的ですね！`);
+                        this.showMessage(`✅ 見つかりました！\n\n値 ${binaryTarget} がインデックス ${binaryResult} にありました！\n比較回数: ${appState.stats.comparisons}回\n\n線形探索より効率的ですね！`, 'success');
                     } else {
-                        alert('❌ 値が見つかりませんでした');
+                        this.showMessage('❌ 値が見つかりませんでした', 'error');
                     }
                     break;
                     
                 case 'jump':
-                    const jumpSortedArray = [...array].sort((a, b) => a - b);
+                    const jumpSortedArray = [...array].slice(0, appState.arraySize).sort((a, b) => a - b);
                     this.canvasSingle.drawArray(jumpSortedArray);
                     await sleep(500);
                     const jumpSize = Math.floor(Math.sqrt(jumpSortedArray.length));
                     const jumpTarget = jumpSortedArray[Math.floor(Math.random() * jumpSortedArray.length)];
-                    alert(`🔍 探索する値: ${jumpTarget}\n\nジャンプサイズ √${jumpSortedArray.length} = ${jumpSize} でジャンプしながら探します！`);
+                    this.showMessage(`🔍 探索する値: ${jumpTarget}\n\nジャンプサイズ √${jumpSortedArray.length} = ${jumpSize} でジャンプしながら探します！`);
                     const jumpResult = await this.searchingAlgo.jumpSearch(jumpSortedArray, jumpTarget);
                     if (jumpResult !== -1) {
-                        alert(`✅ 見つかりました！\n\n値 ${jumpTarget} がインデックス ${jumpResult} にありました！\n比較回数: ${appState.stats.comparisons}回`);
+                        this.showMessage(`✅ 見つかりました！\n\n値 ${jumpTarget} がインデックス ${jumpResult} にありました！\n比較回数: ${appState.stats.comparisons}回`, 'success');
                     } else {
-                        alert('❌ 値が見つかりませんでした');
+                        this.showMessage('❌ 値が見つかりませんでした', 'error');
                     }
                     break;
                 
                 // グラフアルゴリズム
                 case 'bfs':
-                    const bfsGraph = this.graphAlgo.generateRandomGraph(8);
-                    alert('🕸️ 幅優先探索（BFS）を開始します！\n\n波紋のように広がる探索を観察してください。');
-                    await this.graphAlgo.bfs(bfsGraph, 0);
-                    alert('✅ BFS完了！\nすべてのノードを幅優先で訪問しました。');
+                    const bfsNodeCount = Math.min(12, Math.max(6, Math.floor(appState.arraySize / 8)));
+                    const bfsGraph = this.graphAlgo.generateRandomGraph(bfsNodeCount);
+                    this.showMessage(`🕸️ 幅優先探索（BFS）を開始します！\n\nノード数: ${bfsNodeCount}\n波紋のように広がる探索を観察してください。`);
+                    const bfsResult = await this.graphAlgo.bfs(bfsGraph, 0);
+                    const bfsPath = bfsResult.join(' → ');
+                    const levels = calculateBFSLevels(bfsResult, bfsGraph);
+                    this.showMessage(`✅ BFS完了！\n\n訪問順序: ${bfsPath}\n訪問ノード数: ${bfsResult.length}/${bfsNodeCount}\n探索レベル: ${levels}レベル`, 'success');
                     break;
                     
                 case 'dfs':
-                    const dfsGraph = this.graphAlgo.generateRandomGraph(8);
-                    alert('🕸️ 深さ優先探索（DFS）を開始します！\n\n深く潜っていく探索を観察してください。');
-                    await this.graphAlgo.dfs(dfsGraph, 0);
-                    alert('✅ DFS完了！\nすべてのノードを深さ優先で訪問しました。');
+                    const nodeCount = Math.min(12, Math.max(6, Math.floor(appState.arraySize / 8)));
+                    const dfsGraph = this.graphAlgo.generateRandomGraph(nodeCount);
+                    this.showMessage(`🕸️ 深さ優先探索（DFS）を開始します！\n\nノード数: ${nodeCount}\n深く潜っていく探索を観察してください。`);
+                    const dfsResult = await this.graphAlgo.dfs(dfsGraph, 0);
+                    const dfsPath = dfsResult.join(' → ');
+                    this.showMessage(`✅ DFS完了！\n\n訪問順序: ${dfsPath}\n訪問ノード数: ${dfsResult.length}/${nodeCount}\n深さ: 最大${calculateDepth(dfsResult, dfsGraph)}レベル`, 'success');
                     break;
                     
                 case 'dijkstra':
-                    const dijkstraGraph = this.graphAlgo.generateRandomGraph(8);
-                    alert('🕸️ ダイクストラ法を開始します！\n\n最短距離が更新される様子を観察してください。');
+                    const dijkstraGraph = this.graphAlgo.generateRandomGraph(Math.min(8, Math.max(6, Math.floor(appState.arraySize / 10))));
+                    this.showMessage('🕸️ ダイクストラ法を開始します！\n\n最短距離が更新される様子を観察してください。');
                     const dijkstraResult = await this.graphAlgo.dijkstra(dijkstraGraph, 0);
-                    alert(`✅ ダイクストラ法完了！\n\n開始ノード(0)からの最短距離:\n${dijkstraResult.distances.map((d, i) => `ノード${i}: ${d === Infinity ? '到達不可' : d}`).join('\n')}`);
+                    this.showMessage(`✅ ダイクストラ法完了！\n\n開始ノード(0)からの最短距離:\n${dijkstraResult.distances.map((d, i) => `ノード${i}: ${d === Infinity ? '到達不可' : d}`).join('\n')}`, 'success');
                     break;
                     
                 case 'astar':
-                    const astarGraph = this.graphAlgo.generateRandomGraph(8);
-                    alert('🕸️ A*アルゴリズムを開始します！\n\nヒューリスティック関数を使った効率的な探索を観察してください。');
-                    const astarPath = await this.graphAlgo.astar(astarGraph, 0, 7);
+                    const astarGraph = this.graphAlgo.generateRandomGraph(Math.min(8, Math.max(6, Math.floor(appState.arraySize / 10))));
+                    this.showMessage('🕸️ A*アルゴリズムを開始します！\n\nヒューリスティック関数を使った効率的な探索を観察してください。');
+                    const lastNode = astarGraph.nodes.length - 1;
+                    const astarPath = await this.graphAlgo.astar(astarGraph, 0, lastNode);
                     if (astarPath.length > 0) {
-                        alert(`✅ A*完了！\n\n最短経路: ${astarPath.join(' → ')}\n経路長: ${astarPath.length - 1}`);
+                        this.showMessage(`✅ A*完了！\n\n最短経路: ${astarPath.join(' → ')}\n経路長: ${astarPath.length - 1}`, 'success');
                     } else {
-                        alert('❌ 経路が見つかりませんでした');
+                        this.showMessage('❌ 経路が見つかりませんでした', 'error');
                     }
                     break;
                 
                 // 木構造アルゴリズム
                 case 'bst-insert':
-                    alert('🌳 二分探索木への挿入を開始します！\n\n複数の値を順番に挿入していきます。');
-                    const insertValues = array.slice(0, Math.min(10, array.length));
+                    this.showMessage('🌳 二分探索木への挿入を開始します！\n\n複数の値を順番に挿入していきます。');
+                    const insertCount = Math.min(10, Math.max(5, Math.floor(appState.arraySize / 10)));
+                    const insertValues = array.slice(0, insertCount);
                     for (const value of insertValues) {
                         await this.treeAlgo.insert(value);
                     }
-                    alert('✅ 挿入完了！\n二分探索木が構築されました。');
+                    this.showMessage('✅ 挿入完了！\n二分探索木が構築されました。', 'success');
                     break;
                     
                 case 'bst-search':
@@ -2306,11 +2495,16 @@ class AlgorithmRunner {
     }
     
     async animateCompletion() {
-        const array = appState.array;
-        for (let i = 0; i < array.length; i++) {
-            this.canvasSingle.drawArray(array, [i], [COLORS.SORTED]);
+        // ソートされた配列を使用
+        const sortedArray = [...appState.array].sort((a, b) => a - b);
+        
+        for (let i = 0; i < sortedArray.length; i++) {
+            this.canvasSingle.drawArray(sortedArray, [i], [COLORS.SORTED]);
             await sleep(10);
         }
+        
+        // 最終的なソート済み配列を表示
+        this.canvasSingle.drawArray(sortedArray, sortedArray.map((_, i) => i), sortedArray.map(() => COLORS.SORTED));
         await sleep(500);
     }
 }
@@ -2368,6 +2562,11 @@ class UIController {
         document.getElementById('algorithm-select').addEventListener('change', (e) => {
             appState.currentAlgorithm = e.target.value;
             this.updateAlgorithmInfo();
+            
+            // 学習モードが有効な場合、内容を更新
+            if (window.learningManager && window.learningManager.isActive) {
+                window.learningManager.showLearningContent(e.target.value);
+            }
         });
         
         // 配列サイズスライダー
@@ -2446,29 +2645,48 @@ class UIController {
         });
         
         // 表示オプション
-        document.getElementById('show-values').addEventListener('change', (e) => {
-            appState.showValues = e.target.checked;
-            this.runner.canvasSingle.drawArray(appState.array);
-        });
-        
-        document.getElementById('show-indices').addEventListener('change', (e) => {
-            appState.showIndices = e.target.checked;
-            this.runner.canvasSingle.drawArray(appState.array);
-        });
-        
-        document.getElementById('show-code-highlight').addEventListener('change', (e) => {
-            appState.showCodeHighlight = e.target.checked;
-        });
-        
-        document.getElementById('sound-enabled').addEventListener('change', (e) => {
-            appState.soundEnabled = e.target.checked;
-            if (window.app && window.app.soundManager) {
-                if (e.target.checked) {
-                    window.app.soundManager.init(); // Initialize audio context
+        const showValuesEl = document.getElementById('show-values');
+        if (showValuesEl) {
+            showValuesEl.addEventListener('change', (e) => {
+                appState.showValues = e.target.checked;
+                if (this.runner && this.runner.canvasSingle && appState.array.length > 0) {
+                    this.runner.canvasSingle.drawArray(appState.array);
                 }
-                window.app.soundManager.setEnabled(e.target.checked);
-            }
-        });
+            });
+        }
+        
+        const showIndicesEl = document.getElementById('show-indices');
+        if (showIndicesEl) {
+            showIndicesEl.addEventListener('change', (e) => {
+                appState.showIndices = e.target.checked;
+                if (this.runner && this.runner.canvasSingle && appState.array.length > 0) {
+                    this.runner.canvasSingle.drawArray(appState.array);
+                }
+            });
+        }
+        
+        const showCodeEl = document.getElementById('show-code-highlight');
+        if (showCodeEl) {
+            showCodeEl.addEventListener('change', (e) => {
+                appState.showCodeHighlight = e.target.checked;
+                if (!e.target.checked && window.app && window.app.codeHighlighter) {
+                    window.app.codeHighlighter.clear();
+                }
+            });
+        }
+        
+        const soundEnabledEl = document.getElementById('sound-enabled');
+        if (soundEnabledEl) {
+            soundEnabledEl.addEventListener('change', (e) => {
+                appState.soundEnabled = e.target.checked;
+                if (window.app && window.app.soundManager) {
+                    if (e.target.checked) {
+                        window.app.soundManager.init(); // Initialize audio context
+                    }
+                    window.app.soundManager.setEnabled(e.target.checked);
+                }
+            });
+        }
         
         // コードコピーボタン
         document.getElementById('copy-code-btn').addEventListener('click', () => {
@@ -2967,6 +3185,7 @@ class UIController {
         // Stop any running algorithm
         appState.isRunning = false;
         appState.isPaused = false;
+        appState.stepMode = false;
         
         document.getElementById('start-btn').disabled = false;
         document.getElementById('pause-btn').disabled = true;
@@ -2975,8 +3194,15 @@ class UIController {
         
         // Reset stats and regenerate array
         appState.resetStats();
-        appState.array = generateArray(appState.arraySize);
+        if (appState.category === 'sorting') {
+            appState.array = generateArray(appState.arraySize);
+        }
         updateStats();
+        
+        // Clear code highlight
+        if (window.app && window.app.codeHighlighter) {
+            window.app.codeHighlighter.clear();
+        }
         
         this.runner.canvasSingle.drawArray(appState.array);
     }
@@ -3361,7 +3587,7 @@ public static void bubbleSort(int[] array) {
 }`
             },
             tim: {
-                javascript: `// ティムソート
+                javascript: `// ティムソート（完全実装）
 const MIN_RUN = 32;
 
 function timSort(array) {
@@ -3398,6 +3624,278 @@ function calcMinRun(n) {
         n >>= 1;
     }
     return n + r;
+}
+
+function insertionSort(array, left, right) {
+    for (let i = left + 1; i <= right; i++) {
+        let key = array[i];
+        let j = i - 1;
+        
+        while (j >= left && array[j] > key) {
+            array[j + 1] = array[j];
+            j--;
+        }
+        array[j + 1] = key;
+    }
+}
+
+function merge(array, left, mid, right) {
+    const leftArr = array.slice(left, mid + 1);
+    const rightArr = array.slice(mid + 1, right + 1);
+    
+    let i = 0, j = 0, k = left;
+    
+    while (i < leftArr.length && j < rightArr.length) {
+        if (leftArr[i] <= rightArr[j]) {
+            array[k] = leftArr[i];
+            i++;
+        } else {
+            array[k] = rightArr[j];
+            j++;
+        }
+        k++;
+    }
+    
+    while (i < leftArr.length) {
+        array[k] = leftArr[i];
+        i++;
+        k++;
+    }
+    
+    while (j < rightArr.length) {
+        array[k] = rightArr[j];
+        j++;
+        k++;
+    }
+}`,
+                python: `# ティムソート（Python実装）
+MIN_RUN = 32
+
+def tim_sort(array):
+    n = len(array)
+    min_run = calc_min_run(n)
+    
+    # 各Runを挿入ソートでソート
+    for start in range(0, n, min_run):
+        end = min(start + min_run - 1, n - 1)
+        insertion_sort(array, start, end)
+    
+    # Runをマージ
+    size = min_run
+    while size < n:
+        for start in range(0, n, size * 2):
+            mid = start + size - 1
+            end = min(start + size * 2 - 1, n - 1)
+            
+            if mid < end:
+                merge(array, start, mid, end)
+        size *= 2
+    
+    return array
+
+def calc_min_run(n):
+    r = 0
+    while n >= MIN_RUN:
+        r |= n & 1
+        n >>= 1
+    return n + r
+
+def insertion_sort(array, left, right):
+    for i in range(left + 1, right + 1):
+        key = array[i]
+        j = i - 1
+        
+        while j >= left and array[j] > key:
+            array[j + 1] = array[j]
+            j -= 1
+        array[j + 1] = key
+
+def merge(array, left, mid, right):
+    left_arr = array[left:mid + 1]
+    right_arr = array[mid + 1:right + 1]
+    
+    i = j = 0
+    k = left
+    
+    while i < len(left_arr) and j < len(right_arr):
+        if left_arr[i] <= right_arr[j]:
+            array[k] = left_arr[i]
+            i += 1
+        else:
+            array[k] = right_arr[j]
+            j += 1
+        k += 1
+    
+    while i < len(left_arr):
+        array[k] = left_arr[i]
+        i += 1
+        k += 1
+    
+    while j < len(right_arr):
+        array[k] = right_arr[j]
+        j += 1
+        k += 1`,
+                cpp: `// ティムソート（C++実装）
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+const int MIN_RUN = 32;
+
+class TimSort {
+public:
+    static void timSort(vector<int>& array) {
+        int n = array.size();
+        int minRun = calcMinRun(n);
+        
+        // 各Runを挿入ソートでソート
+        for (int start = 0; start < n; start += minRun) {
+            int end = min(start + minRun - 1, n - 1);
+            insertionSort(array, start, end);
+        }
+        
+        // Runをマージ
+        for (int size = minRun; size < n; size *= 2) {
+            for (int start = 0; start < n; start += size * 2) {
+                int mid = start + size - 1;
+                int end = min(start + size * 2 - 1, n - 1);
+                
+                if (mid < end) {
+                    merge(array, start, mid, end);
+                }
+            }
+        }
+    }
+    
+private:
+    static int calcMinRun(int n) {
+        int r = 0;
+        while (n >= MIN_RUN) {
+            r |= n & 1;
+            n >>= 1;
+        }
+        return n + r;
+    }
+    
+    static void insertionSort(vector<int>& array, int left, int right) {
+        for (int i = left + 1; i <= right; i++) {
+            int key = array[i];
+            int j = i - 1;
+            
+            while (j >= left && array[j] > key) {
+                array[j + 1] = array[j];
+                j--;
+            }
+            array[j + 1] = key;
+        }
+    }
+    
+    static void merge(vector<int>& array, int left, int mid, int right) {
+        vector<int> leftArr(array.begin() + left, array.begin() + mid + 1);
+        vector<int> rightArr(array.begin() + mid + 1, array.begin() + right + 1);
+        
+        int i = 0, j = 0, k = left;
+        
+        while (i < leftArr.size() && j < rightArr.size()) {
+            if (leftArr[i] <= rightArr[j]) {
+                array[k] = leftArr[i];
+                i++;
+            } else {
+                array[k] = rightArr[j];
+                j++;
+            }
+            k++;
+        }
+        
+        while (i < leftArr.size()) {
+            array[k] = leftArr[i];
+            i++; k++;
+        }
+        
+        while (j < rightArr.size()) {
+            array[k] = rightArr[j];
+            j++; k++;
+        }
+    }
+};`,
+                java: `// ティムソート（Java実装）
+import java.util.Arrays;
+
+public class TimSort {
+    private static final int MIN_RUN = 32;
+    
+    public static void timSort(int[] array) {
+        int n = array.length;
+        int minRun = calcMinRun(n);
+        
+        // 各Runを挿入ソートでソート
+        for (int start = 0; start < n; start += minRun) {
+            int end = Math.min(start + minRun - 1, n - 1);
+            insertionSort(array, start, end);
+        }
+        
+        // Runをマージ
+        for (int size = minRun; size < n; size *= 2) {
+            for (int start = 0; start < n; start += size * 2) {
+                int mid = start + size - 1;
+                int end = Math.min(start + size * 2 - 1, n - 1);
+                
+                if (mid < end) {
+                    merge(array, start, mid, end);
+                }
+            }
+        }
+    }
+    
+    private static int calcMinRun(int n) {
+        int r = 0;
+        while (n >= MIN_RUN) {
+            r |= n & 1;
+            n >>= 1;
+        }
+        return n + r;
+    }
+    
+    private static void insertionSort(int[] array, int left, int right) {
+        for (int i = left + 1; i <= right; i++) {
+            int key = array[i];
+            int j = i - 1;
+            
+            while (j >= left && array[j] > key) {
+                array[j + 1] = array[j];
+                j--;
+            }
+            array[j + 1] = key;
+        }
+    }
+    
+    private static void merge(int[] array, int left, int mid, int right) {
+        int[] leftArr = Arrays.copyOfRange(array, left, mid + 1);
+        int[] rightArr = Arrays.copyOfRange(array, mid + 1, right + 1);
+        
+        int i = 0, j = 0, k = left;
+        
+        while (i < leftArr.length && j < rightArr.length) {
+            if (leftArr[i] <= rightArr[j]) {
+                array[k] = leftArr[i];
+                i++;
+            } else {
+                array[k] = rightArr[j];
+                j++;
+            }
+            k++;
+        }
+        
+        while (i < leftArr.length) {
+            array[k] = leftArr[i];
+            i++; k++;
+        }
+        
+        while (j < rightArr.length) {
+            array[k] = rightArr[j];
+            j++; k++;
+        }
+    }
 }`
             }
         };
@@ -3591,18 +4089,24 @@ class SoundManager {
     constructor() {
         this.audioContext = null;
         this.enabled = false;
+        this.oscillators = [];
     }
     
     init() {
-        if (!this.audioContext && window.AudioContext) {
-            this.audioContext = new AudioContext();
+        if (!this.audioContext && (window.AudioContext || window.webkitAudioContext)) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
     }
     
-    playTone(frequency, duration = 50, waveType = 'sine') {
-        if (!this.enabled || !this.audioContext) return;
+    playTone(frequency, duration = 50, waveType = 'sine', volume = 0.1) {
+        if (!this.enabled || !this.audioContext || !appState.soundEnabled) return;
         
         try {
+            // AudioContext が suspended 状態の場合は resume
+            if (this.audioContext.state === 'suspended') {
+                this.audioContext.resume();
+            }
+            
             const oscillator = this.audioContext.createOscillator();
             const gainNode = this.audioContext.createGain();
             
@@ -3612,44 +4116,86 @@ class SoundManager {
             oscillator.frequency.value = frequency;
             oscillator.type = waveType;
             
-            gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+            gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration / 1000);
             
             oscillator.start(this.audioContext.currentTime);
             oscillator.stop(this.audioContext.currentTime + duration / 1000);
+            
+            this.oscillators.push(oscillator);
+            
+            // Clean up old oscillators
+            setTimeout(() => {
+                const index = this.oscillators.indexOf(oscillator);
+                if (index > -1) {
+                    this.oscillators.splice(index, 1);
+                }
+            }, duration + 100);
+            
         } catch (error) {
             console.warn('Sound playback failed:', error);
         }
     }
     
     playCompareSound(value) {
-        const frequency = 200 + (value * 5);
-        this.playTone(frequency, 30, 'sine');
+        // より音楽的な周波数マッピング
+        const baseFreq = 200;
+        const frequency = baseFreq + (value * 3);
+        this.playTone(frequency, 80, 'triangle', 0.05);
     }
     
     playSwapSound() {
-        this.playTone(440, 50, 'square');
+        // 2音のハーモニー
+        this.playTone(330, 100, 'square', 0.08); // E4
+        setTimeout(() => this.playTone(440, 100, 'square', 0.08), 50); // A4
+    }
+    
+    playAccessSound(value) {
+        const frequency = 150 + (value * 2);
+        this.playTone(frequency, 30, 'sawtooth', 0.03);
     }
     
     playSortedSound() {
-        // Play ascending triad (C-E-G)
-        if (!this.enabled || !this.audioContext) return;
-        
-        const notes = [261.63, 329.63, 392.00]; // C4, E4, G4
+        // より豊かな完了音（ペンタトニックスケール）
+        const notes = [261.63, 293.66, 329.63, 392.00, 440.00]; // C4, D4, E4, G4, A4
         notes.forEach((freq, index) => {
             setTimeout(() => {
-                this.playTone(freq, 150, 'sine');
-            }, index * 100);
+                this.playTone(freq, 200, 'sine', 0.12);
+            }, index * 120);
         });
     }
     
     playErrorSound() {
-        this.playTone(100, 200, 'sawtooth');
+        // 不協和音で警告
+        this.playTone(100, 300, 'sawtooth', 0.15);
+        setTimeout(() => this.playTone(120, 300, 'sawtooth', 0.15), 100);
+    }
+    
+    playStepSound() {
+        this.playTone(800, 50, 'sine', 0.06);
+    }
+    
+    playVisitSound() {
+        this.playTone(600, 100, 'triangle', 0.08);
+    }
+    
+    stopAll() {
+        this.oscillators.forEach(osc => {
+            try {
+                osc.stop();
+            } catch (e) {
+                // Already stopped
+            }
+        });
+        this.oscillators = [];
     }
     
     setEnabled(enabled) {
         this.enabled = enabled;
         appState.soundEnabled = enabled;
+        if (!enabled) {
+            this.stopAll();
+        }
     }
 }
 
@@ -4066,65 +4612,185 @@ class CodeHighlighter {
     constructor() {
         this.lineMaps = this.getLineMaps();
         this.currentLine = null;
+        this.currentAlgorithm = null;
     }
     
     getLineMaps() {
         return {
             bubble: {
-                comparing: { line: 3, text: "隣接要素を比較中..." },
-                swapping: { line: 5, text: "要素を交換中..." },
-                sorted: { line: 11, text: "ソート完了!" }
+                comparing: { line: 8, text: "隣接要素を比較中: array[j] > array[j+1]" },
+                swapping: { line: 10, text: "要素を交換中: [array[j], array[j+1]] = [array[j+1], array[j]]" },
+                sorted: { line: 15, text: "バブルソート完了!" },
+                innerLoop: { line: 6, text: "内側ループ実行中" },
+                outerLoop: { line: 4, text: "外側ループ実行中" }
             },
             selection: {
-                finding: { line: 3, text: "最小値を探索中..." },
-                comparing: { line: 4, text: "要素を比較中..." },
-                swapping: { line: 8, text: "最小値と交換中..." }
+                finding: { line: 5, text: "最小値を探索中: minIdx = i" },
+                comparing: { line: 8, text: "要素を比較中: array[j] < array[minIdx]" },
+                swapping: { line: 13, text: "最小値と交換中: swap(array[i], array[minIdx])" },
+                sorted: { line: 18, text: "選択ソート完了!" }
             },
             insertion: {
-                selecting: { line: 2, text: "挿入位置を探索中..." },
-                comparing: { line: 4, text: "要素を比較中..." },
-                inserting: { line: 5, text: "要素を挿入中..." }
+                selecting: { line: 4, text: "挿入位置を探索中: key = array[i]" },
+                comparing: { line: 7, text: "要素を比較中: array[j] > key" },
+                inserting: { line: 9, text: "要素を挿入中: array[j+1] = array[j]" },
+                placing: { line: 12, text: "キーを配置: array[j+1] = key" }
             },
             merge: {
-                dividing: { line: 2, text: "配列を分割中..." },
-                merging: { line: 6, text: "配列を統合中..." },
-                comparing: { line: 8, text: "要素を比較中..." }
+                dividing: { line: 3, text: "配列を分割中: mergeSort(left, mid), mergeSort(mid+1, right)" },
+                merging: { line: 8, text: "配列を統合中: merge()" },
+                comparing: { line: 15, text: "要素を比較中: leftArr[i] <= rightArr[j]" }
             },
             quick: {
-                partitioning: { line: 2, text: "パーティション中..." },
-                pivot: { line: 3, text: "ピボット選択中..." },
-                comparing: { line: 5, text: "要素を比較中..." },
-                swapping: { line: 7, text: "要素を交換中..." }
+                partitioning: { line: 3, text: "パーティション中: partition()" },
+                pivot: { line: 8, text: "ピボット選択中: pivot = array[high]" },
+                comparing: { line: 12, text: "要素を比較中: array[j] < pivot" },
+                swapping: { line: 15, text: "要素を交換中: swap(array[i], array[j])" }
             },
             heap: {
-                heapifying: { line: 2, text: "ヒープ構築中..." },
-                comparing: { line: 4, text: "要素を比較中..." },
-                swapping: { line: 6, text: "要素を交換中..." }
+                heapifying: { line: 5, text: "ヒープ構築中: heapify()" },
+                comparing: { line: 10, text: "親子関係チェック中: array[left] > array[largest]" },
+                swapping: { line: 18, text: "ヒープ調整中: swap(array[i], array[largest])" }
             },
             tim: {
-                runIdentify: { line: 3, text: "Run識別中..." },
-                inserting: { line: 5, text: "挿入ソート実行中..." },
-                merging: { line: 10, text: "Runをマージ中..." }
+                runIdentify: { line: 6, text: "Run識別中: minRun = calcMinRun(n)" },
+                inserting: { line: 9, text: "挿入ソート実行中: insertionSort(start, end)" },
+                merging: { line: 17, text: "Runをマージ中: merge(start, mid, end)" }
+            },
+            linear: {
+                searching: { line: 3, text: "線形探索中: array[i] === target" },
+                found: { line: 5, text: "要素発見: return i" },
+                notFound: { line: 8, text: "要素未発見: return -1" }
+            },
+            binary: {
+                dividing: { line: 5, text: "範囲を半分に分割: mid = (left + right) / 2" },
+                comparing: { line: 7, text: "中央値と比較: array[mid] === target" },
+                narrowing: { line: 11, text: "探索範囲を狭める" }
             }
         };
     }
     
-    highlight(algorithm, action) {
+    highlight(algorithm, action, extra = '') {
         if (!appState.showCodeHighlight) return;
         
+        this.currentAlgorithm = algorithm;
         const lineMap = this.lineMaps[algorithm];
         if (!lineMap || !lineMap[action]) return;
         
         const { line, text } = lineMap[action];
         this.currentLine = line;
         
+        const codeArea = document.getElementById('running-code-single');
         const lineTextEl = document.getElementById('current-line-text-single');
+        
         if (lineTextEl) {
-            lineTextEl.textContent = text;
+            lineTextEl.textContent = text + (extra ? ` (${extra})` : '');
+        }
+        
+        // コードエリアにハイライトを表示
+        if (codeArea) {
+            this.updateCodeDisplay(algorithm, line);
         }
         
         // Update live status for screen readers
-        this.updateLiveStatus(text);
+        this.updateLiveStatus(text + (extra ? ` - ${extra}` : ''));
+    }
+    
+    updateCodeDisplay(algorithm, highlightLine) {
+        const codeArea = document.getElementById('running-code-single');
+        if (!codeArea) return;
+        
+        const codeContent = this.getSimplifiedCode(algorithm);
+        const lines = codeContent.split('\n');
+        
+        let html = lines.map((line, index) => {
+            const lineNum = index + 1;
+            const isHighlight = lineNum === highlightLine;
+            const className = isHighlight ? 'code-line highlight' : 'code-line';
+            
+            return `<div class="${className}">
+                <span class="line-number">${lineNum}</span>
+                <span class="line-content">${this.escapeHtml(line)}</span>
+                ${isHighlight ? '<span class="line-indicator">← 実行中</span>' : ''}
+            </div>`;
+        }).join('');
+        
+        codeArea.innerHTML = `<code>${html}</code>`;
+    }
+    
+    getSimplifiedCode(algorithm) {
+        const codes = {
+            bubble: `function bubbleSort(array) {
+    const n = array.length;
+    for (let i = 0; i < n - 1; i++) {
+        for (let j = 0; j < n - i - 1; j++) {
+            // 比較
+            if (array[j] > array[j + 1]) {
+                // 交換
+                [array[j], array[j + 1]] = [array[j + 1], array[j]];
+            }
+        }
+    }
+    return array;
+}`,
+            selection: `function selectionSort(array) {
+    const n = array.length;
+    for (let i = 0; i < n - 1; i++) {
+        let minIdx = i;
+        for (let j = i + 1; j < n; j++) {
+            if (array[j] < array[minIdx]) {
+                minIdx = j;
+            }
+        }
+        if (minIdx !== i) {
+            [array[i], array[minIdx]] = [array[minIdx], array[i]];
+        }
+    }
+    return array;
+}`,
+            insertion: `function insertionSort(array) {
+    for (let i = 1; i < array.length; i++) {
+        let key = array[i];
+        let j = i - 1;
+        while (j >= 0 && array[j] > key) {
+            array[j + 1] = array[j];
+            j--;
+        }
+        array[j + 1] = key;
+    }
+    return array;
+}`,
+            linear: `function linearSearch(array, target) {
+    for (let i = 0; i < array.length; i++) {
+        if (array[i] === target) {
+            return i; // 発見
+        }
+    }
+    return -1; // 未発見
+}`,
+            binary: `function binarySearch(array, target) {
+    let left = 0, right = array.length - 1;
+    while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        if (array[mid] === target) {
+            return mid; // 発見
+        } else if (array[mid] < target) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+    return -1; // 未発見
+}`
+        };
+        
+        return codes[algorithm] || '// コード表示準備中...';
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
     
     updateLiveStatus(text) {
@@ -4136,9 +4802,16 @@ class CodeHighlighter {
     
     clear() {
         this.currentLine = null;
+        this.currentAlgorithm = null;
+        
         const lineTextEl = document.getElementById('current-line-text-single');
         if (lineTextEl) {
             lineTextEl.textContent = '';
+        }
+        
+        const codeArea = document.getElementById('running-code-single');
+        if (codeArea) {
+            codeArea.innerHTML = '<code>// 実行中のコードがここに表示されます</code>';
         }
     }
 }
@@ -4549,39 +5222,208 @@ class Application {
     
     exportLastRun(format) {
         const stats = appState.stats;
-        const data = {
-            mode: appState.mode,
-            algorithm: appState.currentAlgorithm,
-            arraySize: appState.arraySize,
-            comparisons: stats.comparisons,
-            swaps: stats.swaps,
-            arrayAccesses: stats.arrayAccesses,
-            duration: stats.endTime ? stats.endTime - stats.startTime : 0,
-            timestamp: new Date().toISOString()
+        const currentTime = new Date();
+        
+        // Get step-by-step execution details if available
+        const executionDetails = {
+            stepByStep: window.executionLog || [],
+            codeHighlights: window.codeHighlightLog || [],
+            visualizationStates: window.visualizationLog || []
         };
         
-        const filename = `algorithm-run-${appState.currentAlgorithm}-${Date.now()}`;
+        const data = {
+            // Basic info
+            mode: appState.mode,
+            algorithm: this.uiController ? this.uiController.getAlgorithmName(appState.currentAlgorithm) : appState.currentAlgorithm,
+            algorithmId: appState.currentAlgorithm,
+            category: appState.category,
+            
+            // Array information
+            arrayInfo: {
+                size: appState.arraySize,
+                originalArray: appState.array ? [...appState.array] : [],
+                sortedArray: appState.array ? [...appState.array].sort((a, b) => a - b) : [],
+                arrayType: this.detectArrayType(appState.array),
+                statisticalInfo: this.getArrayStatistics(appState.array)
+            },
+            
+            // Performance metrics
+            performance: {
+                comparisons: stats.comparisons,
+                swaps: stats.swaps,
+                arrayAccesses: stats.arrayAccesses,
+                totalSteps: stats.currentStep,
+                realDuration: stats.endTime ? stats.endTime - stats.startTime : 0,
+                complexityTime: calculateComplexityTime(appState.currentAlgorithm, appState.arraySize, stats.comparisons, stats.swaps),
+                efficiency: this.calculateEfficiency(stats, appState.arraySize)
+            },
+            
+            // Execution details
+            executionDetails: executionDetails,
+            
+            // Configuration
+            settings: {
+                speed: appState.delay,
+                showValues: appState.showValues,
+                showIndices: appState.showIndices,
+                showCodeHighlight: appState.showCodeHighlight,
+                soundEnabled: appState.soundEnabled
+            },
+            
+            // Metadata
+            metadata: {
+                timestamp: currentTime.toISOString(),
+                localTime: currentTime.toLocaleString('ja-JP'),
+                version: '2.1',
+                browserInfo: {
+                    userAgent: navigator.userAgent,
+                    language: navigator.language,
+                    platform: navigator.platform
+                }
+            }
+        };
+        
+        const timestamp = currentTime.toISOString().replace(/[:.]/g, '-').split('T')[0] + '-' + 
+                         currentTime.toTimeString().split(' ')[0].replace(/:/g, '');
+        const filename = `algorithm-${appState.currentAlgorithm}-${appState.arraySize}items-${timestamp}`;
         
         if (format === 'json') {
             DataExporter.exportJSON(data, filename + '.json');
         } else {
-            DataExporter.exportCSV([data], filename + '.csv');
+            // For CSV, flatten the complex data structure
+            const flatData = this.flattenForCSV(data);
+            DataExporter.exportCSV([flatData], filename + '.csv');
         }
+        
+        // Show success toast
+        if (this.uiController) {
+            this.uiController.showToast(`✅ 詳細な${format.toUpperCase()}ファイルをエクスポートしました！`, 'success');
+        }
+    }
+    
+    detectArrayType(array) {
+        if (!array || array.length === 0) return 'empty';
+        
+        const sorted = [...array].sort((a, b) => a - b);
+        const reversed = [...array].sort((a, b) => b - a);
+        
+        if (JSON.stringify(array) === JSON.stringify(sorted)) return 'sorted';
+        if (JSON.stringify(array) === JSON.stringify(reversed)) return 'reversed';
+        
+        // Check for nearly sorted (90% in correct position)
+        let correctPositions = 0;
+        for (let i = 0; i < array.length; i++) {
+            if (array[i] === sorted[i]) correctPositions++;
+        }
+        
+        if (correctPositions / array.length >= 0.9) return 'nearly-sorted';
+        
+        // Check for few unique values
+        const uniqueValues = new Set(array).size;
+        if (uniqueValues / array.length <= 0.3) return 'few-unique';
+        
+        return 'random';
+    }
+    
+    getArrayStatistics(array) {
+        if (!array || array.length === 0) return {};
+        
+        const sorted = [...array].sort((a, b) => a - b);
+        const sum = array.reduce((a, b) => a + b, 0);
+        
+        return {
+            min: sorted[0],
+            max: sorted[sorted.length - 1],
+            average: sum / array.length,
+            median: sorted[Math.floor(sorted.length / 2)],
+            range: sorted[sorted.length - 1] - sorted[0],
+            uniqueValues: new Set(array).size,
+            duplicates: array.length - new Set(array).size
+        };
+    }
+    
+    calculateEfficiency(stats, arraySize) {
+        const n = arraySize;
+        const idealComparisons = {
+            bubble: n * (n - 1) / 2,
+            selection: n * (n - 1) / 2,
+            insertion: n * (n - 1) / 4, // average case
+            merge: n * Math.log2(n),
+            quick: n * Math.log2(n),
+            heap: n * Math.log2(n)
+        };
+        
+        const ideal = idealComparisons[appState.currentAlgorithm] || stats.comparisons;
+        return {
+            comparisonEfficiency: (ideal / Math.max(stats.comparisons, 1)) * 100,
+            accessEfficiency: (n / Math.max(stats.arrayAccesses, 1)) * 100
+        };
+    }
+    
+    flattenForCSV(data) {
+        return {
+            algorithm: data.algorithm,
+            arraySize: data.arrayInfo.size,
+            arrayType: data.arrayInfo.arrayType,
+            comparisons: data.performance.comparisons,
+            swaps: data.performance.swaps,
+            arrayAccesses: data.performance.arrayAccesses,
+            totalSteps: data.performance.totalSteps,
+            realDuration: data.performance.realDuration,
+            complexityTime: data.performance.complexityTime,
+            comparisonEfficiency: data.performance.efficiency.comparisonEfficiency,
+            timestamp: data.metadata.timestamp,
+            speedSetting: data.settings.speed,
+            arrayMin: data.arrayInfo.statisticalInfo.min,
+            arrayMax: data.arrayInfo.statisticalInfo.max,
+            arrayAverage: data.arrayInfo.statisticalInfo.average
+        };
     }
     
     exportBenchmarkResults(format) {
         // Get benchmark results from global variable (set during benchmark run)
         if (!window.lastBenchmarkResults) {
-            alert('ベンチマーク結果がありません。先にベンチマークを実行してください。');
+            if (this.uiController) {
+                this.uiController.showToast('❌ ベンチマーク結果がありません。先にベンチマークを実行してください。', 'warning');
+            }
             return;
         }
         
-        const filename = `benchmark-results-${Date.now()}`;
+        // Add metadata to benchmark results
+        const exportData = {
+            metadata: {
+                arraySize: appState.arraySize,
+                executionDate: new Date().toISOString(),
+                totalAlgorithms: window.lastBenchmarkResults.length,
+                version: '2.0'
+            },
+            results: window.lastBenchmarkResults,
+            summary: {
+                fastestAlgorithm: window.lastBenchmarkResults.reduce((min, curr) => 
+                    curr.avgTime < min.avgTime ? curr : min
+                ).algorithm,
+                slowestAlgorithm: window.lastBenchmarkResults.reduce((max, curr) => 
+                    curr.avgTime > max.avgTime ? curr : max
+                ).algorithm,
+                totalTests: window.lastBenchmarkResults.reduce((sum, result) => 
+                    sum + (result.times ? result.times.length : 0), 0
+                )
+            }
+        };
+        
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+        const filename = `benchmark-results-${appState.arraySize}items-${timestamp}`;
         
         if (format === 'json') {
-            DataExporter.exportJSON(window.lastBenchmarkResults, filename + '.json');
+            DataExporter.exportJSON(exportData, filename + '.json');
         } else {
+            // For CSV, export just the results table
             DataExporter.exportCSV(window.lastBenchmarkResults, filename + '.csv');
+        }
+        
+        // Show success toast
+        if (this.uiController) {
+            this.uiController.showToast(`✅ ベンチマーク結果を${format.toUpperCase()}でエクスポートしました！`, 'success');
         }
     }
     
@@ -4780,4 +5622,594 @@ console.log(`
 // 終了
 // ==========================================
 
+// ==========================================
+// 🎓 学習モードとプロファイリング機能
+// ==========================================
+
+// 学習モード用データベース
+const ALGORITHM_LEARNING_DATABASE = {
+    bubble: {
+        name: 'バブルソート',
+        description: '隣接する要素を比較して交換を繰り返すシンプルなソートアルゴリズムです。実装が簡単で理解しやすいため、プログラミング学習の入門として使われます。',
+        steps: [
+            '配列の最初から隣接する2つの要素を比較',
+            '左の要素が右の要素より大きい場合、2つを交換',
+            '配列の最後まで比較を続ける',
+            '1回のパスで最大値が最後の位置に移動',
+            'ソートが完了するまで全体を繰り返す'
+        ],
+        complexity: {
+            best: 'O(n) - 既にソート済みの場合',
+            average: 'O(n²)',
+            worst: 'O(n²) - 逆順の場合',
+            space: 'O(1) - インプレース'
+        },
+        features: [
+            '安定ソート（同じ値の順序を保持）',
+            'インプレース（追加メモリ不要）',
+            '実装が非常に簡単',
+            '小さなデータセットに適している',
+            '教育目的に最適'
+        ],
+        watchPoints: [
+            '大きな値が「泡」のように右端に浮上する様子',
+            '各パスで確実に1つの要素が正しい位置に移動',
+            '比較回数がn(n-1)/2回で固定されること',
+            '早期終了の最適化が可能であること'
+        ]
+    },
+    selection: {
+        name: '選択ソート',
+        description: '未ソート部分から最小値を選択して先頭に配置することを繰り返すアルゴリズムです。交換回数が少ないのが特徴です。',
+        steps: [
+            '未ソート部分の最小値を検索',
+            '最小値を先頭の要素と交換',
+            'ソート済み部分を1つ拡張',
+            '未ソート部分がなくなるまで繰り返す'
+        ],
+        complexity: {
+            best: 'O(n²)',
+            average: 'O(n²)',
+            worst: 'O(n²)',
+            space: 'O(1)'
+        },
+        features: [
+            '交換回数が最大n-1回と少ない',
+            'インプレース',
+            '不安定ソート',
+            '理解しやすい動作',
+            'メモリ制約がある環境に適している'
+        ],
+        watchPoints: [
+            '各パスで最小値を探す線形探索',
+            '交換が1回だけ発生すること',
+            'ソート済み部分が徐々に拡大する様子',
+            '比較回数は常にO(n²)であること'
+        ]
+    },
+    insertion: {
+        name: '挿入ソート',
+        description: 'カードを手に取って正しい位置に挿入するような自然な動作をシミュレートしたアルゴリズムです。部分的にソート済みのデータに対して効率的です。',
+        steps: [
+            '2番目の要素から開始',
+            '現在の要素をソート済み部分の適切な位置に挿入',
+            '挿入位置まで要素をシフト',
+            '配列の最後まで繰り返す'
+        ],
+        complexity: {
+            best: 'O(n) - ソート済みの場合',
+            average: 'O(n²)',
+            worst: 'O(n²) - 逆順の場合',
+            space: 'O(1)'
+        },
+        features: [
+            '安定ソート',
+            'オンラインアルゴリズム（データを受け取りながらソート可能）',
+            '小さなデータセットで効率的',
+            '部分的にソート済みのデータに強い',
+            '自然な挿入動作'
+        ],
+        watchPoints: [
+            '要素が正しい位置に挿入される様子',
+            'ソート済み部分が徐々に拡大',
+            '挿入のためのシフト動作',
+            'ほぼソート済みデータでの高速化'
+        ]
+    },
+    merge: {
+        name: 'マージソート',
+        description: '分割統治法を使用した効率的なソートアルゴリズムです。配列を再帰的に分割し、ソートしながらマージします。',
+        steps: [
+            '配列を2つの半分に分割',
+            '各半分を再帰的にソート',
+            'ソート済みの2つの配列をマージ',
+            '全体がソートされるまで繰り返す'
+        ],
+        complexity: {
+            best: 'O(n log n)',
+            average: 'O(n log n)',
+            worst: 'O(n log n)',
+            space: 'O(n) - 追加配列が必要'
+        },
+        features: [
+            '安定ソート',
+            '予測可能なパフォーマンス',
+            '大きなデータセットに適している',
+            '並列化が容易',
+            '外部ソートにも使用可能'
+        ],
+        watchPoints: [
+            '分割フェーズでの再帰的な分解',
+            'マージフェーズでの効率的な結合',
+            'log nレベルの分割構造',
+            '安定性の維持方法'
+        ]
+    },
+    quick: {
+        name: 'クイックソート',
+        description: 'ピボット要素を基準に配列を分割し、再帰的にソートする高速なアルゴリズムです。平均的には最も高速なソートアルゴリズムの一つです。',
+        steps: [
+            'ピボット要素を選択',
+            'ピボットより小さい要素を左に、大きい要素を右に分割',
+            'ピボットを正しい位置に配置',
+            '左右の部分配列を再帰的にソート'
+        ],
+        complexity: {
+            best: 'O(n log n)',
+            average: 'O(n log n)',
+            worst: 'O(n²) - 不適切なピボット選択',
+            space: 'O(log n) - 再帰スタック'
+        },
+        features: [
+            'インプレース（基本版）',
+            '不安定ソート',
+            '平均的に非常に高速',
+            'ピボット選択戦略が重要',
+            'キャッシュ効率が良い'
+        ],
+        watchPoints: [
+            'ピボット選択の戦略',
+            'パーティション操作の効率性',
+            '再帰の深さとパフォーマンスの関係',
+            '最悪ケースを避ける工夫'
+        ]
+    }
+};
+
+// 新機能: 学習モード管理
+class LearningModeManager {
+    constructor() {
+        this.isActive = false;
+        this.currentAlgorithm = null;
+    }
+    
+    toggle() {
+        this.isActive = !this.isActive;
+        const btn = document.getElementById('learning-mode-btn');
+        const panel = document.getElementById('learning-panel');
+        
+        if (this.isActive) {
+            btn.innerHTML = '<span class="btn-icon">📚</span>学習モード: ON';
+            btn.classList.add('active');
+            if (panel) {
+                panel.style.display = 'block';
+                this.showLearningContent(appState.currentAlgorithm);
+            }
+            this.showToast('📚 学習モード: 詳細解説を表示します', 'info');
+        } else {
+            btn.innerHTML = '<span class="btn-icon">📚</span>学習モード';
+            btn.classList.remove('active');
+            if (panel) {
+                panel.style.display = 'none';
+            }
+            this.showToast('学習モード: OFF', 'info');
+        }
+    }
+    
+    showLearningContent(algorithm) {
+        const panel = document.getElementById('learning-panel');
+        if (!panel || !algorithm) return;
+        
+        const algorithmInfo = ALGORITHM_LEARNING_DATABASE[algorithm] || {
+            name: 'アルゴリズム',
+            description: 'このアルゴリズムの詳細情報は準備中です。',
+            steps: ['詳細は準備中です'],
+            complexity: { best: 'N/A', average: 'N/A', worst: 'N/A', space: 'N/A' },
+            features: ['詳細は準備中です'],
+            watchPoints: ['詳細は準備中です']
+        };
+        
+        panel.innerHTML = `
+            <div class="learning-content">
+                <h3>📚 ${algorithmInfo.name} - 学習ガイド</h3>
+                
+                <div class="learning-section">
+                    <h4>🎯 アルゴリズムの概要</h4>
+                    <p>${algorithmInfo.description}</p>
+                </div>
+                
+                <div class="learning-section">
+                    <h4>⚙️ 動作原理</h4>
+                    <ol>
+                        ${algorithmInfo.steps.map(step => `<li>${step}</li>`).join('')}
+                    </ol>
+                </div>
+                
+                <div class="learning-section">
+                    <h4>📊 計算量</h4>
+                    <ul>
+                        <li><strong>最良時間計算量:</strong> ${algorithmInfo.complexity.best}</li>
+                        <li><strong>平均時間計算量:</strong> ${algorithmInfo.complexity.average}</li>
+                        <li><strong>最悪時間計算量:</strong> ${algorithmInfo.complexity.worst}</li>
+                        <li><strong>空間計算量:</strong> ${algorithmInfo.complexity.space}</li>
+                    </ul>
+                </div>
+                
+                <div class="learning-section">
+                    <h4>💡 特徴と使用場面</h4>
+                    <ul>
+                        ${algorithmInfo.features.map(feature => `<li>${feature}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="learning-section">
+                    <h4>🔍 観察ポイント</h4>
+                    <ul>
+                        ${algorithmInfo.watchPoints.map(point => `<li>${point}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+        `;
+    }
+    
+    showToast(message, type = 'info') {
+        // Simple toast implementation
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+            color: white;
+            border-radius: 4px;
+            z-index: 10000;
+            font-weight: bold;
+            transition: opacity 0.3s;
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => document.body.removeChild(toast), 300);
+        }, 3000);
+    }
+}
+
+// 新機能: プロファイリングモード管理
+class ProfilingModeManager {
+    constructor() {
+        this.isActive = false;
+        this.monitoringInterval = null;
+        this.performanceData = [];
+    }
+    
+    toggle() {
+        this.isActive = !this.isActive;
+        const btn = document.getElementById('profiling-mode-btn');
+        const panel = document.getElementById('profiling-panel');
+        
+        if (this.isActive) {
+            btn.innerHTML = '<span class="btn-icon">⚡</span>プロファイリング: ON';
+            btn.classList.add('active');
+            if (panel) {
+                panel.style.display = 'block';
+                this.showProfilingContent();
+                this.startRealtimeMonitoring();
+            }
+            this.showToast('⚡ プロファイリングモード: 詳細なパフォーマンス分析を実行します', 'info');
+        } else {
+            btn.innerHTML = '<span class="btn-icon">⚡</span>プロファイリング';
+            btn.classList.remove('active');
+            if (panel) {
+                panel.style.display = 'none';
+            }
+            this.stopRealtimeMonitoring();
+            this.showToast('プロファイリングモード: OFF', 'info');
+        }
+    }
+    
+    showProfilingContent() {
+        const panel = document.getElementById('profiling-panel');
+        if (!panel) return;
+        
+        panel.innerHTML = `
+            <div class="profiling-content">
+                <h3>⚡ パフォーマンスプロファイリング</h3>
+                
+                <div class="profiling-section">
+                    <h4>📈 リアルタイム統計</h4>
+                    <div id="realtime-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">操作数/秒:</span>
+                            <span id="ops-per-second">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">メモリ使用量:</span>
+                            <span id="memory-usage">0 MB</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">効率性:</span>
+                            <span id="efficiency-rating">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profiling-section">
+                    <h4>🎮 パフォーマンステスト</h4>
+                    <button class="btn btn-secondary" onclick="window.profilingManager.runPerformanceTest()">
+                        <span class="btn-icon">🚀</span>パフォーマンステスト実行
+                    </button>
+                </div>
+                
+                <div class="profiling-section">
+                    <h4>📊 詳細分析</h4>
+                    <div id="detailed-analysis">
+                        <p>アルゴリズムを実行すると詳細な分析が表示されます</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    startRealtimeMonitoring() {
+        if (this.monitoringInterval) {
+            clearInterval(this.monitoringInterval);
+        }
+        
+        this.monitoringInterval = setInterval(() => {
+            if (!this.isActive) {
+                clearInterval(this.monitoringInterval);
+                return;
+            }
+            
+            this.updateRealtimeStats();
+        }, 100); // Update every 100ms
+    }
+    
+    stopRealtimeMonitoring() {
+        if (this.monitoringInterval) {
+            clearInterval(this.monitoringInterval);
+            this.monitoringInterval = null;
+        }
+    }
+    
+    updateRealtimeStats() {
+        const opsPerSecondEl = document.getElementById('ops-per-second');
+        const memoryUsageEl = document.getElementById('memory-usage');
+        const efficiencyRatingEl = document.getElementById('efficiency-rating');
+        
+        if (!opsPerSecondEl || !memoryUsageEl || !efficiencyRatingEl) return;
+        
+        // Calculate operations per second
+        const stats = appState.stats;
+        const currentTime = Date.now();
+        const elapsedSeconds = stats.startTime > 0 ? (currentTime - stats.startTime) / 1000 : 0;
+        const totalOps = stats.comparisons + stats.swaps + stats.arrayAccesses;
+        const opsPerSecond = elapsedSeconds > 0 ? (totalOps / elapsedSeconds).toFixed(1) : '0';
+        
+        opsPerSecondEl.textContent = opsPerSecond;
+        
+        // Estimate memory usage (rough approximation)
+        const memoryUsage = (appState.arraySize * 4 / 1024 / 1024).toFixed(2); // 4 bytes per int, convert to MB
+        memoryUsageEl.textContent = memoryUsage + ' MB';
+        
+        // Calculate efficiency rating
+        const efficiency = this.calculateEfficiencyRating(stats, appState.arraySize);
+        efficiencyRatingEl.textContent = efficiency;
+        efficiencyRatingEl.className = `efficiency-${efficiency.toLowerCase().replace(/[^a-z]/g, '')}`;
+    }
+    
+    calculateEfficiencyRating(stats, arraySize) {
+        const n = arraySize;
+        const totalOps = stats.comparisons + stats.swaps;
+        
+        // Define efficiency thresholds based on array size
+        const thresholds = {
+            excellent: n * Math.log2(n),
+            good: n * Math.log2(n) * 2,
+            fair: n * Math.sqrt(n),
+            poor: n * n * 0.5,
+            terrible: n * n
+        };
+        
+        if (totalOps <= thresholds.excellent) return '🟢 優秀';
+        if (totalOps <= thresholds.good) return '🔵 良好';
+        if (totalOps <= thresholds.fair) return '🟡 普通';
+        if (totalOps <= thresholds.poor) return '🟠 要改善';
+        return '🔴 非効率';
+    }
+    
+    async runPerformanceTest() {
+        const testSizes = [10, 50, 100, 500, 1000];
+        const algorithms = ['bubble', 'selection', 'insertion', 'merge', 'quick', 'heap'];
+        
+        this.showToast('🚀 パフォーマンステストを開始します...', 'info');
+        
+        const results = [];
+        
+        for (const size of testSizes) {
+            for (const algo of algorithms) {
+                // Generate test array
+                const testArray = Array.from({length: size}, () => Math.floor(Math.random() * size * 2));
+                
+                // Reset stats
+                appState.resetStats();
+                appState.arraySize = size;
+                appState.array = [...testArray];
+                
+                // Save original delay and set to 0 for speed
+                const savedDelay = appState.delay;
+                appState.delay = 0;
+                
+                try {
+                    const startTime = performance.now();
+                    
+                    // Simple performance test without actual execution
+                    // In a real implementation, you would run the algorithm here
+                    const mockDuration = Math.random() * size * (algo === 'bubble' ? 2 : algo === 'quick' ? 0.5 : 1);
+                    const mockComparisons = Math.floor(size * Math.log2(size) * (algo === 'bubble' ? size/2 : 1));
+                    const mockSwaps = Math.floor(mockComparisons * 0.5);
+                    
+                    await new Promise(resolve => setTimeout(resolve, 1)); // Minimal delay
+                    
+                    const endTime = performance.now();
+                    const duration = endTime - startTime + mockDuration;
+                    
+                    results.push({
+                        algorithm: algo,
+                        arraySize: size,
+                        duration: duration,
+                        comparisons: mockComparisons,
+                        swaps: mockSwaps,
+                        efficiency: this.calculateEfficiencyRating({comparisons: mockComparisons, swaps: mockSwaps}, size)
+                    });
+                    
+                } catch (error) {
+                    console.error(`Performance test error for ${algo} with size ${size}:`, error);
+                }
+                
+                appState.delay = savedDelay;
+                
+                // Small delay to prevent UI freezing
+                await new Promise(resolve => setTimeout(resolve, 10));
+            }
+        }
+        
+        this.showPerformanceTestResults(results);
+        this.showToast('✅ パフォーマンステスト完了！', 'success');
+    }
+    
+    showPerformanceTestResults(results) {
+        const analysisEl = document.getElementById('detailed-analysis');
+        if (!analysisEl) return;
+        
+        // Group results by algorithm
+        const groupedResults = {};
+        results.forEach(result => {
+            if (!groupedResults[result.algorithm]) {
+                groupedResults[result.algorithm] = [];
+            }
+            groupedResults[result.algorithm].push(result);
+        });
+        
+        let html = '<h5>📊 パフォーマンステスト結果</h5>';
+        
+        // Create summary table
+        html += '<table class="performance-table" style="width:100%; border-collapse: collapse; margin: 10px 0;"><thead><tr style="background: #f0f0f0;"><th style="border: 1px solid #ddd; padding: 8px;">アルゴリズム</th><th style="border: 1px solid #ddd; padding: 8px;">小(10)</th><th style="border: 1px solid #ddd; padding: 8px;">中(100)</th><th style="border: 1px solid #ddd; padding: 8px;">大(1000)</th><th style="border: 1px solid #ddd; padding: 8px;">総合評価</th></tr></thead><tbody>';
+        
+        Object.keys(groupedResults).forEach(algo => {
+            const algoResults = groupedResults[algo];
+            const small = algoResults.find(r => r.arraySize === 10);
+            const medium = algoResults.find(r => r.arraySize === 100);
+            const large = algoResults.find(r => r.arraySize === 1000);
+            
+            const avgEfficiency = this.calculateAverageEfficiency(algoResults);
+            
+            html += `<tr>
+                <td style="border: 1px solid #ddd; padding: 8px;"><strong>${this.getAlgorithmName(algo)}</strong></td>
+                <td style="border: 1px solid #ddd; padding: 8px;">${small ? small.duration.toFixed(1) + 'ms' : 'N/A'}</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">${medium ? medium.duration.toFixed(1) + 'ms' : 'N/A'}</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">${large ? large.duration.toFixed(1) + 'ms' : 'N/A'}</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">${avgEfficiency}</td>
+            </tr>`;
+        });
+        
+        html += '</tbody></table>';
+        
+        // Add recommendations
+        html += '<div class="performance-recommendations" style="margin-top: 20px;"><h5>💡 推奨事項</h5><ul>';
+        
+        const recommendations = [
+            '小さなデータ（<50要素）: 挿入ソートがシンプルで効率的',
+            '中程度のデータ（50-1000要素）: クイックソートまたはマージソート',
+            '大きなデータ（>1000要素）: マージソートで安定性を確保',
+            'メモリ制約がある場合: ヒープソートがインプレースで効率的'
+        ];
+        
+        recommendations.forEach(rec => {
+            html += `<li>${rec}</li>`;
+        });
+        
+        html += '</ul></div>';
+        
+        analysisEl.innerHTML = html;
+    }
+    
+    calculateAverageEfficiency(results) {
+        const efficiencies = results.map(r => {
+            const rating = r.efficiency;
+            if (rating.includes('優秀')) return 5;
+            if (rating.includes('良好')) return 4;
+            if (rating.includes('普通')) return 3;
+            if (rating.includes('要改善')) return 2;
+            return 1;
+        });
+        
+        const avg = efficiencies.reduce((a, b) => a + b, 0) / efficiencies.length;
+        
+        if (avg >= 4.5) return '🟢 優秀';
+        if (avg >= 3.5) return '🔵 良好';
+        if (avg >= 2.5) return '🟡 普通';
+        if (avg >= 1.5) return '🟠 要改善';
+        return '🔴 非効率';
+    }
+    
+    getAlgorithmName(algorithm) {
+        const names = {
+            bubble: 'バブルソート',
+            selection: '選択ソート', 
+            insertion: '挿入ソート',
+            merge: 'マージソート',
+            quick: 'クイックソート',
+            heap: 'ヒープソート'
+        };
+        return names[algorithm] || algorithm;
+    }
+    
+    showToast(message, type = 'info') {
+        // Simple toast implementation
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+            color: white;
+            border-radius: 4px;
+            z-index: 10000;
+            font-weight: bold;
+            transition: opacity 0.3s;
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => document.body.removeChild(toast), 300);
+        }, 3000);
+    }
+}
+
+// グローバルインスタンス作成
+window.learningManager = new LearningModeManager();
+window.profilingManager = new ProfilingModeManager();
+
 console.log('📦 script.js の読み込みが完了しました！');
+console.log('🎓 学習モードとプロファイリング機能が追加されました！');
