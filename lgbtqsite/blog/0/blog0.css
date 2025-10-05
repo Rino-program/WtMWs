@@ -1,0 +1,48 @@
+/* blog0.css — LGBTQ+ 解説用スタイル */
+:root{
+  --bg: #ffffff;
+  --fg: #111827;
+  --accent: #7c3aed;
+  --muted: #6b7280;
+  --card: #f8fafc;
+}
+[data-theme='dark']{
+  --bg: #0b1220;
+  --fg: #e6eef8;
+  --accent: #a78bfa;
+  --muted: #9aa4b2;
+  --card: #071029;
+}
+*{box-sizing:border-box}
+body{
+  font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  background:var(--bg);
+  color:var(--fg);
+  line-height:1.7;
+  padding:20px;
+}
+.site-header{
+  max-width:900px;
+  margin:0 auto 20px;
+}
+.site-header h1{font-size:1.6rem;margin:6px 0}
+.meta{color:var(--muted);font-size:0.9rem}
+.controls{display:flex;gap:8px;margin-top:8px}
+.controls button{background:var(--card);border:1px solid rgba(0,0,0,0.06);padding:6px 10px;border-radius:6px;cursor:pointer}
+.toc{position:fixed;right:20px;top:100px;background:var(--card);padding:12px;border-radius:8px;max-width:220px;box-shadow:0 6px 18px rgba(2,6,23,0.08)}
+.toc ul{padding-left:12px;margin:6px 0}
+main{max-width:680px;margin:0 auto;padding-bottom:40px}
+section{background:linear-gradient(180deg, transparent, rgba(0,0,0,0.02));padding:14px 16px;border-radius:8px;margin-bottom:14px}
+h2{font-size:1.1rem;margin-bottom:6px}
+ul,ol{margin-left:1.1rem}
+.faq{margin-top:8px;border-top:1px dashed rgba(0,0,0,0.06);padding-top:8px}
+.faq-toggle{width:100%;text-align:left;background:transparent;border:0;padding:8px 0;font-weight:600;cursor:pointer}
+.faq-body{display:none;padding:6px 0;color:var(--muted)}
+.site-footer{max-width:900px;margin:18px auto;color:var(--muted);font-size:0.9rem}
+@media(max-width:900px){
+  .toc{position:static;margin:12px 0}
+  .site-header,main{padding:0 10px}
+}
+/* small utilities */
+a{color:var(--accent)}
+button{font-family:inherit}
