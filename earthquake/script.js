@@ -83,14 +83,15 @@ async function loadEarthquakeData(retryCount = 0) {
         updateConnectionStatus('loading');
         console.log('🔄 地震データを取得中...');
         
-        const cachedData = getCachedData();
-        if (cachedData) {
-            console.log('📦 キャッシュからデータを読み込みました');
-            earthquakeData = cachedData;
-            processEarthquakeData();
-            updateConnectionStatus('connected');
-            return;
-        }
+        // 開発用：キャッシュを一時的にスキップしてデバッグ
+        // const cachedData = getCachedData();
+        // if (cachedData) {
+        //     console.log('📦 キャッシュからデータを読み込みました');
+        //     earthquakeData = cachedData;
+        //     processEarthquakeData();
+        //     updateConnectionStatus('connected');
+        //     return;
+        // }
         
         const response = await fetchWithTimeout(CONFIG.API_ENDPOINTS.JMA, 10000);
         
@@ -99,13 +100,31 @@ async function loadEarthquakeData(retryCount = 0) {
         }
         
         const data = await response.json();
+        console.log('📥 取得したデータ:', data);
         
         if (!Array.isArray(data) || data.length === 0) {
             throw new Error('データが空または不正です');
         }
         
-        earthquakeData = data;
-        cacheData(data);
+        // 各地震の詳細データを取得
+        const detailedData = await Promise.all(
+            data.slice(0, 20).map(async (item) => {
+                try {
+                    const detailUrl = `${CONFIG.API_ENDPOINTS.JMA}${item.json || ''}`;
+                    const detailResponse = await fetch(detailUrl);
+                    if (detailResponse.ok) {
+                        const detail = await detailResponse.json();
+                        return { ...item, detail };
+                    }
+                } catch (e) {
+                    console.warn('詳細データの取得に失敗:', e);
+                }
+                return item;
+            })
+        );
+        
+        earthquakeData = detailedData;
+        cacheData(detailedData);
         processEarthquakeData();
         updateLastUpdateTime();
         updateConnectionStatus('connected');
@@ -145,6 +164,10 @@ function processEarthquakeData() {
     updateStatistics();
     checkEEW();
     renderShindoChart();
+    renderLocationRanking();
+    renderDepthDistribution();
+    renderMonthlyChart();
+    renderHourlyChart();
 }
 
 // フィルタ適用
@@ -158,21 +181,39 @@ function applyFilters() {
     const periodMs = getPeriodMs(periodFilter);
     
     filteredData = earthquakeData.filter(quake => {
-        const quakeTime = new Date(quake.at || quake.time);
+        // 時刻の取得（複数のフィールドに対応）
+        const timeStr = quake.at || quake.time || (quake.detail?.earthquake?.time);
+        if (!timeStr) return false;
+        
+        const quakeTime = new Date(timeStr);
         const timeDiff = now - quakeTime;
         
         if (timeDiff > periodMs) return false;
         
-        const shindo = parseShindo(quake.maxInt || quake.shindo);
-        if (shindoFilter !== 'all' && shindo < parseInt(shindoFilter) * 10) return false;
+        // 震度の取得（複数のフィールドに対応）
+        const maxInt = quake.maxInt || quake.shindo || 
+                      (quake.detail?.earthquake?.maxInt) ||
+                      (quake.detail?.maxInt);
+        const shindo = parseShindo(maxInt);
+        
+        if (shindoFilter !== 'all') {
+            const filterValue = parseInt(shindoFilter);
+            if (filterValue === 1 && shindo < 10) return false;
+            if (filterValue === 3 && shindo < 30) return false;
+            if (filterValue === 4 && shindo < 40) return false;
+            if (filterValue === 5 && shindo < 45) return false;
+        }
         
         if (searchTerm) {
-            const location = (quake.hypocenter?.name || '').toLowerCase();
+            const location = (quake.hypocenter?.name || 
+                            quake.detail?.earthquake?.hypocenter?.name || 
+                            '').toLowerCase();
             if (!location.includes(searchTerm)) return false;
         }
         
         if (settings.filterRegion && settings.region !== 'all') {
-            const location = quake.hypocenter?.name || '';
+            const location = quake.hypocenter?.name || 
+                           quake.detail?.earthquake?.hypocenter?.name || '';
             if (!isInRegion(location, settings.region)) return false;
         }
         
@@ -233,11 +274,32 @@ function isInRegion(location, region) {
 function updateDashboard() {
     if (filteredData.length > 0) {
         const latest = filteredData[0];
+        
+        // 震源地情報を取得（複数のフィールドに対応）
+        const hypocenter = latest.hypocenter?.name || 
+                         latest.detail?.earthquake?.hypocenter?.name || 
+                         '震源地不明';
+        
+        // マグニチュードを取得
+        const mag = latest.mag || 
+                   latest.detail?.earthquake?.hypocenter?.magnitude || 
+                   '?';
+        
+        // 震度を取得
+        const maxInt = latest.maxInt || 
+                      latest.detail?.earthquake?.maxInt || 
+                      latest.shindo;
+        
+        // 時刻を取得
+        const timeStr = latest.at || 
+                       latest.time || 
+                       latest.detail?.earthquake?.time;
+        
         document.getElementById('latest-quake-info').innerHTML = `
             <div style="font-size: 0.9rem;">
-                <strong>${latest.hypocenter?.name || '震源地不明'}</strong><br>
-                M${latest.mag || '?'} / 震度${formatShindo(latest.maxInt || latest.shindo)}<br>
-                <small>${formatDateTime(latest.at || latest.time)}</small>
+                <strong>${hypocenter}</strong><br>
+                M${mag} / 震度${formatShindo(maxInt)}<br>
+                <small>${formatDateTime(timeStr)}</small>
             </div>
         `;
     } else {
@@ -247,7 +309,9 @@ function updateDashboard() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayCount = earthquakeData.filter(q => {
-        const qDate = new Date(q.at || q.time);
+        const timeStr = q.at || q.time || q.detail?.earthquake?.time;
+        if (!timeStr) return false;
+        const qDate = new Date(timeStr);
         return qDate >= today;
     }).length;
     document.getElementById('today-count').textContent = todayCount;
@@ -264,17 +328,28 @@ function displayCurrentActivity() {
     }
     
     const latestQuake = filteredData[0];
-    const shindo = parseShindo(latestQuake.maxInt || latestQuake.shindo);
+    
+    // 各フィールドを柔軟に取得
+    const earthquake = latestQuake.detail?.earthquake || latestQuake;
+    const hypocenter = earthquake.hypocenter || latestQuake.hypocenter || {};
+    
+    const timeStr = latestQuake.at || latestQuake.time || earthquake.time;
+    const location = hypocenter.name || '情報なし';
+    const mag = hypocenter.magnitude || latestQuake.mag || '不明';
+    const depth = hypocenter.depth || latestQuake.depth;
+    const maxInt = earthquake.maxInt || latestQuake.maxInt || latestQuake.shindo;
+    
+    const shindo = parseShindo(maxInt);
     const statusClass = shindo >= 50 ? 'status-danger' : shindo >= 40 ? 'status-warning' : 'status-normal';
     
     const activityHTML = `
         <div class="activity-summary">
             <p><strong style="font-size: 1.2rem;">最新の地震:</strong></p>
-            <p class="${statusClass}"><strong>発生時刻:</strong> ${formatDateTime(latestQuake.at || latestQuake.time)}</p>
-            <p><strong>震源地:</strong> ${latestQuake.hypocenter?.name || '情報なし'}</p>
-            <p><strong>マグニチュード:</strong> M${latestQuake.mag || '不明'}</p>
-            <p><strong>最大震度:</strong> <span class="${statusClass}">${formatShindo(latestQuake.maxInt || latestQuake.shindo)}</span></p>
-            ${latestQuake.depth ? `<p><strong>深さ:</strong> ${latestQuake.depth}km</p>` : ''}
+            <p class="${statusClass}"><strong>発生時刻:</strong> ${formatDateTime(timeStr)}</p>
+            <p><strong>震源地:</strong> ${location}</p>
+            <p><strong>マグニチュード:</strong> M${mag}</p>
+            <p><strong>最大震度:</strong> <span class="${statusClass}">${formatShindo(maxInt)}</span></p>
+            ${depth ? `<p><strong>深さ:</strong> ${depth}${typeof depth === 'string' ? '' : 'km'}</p>` : ''}
             <p class="update-time">⏰ 最終更新: ${new Date().toLocaleTimeString('ja-JP')}</p>
         </div>
     `;
@@ -296,17 +371,27 @@ function displayRecentEarthquakes() {
     
     let listHTML = '';
     displayData.forEach((quake, index) => {
-        const shindo = parseShindo(quake.maxInt || quake.shindo);
+        // 各フィールドを柔軟に取得
+        const earthquake = quake.detail?.earthquake || quake;
+        const hypocenter = earthquake.hypocenter || quake.hypocenter || {};
+        
+        const timeStr = quake.at || quake.time || earthquake.time;
+        const location = hypocenter.name || '震源地不明';
+        const mag = hypocenter.magnitude || quake.mag || '不明';
+        const depth = hypocenter.depth || quake.depth;
+        const maxInt = earthquake.maxInt || quake.maxInt || quake.shindo;
+        
+        const shindo = parseShindo(maxInt);
         const className = getEarthquakeClass(shindo);
         
         listHTML += `
             <div class="earthquake-item ${className}" onclick="showEarthquakeDetail(${index})" role="button" tabindex="0">
-                <div class="eq-time">⏰ ${formatDateTime(quake.at || quake.time)}</div>
-                <div class="eq-location"><strong>📍 ${quake.hypocenter?.name || '震源地不明'}</strong></div>
+                <div class="eq-time">⏰ ${formatDateTime(timeStr)}</div>
+                <div class="eq-location"><strong>📍 ${location}</strong></div>
                 <div class="eq-details">
-                    <span>🔢 M${quake.mag || '不明'}</span> |
-                    <span>📊 最大震度: <strong>${formatShindo(shindo)}</strong></span>
-                    ${quake.depth ? ` | <span>📏 深さ: ${quake.depth}km</span>` : ''}
+                    <span>🔢 M${mag}</span> |
+                    <span>📊 最大震度: <strong>${formatShindo(maxInt)}</strong></span>
+                    ${depth ? ` | <span>📏 深さ: ${typeof depth === 'string' ? depth : depth + 'km'}</span>` : ''}
                 </div>
             </div>
         `;
@@ -364,17 +449,30 @@ function updateStatistics() {
     const now = new Date();
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     
-    const weekData = earthquakeData.filter(q => new Date(q.at || q.time) >= weekAgo);
+    const weekData = earthquakeData.filter(q => {
+        const timeStr = q.at || q.time || q.detail?.earthquake?.time;
+        if (!timeStr) return false;
+        return new Date(timeStr) >= weekAgo;
+    });
     
     document.getElementById('week-total').textContent = weekData.length;
     
-    const maxShindo = Math.max(...weekData.map(q => parseShindo(q.maxInt || q.shindo)));
+    const maxShindo = Math.max(0, ...weekData.map(q => {
+        const maxInt = q.maxInt || q.detail?.earthquake?.maxInt || q.shindo || 0;
+        return parseShindo(maxInt);
+    }));
     document.getElementById('week-max-shindo').textContent = maxShindo > 0 ? formatShindo(maxShindo) : '-';
     
-    const maxMag = Math.max(...weekData.map(q => parseFloat(q.mag) || 0));
+    const maxMag = Math.max(0, ...weekData.map(q => {
+        const mag = q.mag || q.detail?.earthquake?.hypocenter?.magnitude || 0;
+        return parseFloat(mag) || 0;
+    }));
     document.getElementById('week-max-mag').textContent = maxMag > 0 ? `M${maxMag.toFixed(1)}` : '-';
     
-    const strongCount = weekData.filter(q => parseShindo(q.maxInt || q.shindo) >= 40).length;
+    const strongCount = weekData.filter(q => {
+        const maxInt = q.maxInt || q.detail?.earthquake?.maxInt || q.shindo || 0;
+        return parseShindo(maxInt) >= 40;
+    }).length;
     document.getElementById('week-strong').textContent = `${strongCount}回`;
 }
 
@@ -388,24 +486,34 @@ function renderShindoChart() {
     };
     
     filteredData.forEach(q => {
-        const shindo = formatShindo(q.maxInt || q.shindo);
+        const maxInt = q.maxInt || q.detail?.earthquake?.maxInt || q.shindo;
+        const shindo = formatShindo(maxInt);
         if (shindoCounts.hasOwnProperty(shindo)) {
             shindoCounts[shindo]++;
         }
     });
     
+    // データがあるかチェック
+    const totalCount = Object.values(shindoCounts).reduce((a, b) => a + b, 0);
+    if (totalCount === 0) {
+        chartElement.innerHTML = '<p style="text-align: center; color: var(--gray-600); padding: 2rem;">表示期間内にデータがありません</p>';
+        return;
+    }
+    
     let chartHTML = '<div style="padding: 1rem;">';
     for (const [shindo, count] of Object.entries(shindoCounts)) {
         if (count > 0) {
-            const barWidth = Math.min((count / filteredData.length) * 100, 100);
+            const barWidth = Math.min((count / totalCount) * 100, 100);
+            const percentage = ((count / totalCount) * 100).toFixed(1);
+            
             chartHTML += `
                 <div style="margin-bottom: 1rem;">
                     <div style="display: flex; align-items: center; margin-bottom: 0.25rem;">
-                        <span style="width: 60px; font-weight: bold;">震度${shindo}</span>
-                        <span style="margin-left: 1rem; color: var(--gray-600);">${count}回</span>
+                        <span style="width: 70px; font-weight: bold;">震度${shindo}</span>
+                        <span style="margin-left: 1rem; color: var(--gray-600);">${count}回 (${percentage}%)</span>
                     </div>
-                    <div style="background: var(--gray-300); height: 24px; border-radius: 4px; overflow: hidden;">
-                        <div style="background: var(--secondary-color); height: 100%; width: ${barWidth}%; transition: width 0.5s;"></div>
+                    <div style="background: var(--gray-300); height: 28px; border-radius: 4px; overflow: hidden;">
+                        <div style="background: ${getShindoColor(shindo)}; height: 100%; width: ${barWidth}%; transition: width 0.5s;"></div>
                     </div>
                 </div>
             `;
@@ -413,7 +521,23 @@ function renderShindoChart() {
     }
     chartHTML += '</div>';
     
-    chartElement.innerHTML = chartHTML || '<p style="text-align: center; color: var(--gray-600);">データなし</p>';
+    chartElement.innerHTML = chartHTML;
+}
+
+// 震度に応じた色を返す
+function getShindoColor(shindo) {
+    const colors = {
+        '1': '#62a8ea',
+        '2': '#4a90e2',
+        '3': '#3498db',
+        '4': '#f39c12',
+        '5弱': '#e67e22',
+        '5強': '#d35400',
+        '6弱': '#e74c3c',
+        '6強': '#c0392b',
+        '7': '#8e44ad'
+    };
+    return colors[shindo] || 'var(--secondary-color)';
 }
 
 // UI操作関数
@@ -434,15 +558,33 @@ function showEarthquakeDetail(index) {
     const quake = filteredData[index];
     if (!quake) return;
     
+    // 各フィールドを柔軟に取得
+    const earthquake = quake.detail?.earthquake || quake;
+    const hypocenter = earthquake.hypocenter || quake.hypocenter || {};
+    
+    const timeStr = quake.at || quake.time || earthquake.time;
+    const location = hypocenter.name || '不明';
+    const mag = hypocenter.magnitude || quake.mag || '不明';
+    const depth = hypocenter.depth || quake.depth;
+    const maxInt = earthquake.maxInt || quake.maxInt || quake.shindo;
+    const tsunami = earthquake.domesticTsunami || quake.tsunami;
+    
+    // 震源の位置情報
+    const lat = hypocenter.latitude;
+    const lon = hypocenter.longitude;
+    const positionInfo = (lat && lon) ? `\n🗺️ 位置: 北緯${lat}° 東経${lon}°` : '';
+    
     const detail = `
 🌏 地震詳細情報
 
-📅 発生時刻: ${formatDateTime(quake.at || quake.time)}
-📍 震源地: ${quake.hypocenter?.name || '不明'}
-🔢 マグニチュード: ${quake.mag || '不明'}
-📊 最大震度: ${formatShindo(quake.maxInt || quake.shindo)}
-📏 深さ: ${quake.depth ? quake.depth + 'km' : '不明'}
-${quake.tsunami ? '🌊 津波: ' + quake.tsunami : ''}
+� 発生時刻: ${formatDateTime(timeStr)}
+📍 震源地: ${location}
+🔢 マグニチュード: M${mag}
+📊 最大震度: ${formatShindo(maxInt)}
+�📏 深さ: ${depth ? (typeof depth === 'string' ? depth : depth + 'km') : '不明'}${positionInfo}
+${tsunami ? '🌊 津波: ' + tsunami : ''}
+
+※ 詳細は気象庁の公式サイトをご確認ください
     `.trim();
     
     alert(detail);
@@ -634,16 +776,53 @@ function formatDateTime(dateString) {
 
 function formatShindo(shindo) {
     if (!shindo) return '不明';
-    const shindoMap = {
-        '10': '1', '20': '2', '30': '3', '40': '4',
-        '45': '5弱', '50': '5強', '55': '6弱', '60': '6強', '70': '7'
-    };
-    return shindoMap[shindo] || shindo;
+    
+    // 文字列の場合
+    if (typeof shindo === 'string') {
+        const shindoMap = {
+            '10': '1', '20': '2', '30': '3', '40': '4',
+            '45': '5弱', '46': '5弱', '50': '5強', '55': '6弱', '60': '6強', '70': '7',
+            '1': '1', '2': '2', '3': '3', '4': '4',
+            '5-': '5弱', '5+': '5強', '6-': '6弱', '6+': '6強', '7': '7'
+        };
+        return shindoMap[shindo] || shindo;
+    }
+    
+    // 数値の場合
+    if (typeof shindo === 'number') {
+        if (shindo >= 70) return '7';
+        if (shindo >= 60) return '6強';
+        if (shindo >= 55) return '6弱';
+        if (shindo >= 50) return '5強';
+        if (shindo >= 45) return '5弱';
+        if (shindo >= 40) return '4';
+        if (shindo >= 30) return '3';
+        if (shindo >= 20) return '2';
+        if (shindo >= 10) return '1';
+    }
+    
+    return '不明';
 }
 
 function parseShindo(shindo) {
+    if (!shindo) return 0;
+    
     if (typeof shindo === 'number') return shindo;
-    const num = parseInt(shindo);
+    
+    // 文字列を数値に変換
+    const shindoStr = String(shindo);
+    const shindoValueMap = {
+        '1': 10, '2': 20, '3': 30, '4': 40,
+        '5-': 45, '5弱': 45, '5+': 50, '5強': 50,
+        '6-': 55, '6弱': 55, '6+': 60, '6強': 60,
+        '7': 70
+    };
+    
+    if (shindoValueMap[shindoStr]) {
+        return shindoValueMap[shindoStr];
+    }
+    
+    const num = parseInt(shindoStr);
     return isNaN(num) ? 0 : num;
 }
 
@@ -708,3 +887,215 @@ if (typeof module !== 'undefined' && module.exports) {
         closeEmergencyBanner,
     };
 }
+
+// 追加の統計グラフ描画関数
+
+// 震源地ランキング
+function renderLocationRanking() {
+    const rankingElement = document.getElementById('location-ranking');
+    if (!rankingElement) return;
+    
+    // 震源地ごとにカウント
+    const locationCounts = {};
+    filteredData.forEach(q => {
+        const earthquake = q.detail?.earthquake || q;
+        const hypocenter = earthquake.hypocenter || q.hypocenter || {};
+        const location = hypocenter.name || '不明';
+        
+        locationCounts[location] = (locationCounts[location] || 0) + 1;
+    });
+    
+    // ソートして上位10件
+    const sorted = Object.entries(locationCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+    
+    if (sorted.length === 0) {
+        rankingElement.innerHTML = '<p style="text-align: center; color: var(--gray-600); padding: 2rem;">データなし</p>';
+        return;
+    }
+    
+    let html = '<div style="padding: 1rem;">';
+    sorted.forEach(([location, count], index) => {
+        const rank = index + 1;
+        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+        
+        html += `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; margin-bottom: 0.5rem; background: var(--gray-100); border-radius: 6px;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-weight: bold; min-width: 30px;">${medal}</span>
+                    <span>${location}</span>
+                </div>
+                <span style="font-weight: bold; color: var(--primary-color);">${count}回</span>
+            </div>
+        `;
+    });
+    html += '</div>';
+    
+    rankingElement.innerHTML = html;
+}
+
+// 深さ別分布
+function renderDepthDistribution() {
+    const depthElement = document.getElementById('depth-distribution');
+    if (!depthElement) return;
+    
+    const depthRanges = {
+        '0-10km': 0,
+        '10-30km': 0,
+        '30-50km': 0,
+        '50-100km': 0,
+        '100-300km': 0,
+        '300km以上': 0,
+        '不明': 0
+    };
+    
+    filteredData.forEach(q => {
+        const earthquake = q.detail?.earthquake || q;
+        const hypocenter = earthquake.hypocenter || q.hypocenter || {};
+        const depth = hypocenter.depth || q.depth;
+        
+        if (!depth || depth === '不明') {
+            depthRanges['不明']++;
+        } else {
+            const d = parseFloat(depth);
+            if (isNaN(d)) {
+                depthRanges['不明']++;
+            } else if (d < 10) {
+                depthRanges['0-10km']++;
+            } else if (d < 30) {
+                depthRanges['10-30km']++;
+            } else if (d < 50) {
+                depthRanges['30-50km']++;
+            } else if (d < 100) {
+                depthRanges['50-100km']++;
+            } else if (d < 300) {
+                depthRanges['100-300km']++;
+            } else {
+                depthRanges['300km以上']++;
+            }
+        }
+    });
+    
+    const total = Object.values(depthRanges).reduce((a, b) => a + b, 0);
+    
+    if (total === 0) {
+        depthElement.innerHTML = '<p style="text-align: center; color: var(--gray-600); padding: 2rem;">データなし</p>';
+        return;
+    }
+    
+    let html = '<div style="padding: 1rem;">';
+    for (const [range, count] of Object.entries(depthRanges)) {
+        if (count > 0) {
+            const percentage = ((count / total) * 100).toFixed(1);
+            const barWidth = Math.min((count / total) * 100, 100);
+            
+            html += `
+                <div style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                        <span style="font-weight: bold;">${range}</span>
+                        <span style="color: var(--gray-600);">${count}回 (${percentage}%)</span>
+                    </div>
+                    <div style="background: var(--gray-300); height: 24px; border-radius: 4px; overflow: hidden;">
+                        <div style="background: var(--success-color); height: 100%; width: ${barWidth}%; transition: width 0.5s;"></div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    html += '</div>';
+    
+    depthElement.innerHTML = html;
+}
+
+// 月別グラフ
+function renderMonthlyChart() {
+    const chartElement = document.getElementById('monthly-chart');
+    if (!chartElement) return;
+    
+    // 過去12ヶ月のデータ
+    const now = new Date();
+    const monthlyCounts = {};
+    
+    for (let i = 11; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}`;
+        monthlyCounts[key] = 0;
+    }
+    
+    earthquakeData.forEach(q => {
+        const timeStr = q.at || q.time || q.detail?.earthquake?.time;
+        if (!timeStr) return;
+        
+        const date = new Date(timeStr);
+        const key = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}`;
+        
+        if (monthlyCounts.hasOwnProperty(key)) {
+            monthlyCounts[key]++;
+        }
+    });
+    
+    const maxCount = Math.max(...Object.values(monthlyCounts), 1);
+    
+    let html = '<div style="padding: 1rem;">';
+    for (const [month, count] of Object.entries(monthlyCounts)) {
+        const barHeight = (count / maxCount) * 100;
+        
+        html += `
+            <div style="margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                    <span style="font-weight: bold;">${month}</span>
+                    <span style="color: var(--gray-600);">${count}回</span>
+                </div>
+                <div style="background: var(--gray-300); height: 24px; border-radius: 4px; overflow: hidden;">
+                    <div style="background: var(--secondary-color); height: 100%; width: ${barHeight}%; transition: width 0.5s;"></div>
+                </div>
+            </div>
+        `;
+    }
+    html += '</div>';
+    
+    chartElement.innerHTML = html;
+}
+
+// 時間帯別グラフ
+function renderHourlyChart() {
+    const chartElement = document.getElementById('hourly-chart');
+    if (!chartElement) return;
+    
+    const hourlyCounts = {};
+    for (let i = 0; i < 24; i++) {
+        hourlyCounts[i] = 0;
+    }
+    
+    filteredData.forEach(q => {
+        const timeStr = q.at || q.time || q.detail?.earthquake?.time;
+        if (!timeStr) return;
+        
+        const date = new Date(timeStr);
+        const hour = date.getHours();
+        hourlyCounts[hour]++;
+    });
+    
+    const maxCount = Math.max(...Object.values(hourlyCounts), 1);
+    
+    let html = '<div style="padding: 1rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 0.5rem;">';
+    for (let hour = 0; hour < 24; hour++) {
+        const count = hourlyCounts[hour];
+        const barHeight = (count / maxCount) * 100;
+        
+        html += `
+            <div style="text-align: center;">
+                <div style="height: 100px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 0.25rem;">
+                    <div style="background: var(--warning-color); width: 30px; height: ${barHeight}%; border-radius: 4px 4px 0 0; transition: height 0.5s;" title="${count}回"></div>
+                </div>
+                <div style="font-size: 0.85rem; font-weight: bold;">${hour}時</div>
+                <div style="font-size: 0.75rem; color: var(--gray-600);">${count}回</div>
+            </div>
+        `;
+    }
+    html += '</div>';
+    
+    chartElement.innerHTML = html;
+}
+
