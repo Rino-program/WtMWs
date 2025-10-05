@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="リアルタイム地震情報、震度速報、地震の知識を提供するサイト">
+    <meta name="keywords" content="地震,震度,速報,防災,気象庁,リアルタイム,マグニチュード">
+    <meta name="author" content="Rino-program">
+    <meta property="og:title" content="地震情報サイト - リアルタイム震度・速報">
+    <meta property="og:description" content="日本全国の地震情報をリアルタイムで提供。震度速報、地震の知識、防災情報など。">
+    <meta property="og:type" content="website">
+    <title>地震情報サイト - リアルタイム震度・速報</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌏</text></svg>">
+</head>
+<body>
+    <!-- 緊急地震速報バナー -->
+    <div id="emergency-banner" class="emergency-banner hidden">
+        <div class="emergency-content">
+            <span class="emergency-icon">🚨</span>
+            <span class="emergency-text"></span>
+            <button class="emergency-close" onclick="closeEmergencyBanner()">×</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>🌏 地震情報サイト</h1>
+                <div class="header-status">
+                    <span class="status-indicator" id="connection-status">
+                        <span class="status-dot"></span>
+                        <span class="status-text">接続中...</span>
+                    </span>
+                    <span class="last-update" id="last-update">最終更新: --</span>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#dashboard">ダッシュボード</a></li>
+                    <li><a href="#realtime">リアルタイム震度</a></li>
+                    <li><a href="#alerts">地震速報</a></li>
+                    <li><a href="#statistics">統計</a></li>
+                    <li><a href="#knowledge">防災知識</a></li>
+                    <li><a href="#settings">設定</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- ダッシュボードセクション -->
+        <section id="dashboard" class="section dashboard-section">
+            <div class="container">
+                <h2>📊 ダッシュボード</h2>
+                <div class="dashboard-grid">
+                    <div class="dashboard-card card-primary">
+                        <div class="card-icon">🔔</div>
+                        <div class="card-content">
+                            <h3>緊急地震速報</h3>
+                            <div id="eew-status" class="status-normal">現在なし</div>
+                        </div>
+                    </div>
+                    <div class="dashboard-card card-info">
+                        <div class="card-icon">📍</div>
+                        <div class="card-content">
+                            <h3>最新の地震</h3>
+                            <div id="latest-quake-info">取得中...</div>
+                        </div>
+                    </div>
+                    <div class="dashboard-card card-warning">
+                        <div class="card-icon">📈</div>
+                        <div class="card-content">
+                            <h3>今日の地震回数</h3>
+                            <div id="today-count" class="big-number">0</div>
+                        </div>
+                    </div>
+                    <div class="dashboard-card card-success">
+                        <div class="card-icon">🗾</div>
+                        <div class="card-content">
+                            <h3>観測地点</h3>
+                            <div id="observation-points" class="big-number">全国</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- クイック統計 -->
+                <div class="quick-stats">
+                    <h3>📊 今週の地震活動</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">総回数</span>
+                            <span class="stat-value" id="week-total">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">最大震度</span>
+                            <span class="stat-value" id="week-max-shindo">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">最大マグニチュード</span>
+                            <span class="stat-value" id="week-max-mag">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">震度4以上</span>
+                            <span class="stat-value" id="week-strong">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- リアルタイム震度セクション -->
+        <section id="realtime" class="section">
+            <div class="container">
+                <h2>📊 リアルタイム震度</h2>
+                
+                <!-- フィルター機能 -->
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <label>震度フィルター:</label>
+                        <select id="shindo-filter">
+                            <option value="all">すべて</option>
+                            <option value="1">震度1以上</option>
+                            <option value="3">震度3以上</option>
+                            <option value="4">震度4以上</option>
+                            <option value="5">震度5弱以上</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>期間:</label>
+                        <select id="period-filter">
+                            <option value="1h">1時間以内</option>
+                            <option value="24h" selected>24時間以内</option>
+                            <option value="7d">7日以内</option>
+                            <option value="30d">30日以内</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-refresh" onclick="loadEarthquakeData()">🔄 更新</button>
+                </div>
+
+                <div class="realtime-info">
+                    <div class="info-card">
+                        <h3>現在の地震活動</h3>
+                        <div id="current-activity" class="loading">
+                            <div class="spinner"></div>
+                            <p>データを取得中...</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <h3>震度マップ</h3>
+                        <div id="earthquake-map" class="map-container">
+                            <div class="map-placeholder">
+                                <p>🗾 地震発生地点を表示</p>
+                                <small>クリックで詳細表示</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 震度分布グラフ -->
+                <div class="info-card chart-card">
+                    <h3>📊 震度分布</h3>
+                    <div id="shindo-chart" class="chart-container">
+                        <!-- グラフが表示される -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 地震速報・情報セクション -->
+        <section id="alerts" class="section">
+            <div class="container">
+                <h2>⚠️ 地震速報・情報</h2>
+                
+                <!-- 検索・ソート機能 -->
+                <div class="search-controls">
+                    <input type="text" id="search-input" placeholder="震源地で検索..." class="search-input">
+                    <select id="sort-order" class="sort-select">
+                        <option value="time-desc">新しい順</option>
+                        <option value="time-asc">古い順</option>
+                        <option value="mag-desc">マグニチュード降順</option>
+                        <option value="shindo-desc">震度降順</option>
+                    </select>
+                </div>
+
+                <div class="alert-container">
+                    <div class="alert-box">
+                        <h3>🚨 緊急地震速報</h3>
+                        <div id="eew-info" class="alert-content">
+                            <div class="status-indicator-large">
+                                <span class="status-dot-large ok"></span>
+                                <span>現在、緊急地震速報は発表されていません</span>
+                            </div>
+                            <p class="update-time" id="eew-update-time">最終確認: --</p>
+                        </div>
+                    </div>
+                    
+                    <div class="recent-earthquakes">
+                        <div class="section-header">
+                            <h3>最近の地震情報</h3>
+                            <div class="view-controls">
+                                <button class="view-btn active" data-view="list" onclick="switchView('list')">📋 リスト</button>
+                                <button class="view-btn" data-view="grid" onclick="switchView('grid')">🎛️ グリッド</button>
+                            </div>
+                        </div>
+                        <div id="recent-list" class="earthquake-list">
+                            <div class="loading-placeholder">
+                                <div class="spinner"></div>
+                                <p>地震情報を取得中...</p>
+                            </div>
+                        </div>
+                        <div class="load-more-container">
+                            <button id="load-more-btn" class="btn btn-secondary" onclick="loadMoreEarthquakes()">もっと見る</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 統計セクション -->
+        <section id="statistics" class="section">
+            <div class="container">
+                <h2>📈 統計情報</h2>
+                <div class="statistics-grid">
+                    <div class="stat-card">
+                        <h3>月別地震回数</h3>
+                        <div id="monthly-chart" class="chart-container-large">
+                            <!-- 月別グラフ -->
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>時間帯別分布</h3>
+                        <div id="hourly-chart" class="chart-container-large">
+                            <!-- 時間帯別グラフ -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="statistics-grid">
+                    <div class="stat-card">
+                        <h3>震源地TOP10</h3>
+                        <div id="location-ranking" class="ranking-list">
+                            <!-- ランキング -->
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>深さ別分布</h3>
+                        <div id="depth-distribution" class="distribution-chart">
+                            <!-- 深さ分布 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 地震の知識セクション -->
+        <section id="knowledge" class="section">
+            <div class="container">
+                <h2>📚 地震の知識</h2>
+                <div class="knowledge-grid">
+                    <div class="knowledge-card">
+                        <h3>🔢 震度とマグニチュードの違い</h3>
+                        <p>震度は各地点での揺れの強さを表し、マグニチュードは地震のエネルギーの大きさを表します。</p>
+                        <details>
+                            <summary>詳しく見る</summary>
+                            <ul>
+                                <li><strong>震度:</strong> 0～7の10段階で表される（5弱、5強、6弱、6強を含む）</li>
+                                <li><strong>マグニチュード:</strong> 地震そのものの規模を表す数値</li>
+                                <li>同じ地震でも、場所によって震度は異なります</li>
+                            </ul>
+                        </details>
+                    </div>
+
+                    <div class="knowledge-card">
+                        <h3>🏠 地震が起きたら</h3>
+                        <p>地震発生時の適切な行動について学びましょう。</p>
+                        <details>
+                            <summary>詳しく見る</summary>
+                            <ul>
+                                <li><strong>屋内:</strong> 机の下に隠れる、頭を守る、窓から離れる</li>
+                                <li><strong>屋外:</strong> 建物や塀から離れる、頭を守る</li>
+                                <li><strong>避難時:</strong> エレベーターは使わない、落ち着いて行動</li>
+                                <li><strong>車運転中:</strong> 徐々に速度を落とし、道路の左側に停車</li>
+                            </ul>
+                        </details>
+                    </div>
+
+                    <div class="knowledge-card">
+                        <h3>📦 防災グッズ</h3>
+                        <p>日頃から準備しておきたい防災用品をチェックしましょう。</p>
+                        <details>
+                            <summary>詳しく見る</summary>
+                            <ul>
+                                <li>飲料水（1人1日3リットルが目安）</li>
+                                <li>非常食（3日分以上）</li>
+                                <li>懐中電灯、ラジオ</li>
+                                <li>救急用品、常備薬</li>
+                                <li>モバイルバッテリー</li>
+                                <li>現金、貴重品</li>
+                            </ul>
+                        </details>
+                    </div>
+
+                    <div class="knowledge-card">
+                        <h3>🌊 津波について</h3>
+                        <p>津波警報・注意報が出たら、すぐに高台へ避難しましょう。</p>
+                        <details>
+                            <summary>詳しく見る</summary>
+                            <ul>
+                                <li><strong>大津波警報:</strong> 予想高さ3m超 - 最高レベルの警戒</li>
+                                <li><strong>津波警報:</strong> 予想高さ1～3m</li>
+                                <li><strong>津波注意報:</strong> 予想高さ0.2～1m</li>
+                                <li>海岸付近では、強い揺れを感じたらすぐに避難</li>
+                            </ul>
+                        </details>
+                    </div>
+
+                    <div class="knowledge-card">
+                        <h3>🔔 緊急地震速報について</h3>
+                        <p>P波とS波の時間差を利用した早期警報システムです。</p>
+                        <details>
+                            <summary>詳しく見る</summary>
+                            <ul>
+                                <li>大きな揺れの数秒～数十秒前に発表</li>
+                                <li>スマートフォンやテレビで受信可能</li>
+                                <li>速報が出たら、すぐに身を守る行動を</li>
+                                <li>震源に近い地域では間に合わない場合も</li>
+                            </ul>
+                        </details>
+                    </div>
+
+                    <div class="knowledge-card">
+                        <h3>🗾 日本の地震のメカニズム</h3>
+                        <p>なぜ日本は地震が多いのか、プレートの動きから理解しましょう。</p>
+                        <details>
+                            <summary>詳しく見る</summary>
+                            <ul>
+                                <li>日本は4つのプレートが接する場所に位置</li>
+                                <li>プレートの沈み込みで地震が発生</li>
+                                <li>海溝型地震と直下型地震</li>
+                                <li>活断層による内陸地震</li>
+                            </ul>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 設定セクション -->
+        <section id="settings" class="section">
+            <div class="container">
+                <h2>⚙️ 設定</h2>
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>通知設定</h3>
+                        <div class="setting-item">
+                            <label class="switch">
+                                <input type="checkbox" id="notify-all" onchange="updateSettings()">
+                                <span class="slider"></span>
+                            </label>
+                            <span>すべての地震で通知</span>
+                        </div>
+                        <div class="setting-item">
+                            <label class="switch">
+                                <input type="checkbox" id="notify-strong" checked onchange="updateSettings()">
+                                <span class="slider"></span>
+                            </label>
+                            <span>震度4以上で通知</span>
+                        </div>
+                        <div class="setting-item">
+                            <label class="switch">
+                                <input type="checkbox" id="notify-eew" checked onchange="updateSettings()">
+                                <span class="slider"></span>
+                            </label>
+                            <span>緊急地震速報で通知</span>
+                        </div>
+                        <div class="setting-item">
+                            <label>通知音:</label>
+                            <select id="sound-select" onchange="updateSettings()">
+                                <option value="default">デフォルト</option>
+                                <option value="alert">アラート</option>
+                                <option value="bell">ベル</option>
+                                <option value="none">なし</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>表示設定</h3>
+                        <div class="setting-item">
+                            <label>テーマ:</label>
+                            <select id="theme-select" onchange="changeTheme()">
+                                <option value="light">ライト</option>
+                                <option value="dark">ダーク</option>
+                                <option value="auto">自動</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>更新間隔:</label>
+                            <select id="update-interval" onchange="updateSettings()">
+                                <option value="30">30秒</option>
+                                <option value="60" selected>1分</option>
+                                <option value="300">5分</option>
+                                <option value="600">10分</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>表示件数:</label>
+                            <select id="display-count" onchange="updateSettings()">
+                                <option value="10" selected>10件</option>
+                                <option value="20">20件</option>
+                                <option value="50">50件</option>
+                                <option value="100">100件</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>地域設定</h3>
+                        <div class="setting-item">
+                            <label>優先地域:</label>
+                            <select id="region-select" onchange="updateSettings()">
+                                <option value="all">全国</option>
+                                <option value="hokkaido">北海道</option>
+                                <option value="tohoku">東北</option>
+                                <option value="kanto">関東</option>
+                                <option value="chubu">中部</option>
+                                <option value="kinki">近畿</option>
+                                <option value="chugoku">中国</option>
+                                <option value="shikoku">四国</option>
+                                <option value="kyushu">九州</option>
+                                <option value="okinawa">沖縄</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label class="switch">
+                                <input type="checkbox" id="filter-region" onchange="updateSettings()">
+                                <span class="slider"></span>
+                            </label>
+                            <span>優先地域のみ表示</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>データ管理</h3>
+                        <button class="btn btn-secondary" onclick="clearCache()">📦 キャッシュをクリア</button>
+                        <button class="btn btn-secondary" onclick="exportData()">💾 データをエクスポート</button>
+                        <button class="btn btn-danger" onclick="resetSettings()">🔄 設定をリセット</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- このサイトについて -->
+        <section id="about" class="section">
+            <div class="container">
+                <h2>ℹ️ このサイトについて</h2>
+                <div class="about-content">
+                    <p>このサイトは、地震に関する情報をリアルタイムで提供し、防災意識を高めることを目的としています。</p>
+                    
+                    <div class="about-grid">
+                        <div class="about-card">
+                            <h3>📡 データソース</h3>
+                            <ul>
+                                <li><a href="https://www.jma.go.jp/jma/index.html" target="_blank">気象庁</a> - 地震情報API</li>
+                                <li><a href="https://www.bosai.go.jp/" target="_blank">防災科学技術研究所</a> - 地震データ</li>
+                            </ul>
+                        </div>
+
+                        <div class="about-card">
+                            <h3>🔄 更新情報</h3>
+                            <p>地震情報は設定された間隔で自動的に更新されます（デフォルト: 1分）</p>
+                            <p>緊急地震速報は優先的に表示されます</p>
+                        </div>
+
+                        <div class="about-card">
+                            <h3>✨ 主な機能</h3>
+                            <ul>
+                                <li>リアルタイム地震情報表示</li>
+                                <li>緊急地震速報対応</li>
+                                <li>震度・マグニチュード別フィルタ</li>
+                                <li>統計データの可視化</li>
+                                <li>通知機能（要設定）</li>
+                                <li>ダークモード対応</li>
+                            </ul>
+                        </div>
+
+                        <div class="about-card">
+                            <h3>📱 対応環境</h3>
+                            <ul>
+                                <li>PC（Windows, Mac, Linux）</li>
+                                <li>スマートフォン（iOS, Android）</li>
+                                <li>タブレット</li>
+                                <li>モダンブラウザ推奨</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="disclaimer">
+                        <h3>⚠️ 免責事項</h3>
+                        <p><strong>重要:</strong> このサイトの情報は参考情報です。正式な情報は必ず<a href="https://www.jma.go.jp/jma/index.html" target="_blank">気象庁の公式サイト</a>でご確認ください。</p>
+                        <ul>
+                            <li>緊急時は公式な情報源を優先してください</li>
+                            <li>当サイトは情報の正確性を保証するものではありません</li>
+                            <li>防災行動は各自の判断で行ってください</li>
+                        </ul>
+                    </div>
+
+                    <div class="version-info">
+                        <p>Version 2.0.0 | Last Updated: 2025年10月5日</p>
+                        <p>© 2025 Rino-program | <a href="https://github.com/Rino-program/WtMWs" target="_blank">GitHub</a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 地震情報サイト | データ提供: 気象庁・防災科学技術研究所</p>
+            <p><a href="https://www.jma.go.jp/jma/index.html" target="_blank">気象庁</a> | 
+               <a href="https://www.bosai.go.jp/" target="_blank">防災科研</a></p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
