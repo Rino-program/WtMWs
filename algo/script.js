@@ -1,6 +1,6 @@
 // ==========================================
 // 🎨 Ultimate Algorithm Visualizer
-// バージョン: 2.0
+// バージョン: 2.1
 // 作成者: Rino-program
 // ==========================================
 
@@ -5602,7 +5602,7 @@ if (typeof module !== 'undefined' && module.exports) {
 console.log(`
     ╔═══════════════════════════════════════════╗
     ║                                           ║
-    ║     🎨 Algorithm Visualizer v2.0         ║
+    ║     🎨 Algorithm Visualizer v2.1         ║
     ║                                           ║
     ║     Created with ❤️ by Rino-program     ║
     ║                                           ║

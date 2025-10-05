@@ -138,53 +138,81 @@ function solveMaze() {
     const visitedCells = [];
     let found = false;
 
-    function animate() {
-        if (queue.length === 0) {
-            if (!found) {
-                document.getElementById('result').innerText = "エラー：スタートとゴールがつながっていません。";
-            }
-            return;
-        }
+    // 探索中フラグで多重実行防止
+    if (window.__mazeSolving) return;
+    window.__mazeSolving = true;
+    document.querySelector('button[onclick="solveMaze()"]')?.setAttribute('disabled', 'disabled');
 
-        const [x, y] = queue.shift();
-        visitedCells.push([x, y]);
-        drawMaze([], visitedCells);
-
-        if (x === gx && y === gy) {
-            found = true;
-            const solutionPath = [];
-            let cx = gx, cy = gy, d = dist[gy][gx];
-            while (d > 0) {
-                solutionPath.push([cx, cy]);
-                for (let [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
-                    const nx = cx + dx, ny = cy + dy;
-                    if (nx >= 0 && ny >= 0 && nx < COLS && ny < ROWS && dist[ny][nx] === d - 1) {
-                        cx = nx;
-                        cy = ny;
-                        d--;
-                        break;
-                    }
-                }
-            }
-            solutionPath.push([sx, sy]);
-            solutionPath.reverse();
-            drawMaze(solutionPath);
-            document.getElementById('result').innerText = `最短距離: ${dist[gy][gx]}`;
-            return;
-        }
-
-        for (let [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
-            const nx = x + dx, ny = y + dy;
-            if (nx >= 0 && ny >= 0 && nx < COLS && ny < ROWS && m[ny][nx] === 0 && dist[ny][nx] === -1) {
-                dist[ny][nx] = dist[y][x] + 1;
-                queue.push([nx, ny]);
-            }
-        }
-
-        requestAnimationFrame(animate); // アニメーションの継続
+    function isWall(pos) {
+        return maze[pos[0]][pos[1]] === 1;
+    }
+    // ゴール・スタートが壁上ならエラー
+    if (isWall(start) || isWall(end)) {
+        document.getElementById('result').innerText = "エラー：スタートまたはゴールが壁上です。";
+        window.__mazeSolving = false;
+        document.querySelector('button[onclick="solveMaze()"]')?.removeAttribute('disabled');
+        return;
     }
 
-    requestAnimationFrame(animate); // アニメーションの開始
+    function animate() {
+        // 残りキュー数・迷路サイズでステップ数自動調整
+        let STEPS_PER_FRAME = Math.max(30, Math.min(200, Math.floor(queue.length / 40)));
+        let steps = 0;
+        let newVisited = [];
+        while (queue.length > 0 && steps < STEPS_PER_FRAME && !found) {
+            const [x, y] = queue.shift();
+            // 既にvisitedならスキップ
+            const key = `${x},${y}`;
+            if (!visitedCells.some(([vx, vy]) => vx === x && vy === y)) {
+                visitedCells.push([x, y]);
+                newVisited.push([x, y]);
+            }
+
+            if (x === gx && y === gy) {
+                found = true;
+                const solutionPath = [];
+                let cx = gx, cy = gy, d = dist[gy][gx];
+                while (d > 0) {
+                    solutionPath.push([cx, cy]);
+                    for (let [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
+                        const nx = cx + dx, ny = cy + dy;
+                        if (nx >= 0 && ny >= 0 && nx < COLS && ny < ROWS && dist[ny][nx] === d - 1) {
+                            cx = nx;
+                            cy = ny;
+                            d--;
+                            break;
+                        }
+                    }
+                }
+                solutionPath.push([sx, sy]);
+                solutionPath.reverse();
+                drawMaze(solutionPath);
+                document.getElementById('result').innerText = `最短距離: ${dist[gy][gx]}`;
+                window.__mazeSolving = false;
+                document.querySelector('button[onclick="solveMaze()"]')?.removeAttribute('disabled');
+                return;
+            }
+
+            for (let [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
+                const nx = x + dx, ny = y + dy;
+                if (nx >= 0 && ny >= 0 && nx < COLS && ny < ROWS && m[ny][nx] === 0 && dist[ny][nx] === -1) {
+                    dist[ny][nx] = dist[y][x] + 1;
+                    queue.push([nx, ny]);
+                }
+            }
+            steps++;
+        }
+        // 新しく訪問したセルのみ描画
+        drawMaze([], visitedCells);
+        if (!found && queue.length > 0) {
+            requestAnimationFrame(animate);
+        } else if (!found && queue.length === 0) {
+            document.getElementById('result').innerText = "エラー：スタートとゴールがつながっていません。";
+            window.__mazeSolving = false;
+            document.querySelector('button[onclick="solveMaze()"]')?.removeAttribute('disabled');
+        }
+    }
+    requestAnimationFrame(animate);
 }
 
 window.onload = resetMaze;
