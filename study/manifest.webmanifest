@@ -1,11 +1,22 @@
 {
-  "name": "Study Support",
-  "short_name": "Study",
+  "name": "Study Support - 学習サポートアプリ",
+  "short_name": "Study Support",
+  "description": "ポモドーロタイマーとタスク管理を組み合わせた学習サポートアプリ",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
+  "categories": ["productivity", "education"],
+  "lang": "ja",
+  "dir": "ltr",
   "icons": [
-    {"src":"../img/title.png","sizes":"256x256","type":"image/png"}
+    {
+      "src": "../img/title.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }

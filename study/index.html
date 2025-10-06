@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Study Support</title>
+  <meta name="description" content="Study Support - ポモドーロタイマーとタスク管理を組み合わせた学習サポートアプリ。集中力を高めて効率的に学習しましょう。">
+  <meta name="keywords" content="ポモドーロ,タイマー,学習,タスク管理,集中,効率化">
+  <meta name="author" content="Rino-program">
+  <meta name="theme-color" content="#0f172a">
+  <title>Study Support - 学習サポートアプリ</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="stylesheet" href="./study_style.css">
   <link rel="icon" href="../img/title.png">
@@ -73,24 +77,26 @@
           </div>
           <form id="new-task-form" class="task-form hidden" aria-hidden="true">
             <h3 id="task-form-title">新規タスク追加</h3>
-            <input id="new-task-title" type="text" placeholder="タイトル" required>
-            <select id="new-task-folder">
+            <input id="new-task-title" type="text" placeholder="タイトル" required aria-label="タスクタイトル">
+            <select id="new-task-folder" aria-label="フォルダ選択">
               <option value="default">デフォルト</option>
             </select>
-            <input id="new-task-subject" type="text" placeholder="科目/カテゴリ">
-            <select id="new-task-priority">
-              <option value="normal">通常</option>
-              <option value="high">高</option>
-              <option value="urgent">緊急</option>
+            <input id="new-task-subject" type="text" placeholder="科目/カテゴリ" aria-label="科目またはカテゴリ">
+            <select id="new-task-priority" aria-label="優先度">
+              <option value="normal">🔵 通常</option>
+              <option value="high">🔶 高優先度</option>
+              <option value="urgent">🔴 緊急</option>
             </select>
-            <input id="new-task-notes" type="text" placeholder="メモ">
-            <input id="new-task-goal" type="number" min="0" max="999" placeholder="目標時間(分)">
-            <input id="new-task-amount" type="number" min="0" max="99999" placeholder="目標量（例: ページ数）">
-            <input id="new-task-amount-unit" type="text" placeholder="単位（例: ページ）">
-            <input id="new-task-deadline" type="date" placeholder="締切日">
+            <input id="new-task-notes" type="text" placeholder="メモ" aria-label="メモ">
+            <div class="form-row">
+              <input id="new-task-goal" type="number" min="0" max="999" placeholder="目標時間(分)" aria-label="目標時間(分)">
+              <input id="new-task-amount" type="number" min="0" max="99999" placeholder="目標量" aria-label="目標量">
+              <input id="new-task-amount-unit" type="text" placeholder="単位" aria-label="単位">
+            </div>
+            <input id="new-task-deadline" type="date" aria-label="締切日">
             <div class="form-actions">
-              <button id="save-task-btn" class="primary btn-small" type="submit">保存</button>
-              <button id="cancel-task-btn" class="btn-small" type="button">キャンセル</button>
+              <button id="save-task-btn" class="primary btn-small" type="submit">💾 保存</button>
+              <button id="cancel-task-btn" class="btn-small" type="button">✖️ キャンセル</button>
             </div>
           </form>
           <form id="new-folder-form" class="folder-form hidden" aria-hidden="true">
@@ -352,13 +358,13 @@
           <button id="clear-data-btn" class="danger btn-small">全データ削除</button>
         </div>
         <div class="app-info">
-          <p>Study Support v0.2 Enhanced<br>© 2025 Rino-program</p>
+          <p>Study Support v0.3 Enhanced<br>© 2025 Rino-program</p>
         </div>
       </div>
     </section>
   </main>
   <footer class="app-footer">
-    <span>Study Support v0.2 Enhanced | © 2025 Rino-program</span>
+    <span>Study Support v0.3 Enhanced | © 2025 Rino-program</span>
   </footer>
     <script src="app.js"></script>
 </body>

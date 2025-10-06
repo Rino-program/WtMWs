@@ -606,6 +606,13 @@
     if (newTaskGoal) newTaskGoal.value = task.goalMinutes;
     if (newTaskAmount) newTaskAmount.value = task.amount;
     if (newTaskAmountUnit) newTaskAmountUnit.value = task.amountUnit;
+    
+    // 優先度とデッドラインも設定
+    const newTaskPriority = document.getElementById('new-task-priority');
+    const newTaskDeadline = document.getElementById('new-task-deadline');
+    if (newTaskPriority) newTaskPriority.value = task.priority || 'normal';
+    if (newTaskDeadline) newTaskDeadline.value = task.deadline || '';
+    
     toggleTaskForm(true);
   }
 
@@ -844,7 +851,7 @@
     }
   });
 
-  // タスクフォーム送信（重複していた部分を統合）
+  // タスクフォーム送信（統合版）
   if (taskForm) taskForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const title = newTaskTitle?.value.trim();
@@ -853,6 +860,10 @@
       return;
     }
     
+    // 優先度とデッドラインの取得
+    const newTaskPriority = document.getElementById('new-task-priority');
+    const newTaskDeadline = document.getElementById('new-task-deadline');
+    
     if (editingTaskId) {
       // 編集モード
       const task = db.tasks.find(t => t.id === editingTaskId);
@@ -864,6 +875,8 @@
         task.amount = parseInt(newTaskAmount?.value) || 0;
         task.amountUnit = newTaskAmountUnit?.value.trim() || '';
         task.folderId = newTaskFolder?.value || 'default';
+        task.priority = newTaskPriority?.value || 'normal';
+        task.deadline = newTaskDeadline?.value || null;
         task.updatedAt = Date.now();
         saveDB(db);
         refreshTaskUI();
@@ -882,63 +895,8 @@
         amount: parseInt(newTaskAmount?.value) || 0,
         amountUnit: newTaskAmountUnit?.value.trim() || '',
         folderId: newTaskFolder?.value || 'default',
-        currentAmount: 0,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        archived: false,
-        completed: false,
-      };
-      db.tasks.push(t);
-      db.settings.currentTaskId = t.id;
-      saveDB(db);
-      refreshTaskUI();
-      toggleTaskForm(false);
-    }
-    
-    // ダッシュボードがアクティブな場合、更新
-    const activeTab = document.querySelector('.tab-button.is-active');
-    if (activeTab && activeTab.dataset.tab === 'dashboard') {
-      updateDashboard();
-    }
-  });
-
-  if (saveTaskBtn) saveTaskBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    const title = newTaskTitle?.value.trim();
-    if (!title) { 
-      if (newTaskTitle) newTaskTitle.focus(); 
-      return; 
-    }
-    
-    if (editingTaskId) {
-      // 編集モード
-      const task = db.tasks.find(t => t.id === editingTaskId);
-      if (task) {
-        task.title = title;
-        task.subject = newTaskSubject?.value.trim() || '';
-        task.notes = newTaskNotes?.value.trim() || '';
-        task.goalMinutes = parseInt(newTaskGoal?.value) || 0;
-        task.amount = parseInt(newTaskAmount?.value) || 0;
-        task.amountUnit = newTaskAmountUnit?.value.trim() || '';
-        task.folderId = newTaskFolder?.value || 'default';
-        task.updatedAt = Date.now();
-        saveDB(db);
-        refreshTaskUI();
-        editingTaskId = null;
-        if (taskFormTitle) taskFormTitle.textContent = '新規タスク追加';
-        toggleTaskForm(false);
-      }
-    } else {
-      // 新規作成
-      const t = {
-        id: 't_' + Math.random().toString(36).slice(2,9),
-        title,
-        subject: newTaskSubject?.value.trim() || '',
-        notes: newTaskNotes?.value.trim() || '',
-        goalMinutes: parseInt(newTaskGoal?.value) || 0,
-        amount: parseInt(newTaskAmount?.value) || 0,
-        amountUnit: newTaskAmountUnit?.value.trim() || '',
-        folderId: newTaskFolder?.value || 'default',
+        priority: newTaskPriority?.value || 'normal',
+        deadline: newTaskDeadline?.value || null,
         currentAmount: 0,
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -1997,6 +1955,65 @@
     }
   }
 
+  // Mini timer controls
+  const miniToggleBtn = document.getElementById('mini-toggle');
+  if (miniToggleBtn) {
+    miniToggleBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (state.running) {
+        pauseTimer();
+      } else if (state.pausedRemainingMs !== null) {
+        resumeTimer();
+      } else {
+        startTimer();
+      }
+    });
+  }
+
+  // Update mini timer display
+  function updateMiniTimer() {
+    const miniMode = document.getElementById('mini-mode');
+    const miniTime = document.getElementById('mini-time');
+    const miniToggle = document.getElementById('mini-toggle');
+    
+    if (miniMode) {
+      const modeText = state.mode === Mode.Focus ? '🎯 集中' : (state.mode === Mode.Short ? '☕ 短休憩' : '🛌 長休憩');
+      miniMode.textContent = modeText;
+    }
+    
+    if (miniTime && miniToggle) {
+      const remaining = state.endAt ? Math.max(0, state.endAt - Date.now()) : state.totalDurationMs;
+      const percentage = state.totalDurationMs > 0 ? Math.max(0, (remaining / state.totalDurationMs) * 100) : 100;
+      const showSeconds = db.settings.showSeconds || false;
+      miniTime.textContent = `${formatTime(remaining, showSeconds)} (${Math.round(percentage)}%)`;
+      
+      // ボタンのテキストを更新
+      if (state.running) {
+        miniToggle.textContent = '⏸';
+        miniToggle.title = '一時停止';
+      } else if (state.pausedRemainingMs !== null) {
+        miniToggle.textContent = '▶';
+        miniToggle.title = '再開';
+      } else {
+        miniToggle.textContent = '▶';
+        miniToggle.title = '開始';
+      }
+    }
+  }
+
+  // Update tick function to include mini timer
+  const originalTick = tick;
+  function tick(){
+    originalTick();
+    updateMiniTimer();
+  }
+
+  // Amount controls event listeners
+  if (amountMinusBtn) amountMinusBtn.addEventListener('click', decrementAmount);
+  if (amountPlusBtn) amountPlusBtn.addEventListener('click', incrementAmount);
+  if (amountResetBtn) amountResetBtn.addEventListener('click', resetAmount);
+  if (amountCompleteBtn) amountCompleteBtn.addEventListener('click', completeAmount);
+
   // Keyboard shortcuts - 追加機能
   document.addEventListener('keydown', (e) => {
     // フォーム入力中は処理しない
@@ -2124,18 +2141,41 @@
     updateSessionStats();
   }
 
-  // PWA registration
+  // Initial load
+  applyTheme();
+  requestNotificationPermission();
+  refreshUI();
+  loadSettingsIntoForm();
+
+  // Service Worker registration for PWA
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(console.error);
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('Service Worker registered:', reg.scope))
+        .catch(err => console.error('Service Worker registration failed:', err));
     });
   }
 
-  // 通知許可の初期化
-  requestNotificationPermission();
+  // Visibility change handling - タブが非アクティブでも時間を正確に
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && state.running) {
+      tick(); // タブが再度アクティブになったら即座に更新
+    }
+  });
 
-  // kick off
-  applyTheme();
-  loadSettingsIntoForm(); // 初期化時に設定を読み込む
-  refreshUI();
+  // Auto-save reminder (週に1回程度)
+  setInterval(() => {
+    const lastReminder = localStorage.getItem('studyapp.lastExportReminder');
+    const now = Date.now();
+    if (!lastReminder || now - parseInt(lastReminder) > 7 * 24 * 60 * 60 * 1000) {
+      const sessions = db.sessions.length;
+      if (sessions > 50) { // セッションが一定以上あれば
+        if (confirm('データのバックアップをお勧めします。今すぐエクスポートしますか？')) {
+          exportBtn?.click();
+        }
+        localStorage.setItem('studyapp.lastExportReminder', String(now));
+      }
+    }
+  }, 60 * 60 * 1000); // 1時間ごとにチェック
+
 })();
