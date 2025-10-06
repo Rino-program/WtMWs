@@ -19,7 +19,7 @@
     <header class="site-header">
         <div class="breadcrumbs">ブログ一覧 &gt; LGBTQ+</div>
         <h1>LGBTQ+とは — 基礎知識と支援ガイド</h1>
-        <div class="meta">公開日: 2025/10/05 &nbsp;｜&nbsp; 更新日: 2025/10/05</div>
+        <div class="meta">公開日: 2025/10/05 &nbsp;｜&nbsp; 更新日: 2025/10/06</div>
         <div class="controls">
             <button id="toggle-theme" aria-pressed="false">ダークモード</button>
             <button onclick="history.back()">戻る</button>
@@ -32,74 +32,290 @@
     </nav>
 
     <main>
+        <section class="ai-warning">
+            <div style="background:linear-gradient(90deg,#ffb6b6,#fff3cd);border:2px solid #ff6f6f;color:#a94442;padding:1.2em 1em;margin-bottom:2em;border-radius:8px;font-size:1.15em;box-shadow:0 2px 8px rgba(255,0,0,0.08);">
+                <strong>⚠️ 重要なお知らせ</strong><br>
+                このページはAI（GitHub Copilot）が自動生成したものであり、内容には誤った情報や見解が含まれている可能性があります。<br>
+                <span style="font-weight:bold;text-decoration:underline;">必ず公式情報や専門機関の最新情報もご確認ください。</span>
+            </div>
+        </section>
         <section>
             <h2 id="intro">はじめに</h2>
             <p>本記事はLGBTQ+について基礎的な知識をわかりやすくまとめ、支援や相談の方法、よくある誤解への対応を紹介します。性自認・性的指向・表現の違いを尊重するための入門リソースとしてお使いください。</p>
+            <div class="info-box">
+                <strong>📌 この記事の目的</strong>
+                <p>LGBTQ+について初めて学ぶ方でも理解できるよう、基本的な用語や概念を解説し、より良い社会づくりのための第一歩をサポートします。</p>
+            </div>
         </section>
 
         <section>
             <h2 id="what">LGBTQ+とは何か</h2>
             <p>LGBTQ+は、性的指向や性自認の多様性を示す総称です。主な構成は次の通りです。</p>
-            <ul>
-                <li><strong>L</strong> — レズビアン（女性に恋愛感情・性的魅力を抱く女性）</li>
-                <li><strong>G</strong> — ゲイ（男性に恋愛感情・性的魅力を抱く男性）</li>
-                <li><strong>B</strong> — バイセクシュアル（男女双方に惹かれる可能性がある）</li>
-                <li><strong>T</strong> — トランスジェンダー（出生時に割り当てられた性別と自己認識が異なる）</li>
-                <li><strong>Q</strong> — クィア / クエスチョニング（既存の枠に当てはまらない、あるいは問いを持つ人）</li>
-                <li><strong>+</strong> — 上記に含まれない多様なアイデンティティ（インターセックス、アセクシュアル等）を含意します</li>
-            </ul>
+            <div class="term-grid">
+                <div class="term-card">
+                    <div class="term-letter">L</div>
+                    <div class="term-content">
+                        <strong>レズビアン</strong>
+                        <p>女性に恋愛感情や性的魅力を抱く女性</p>
+                    </div>
+                </div>
+                <div class="term-card">
+                    <div class="term-letter">G</div>
+                    <div class="term-content">
+                        <strong>ゲイ</strong>
+                        <p>男性に恋愛感情や性的魅力を抱く男性</p>
+                    </div>
+                </div>
+                <div class="term-card">
+                    <div class="term-letter">B</div>
+                    <div class="term-content">
+                        <strong>バイセクシュアル</strong>
+                        <p>男女双方に惹かれる可能性がある人</p>
+                    </div>
+                </div>
+                <div class="term-card">
+                    <div class="term-letter">T</div>
+                    <div class="term-content">
+                        <strong>トランスジェンダー</strong>
+                        <p>出生時に割り当てられた性別と自己認識が異なる人</p>
+                    </div>
+                </div>
+                <div class="term-card">
+                    <div class="term-letter">Q</div>
+                    <div class="term-content">
+                        <strong>クィア / クエスチョニング</strong>
+                        <p>既存の枠に当てはまらない、あるいは問いを持つ人</p>
+                    </div>
+                </div>
+                <div class="term-card">
+                    <div class="term-letter">+</div>
+                    <div class="term-content">
+                        <strong>その他のアイデンティティ</strong>
+                        <p>パンセクシュアル、アセクシュアル、インターセックス、ノンバイナリーなど</p>
+                    </div>
+                </div>
+            </div>
+            <p class="citation">出典: 認定NPO法人 虹色ダイバーシティ「LGBTQ+基礎知識」<a href="https://nijiirodiversity.jp/" target="_blank" rel="noopener">https://nijiirodiversity.jp/</a></p>
+        </section>
+
+        <section>
+            <h2 id="statistics">日本の現状とデータ</h2>
+            <p>日本におけるLGBTQ+の割合や社会状況について、信頼できる調査データをご紹介します。</p>
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-number">8.9%</div>
+                    <div class="stat-label">日本におけるLGBTQ+層の割合</div>
+                    <p class="stat-source">出典: 電通ダイバーシティ・ラボ「LGBTQ+調査2020」</p>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">約70%</div>
+                    <div class="stat-label">職場でカミングアウトしていない割合</div>
+                    <p class="stat-source">出典: 日本労働組合総連合会「LGBT に関する職場の意識調査」2016</p>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">68%</div>
+                    <div class="stat-label">学校でいじめや暴力を経験した割合</div>
+                    <p class="stat-source">出典: 認定NPO法人 ReBit「LGBT 子ども・若者調査」2020</p>
+                </div>
+            </div>
         </section>
 
         <section>
             <h2 id="differences">性自認と性的指向の違い</h2>
-            <p>簡潔に言うと、<strong>性自認</strong>は「自分はどの性だと感じるか（自分の内面的な性）」、<strong>性的指向</strong>は「誰に惹かれるか（恋愛／性的な対象）」を指します。両者は独立しており、組み合わせは多様です。</p>
+            <p>これらは異なる概念ですが、しばしば混同されます。明確に理解することが大切です。</p>
+            <div class="comparison-box">
+                <div class="comparison-item">
+                    <h3>🧠 性自認（Gender Identity）</h3>
+                    <p><strong>「自分はどの性だと感じるか」</strong></p>
+                    <ul>
+                        <li>自分の内面的な性別の認識</li>
+                        <li>男性、女性、ノンバイナリー、Xジェンダーなど</li>
+                        <li>出生時に割り当てられた性別とは異なる場合がある</li>
+                    </ul>
+                </div>
+                <div class="comparison-item">
+                    <h3>💕 性的指向（Sexual Orientation）</h3>
+                    <p><strong>「誰に惹かれるか」</strong></p>
+                    <ul>
+                        <li>恋愛・性的な対象の性別</li>
+                        <li>異性愛、同性愛、両性愛、全性愛、無性愛など</li>
+                        <li>性自認とは独立した概念</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="note">💡 例：トランスジェンダー女性が女性に惹かれる場合、性自認は「女性」で性的指向は「レズビアン」となります。</p>
+            <p class="citation">出典: American Psychological Association「Understanding Sexual Orientation and Gender Identity」<a href="https://www.apa.org/topics/lgbtq" target="_blank" rel="noopener">https://www.apa.org/topics/lgbtq</a></p>
         </section>
 
         <section>
             <h2 id="issues">直面する課題</h2>
-            <p>LGBTQ+の人々は、差別、偏見、職場や学校でのハラスメント、医療アクセスの困難などを経験する場合があります。支援する側は当事者の声を尊重し、安全な環境づくりを意識することが重要です。</p>
+            <p>LGBTQ+の人々は、様々な社会的・心理的困難に直面しています。以下は主な課題です。</p>
+            <div class="issue-list">
+                <div class="issue-item">
+                    <span class="issue-icon">⚠️</span>
+                    <div>
+                        <strong>差別と偏見</strong>
+                        <p>社会の理解不足により、日常生活で差別的な扱いを受けることがあります。</p>
+                    </div>
+                </div>
+                <div class="issue-item">
+                    <span class="issue-icon">🏢</span>
+                    <div>
+                        <strong>職場・学校でのハラスメント</strong>
+                        <p>カミングアウトへの恐れ、いじめ、キャリアへの悪影響などが報告されています。</p>
+                    </div>
+                </div>
+                <div class="issue-item">
+                    <span class="issue-icon">🏥</span>
+                    <div>
+                        <strong>医療アクセスの困難</strong>
+                        <p>理解ある医療機関が少なく、適切な治療を受けにくい状況があります。</p>
+                    </div>
+                </div>
+                <div class="issue-item">
+                    <span class="issue-icon">⚖️</span>
+                    <div>
+                        <strong>法的保護の不足</strong>
+                        <p>日本では同性婚が認められておらず、パートナーシップ制度も地域によって異なります。</p>
+                    </div>
+                </div>
+                <div class="issue-item">
+                    <span class="issue-icon">😔</span>
+                    <div>
+                        <strong>メンタルヘルスへの影響</strong>
+                        <p>うつ病、不安障害、自殺念慮のリスクが一般集団より高いことが知られています。</p>
+                    </div>
+                </div>
+            </div>
+            <p class="citation">出典: 厚生労働省「性的指向及び性自認を理由とする職場における差別の解消に向けた取組について」令和2年<a href="https://www.mhlw.go.jp/" target="_blank" rel="noopener">https://www.mhlw.go.jp/</a></p>
         </section>
 
         <section>
             <h2 id="how-to-support">支援と応対のポイント</h2>
-            <ol>
-                <li>当事者の自己表現と言語（名前・代名詞）を尊重する。</li>
-                <li>個人的な質問は慎重に。必要がある場合は必ず許可を得る。</li>
-                <li>差別的発言や行動があれば、安全に介入する方法を学ぶ。</li>
-                <li>相談窓口や関係団体を案内できるように情報を備えておく。</li>
-            </ol>
+            <p>LGBTQ+の人々を支援するために、私たち一人ひとりができることがあります。</p>
+            <div class="support-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <strong>代名詞と名前を尊重する</strong>
+                        <p>本人が使用する名前や代名詞（彼・彼女・they など）を使用しましょう。不明な場合は丁寧に尋ねることも大切です。</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <strong>プライバシーを守る</strong>
+                        <p>個人的な質問は慎重に。本人の許可なく性的指向や性自認について他人に話さないようにしましょう。</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <strong>アライ（味方）になる</strong>
+                        <p>差別的な発言や行動を見かけたら、安全な方法で介入しましょう。沈黙は容認と受け取られることもあります。</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <strong>学び続ける</strong>
+                        <p>LGBTQ+に関する理解を深め、最新の情報にアップデートし続けることが重要です。</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <strong>リソースを案内する</strong>
+                        <p>相談窓口や支援団体の情報を把握し、必要な人に適切に案内できるようにしましょう。</p>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <section>
             <h2 id="resources">相談窓口・リソース</h2>
-            <ul>
-                <li><a href="https://www.outjapan.org/" target="_blank" rel="noopener">OUT JAPAN（日本のLGBT支援団体）</a></li>
-                <li><a href="https://rainbow-pride.jp/" target="_blank" rel="noopener">レインボープライド関連情報</a></li>
-                <li>地域の保健所やNPOの相談窓口（自治体のページを参照してください）</li>
-            </ul>
+            <p>困ったときや相談したいときに利用できる信頼できる窓口やリソースです。</p>
+            <div class="resource-grid">
+                <div class="resource-card">
+                    <h3>🌈 認定NPO法人 虹色ダイバーシティ</h3>
+                    <p>企業・団体向けのLGBTQ+研修やコンサルティングを提供</p>
+                    <a href="https://nijiirodiversity.jp/" target="_blank" rel="noopener">https://nijiirodiversity.jp/</a>
+                </div>
+                <div class="resource-card">
+                    <h3>🏳️‍🌈 認定NPO法人 ReBit</h3>
+                    <p>教育現場でのLGBTQ+支援、キャリア支援を展開</p>
+                    <a href="https://rebitlgbt.org/" target="_blank" rel="noopener">https://rebitlgbt.org/</a>
+                </div>
+                <div class="resource-card">
+                    <h3>📞 よりそいホットライン</h3>
+                    <p>24時間無料電話相談（LGBTQ+専門ラインあり）</p>
+                    <p><strong>0120-279-338</strong></p>
+                    <a href="https://www.since2011.net/yorisoi/" target="_blank" rel="noopener">https://www.since2011.net/yorisoi/</a>
+                </div>
+                <div class="resource-card">
+                    <h3>💼 JobRainbow</h3>
+                    <p>LGBTQ+フレンドリーな就職・転職支援サービス</p>
+                    <a href="https://jobrainbow.jp/" target="_blank" rel="noopener">https://jobrainbow.jp/</a>
+                </div>
+                <div class="resource-card">
+                    <h3>🏥 はりっち（PROUD CLINIC）</h3>
+                    <p>LGBTQ+フレンドリーな医療機関検索</p>
+                    <a href="https://proudlife.org/" target="_blank" rel="noopener">https://proudlife.org/</a>
+                </div>
+                <div class="resource-card">
+                    <h3>📚 東京レインボープライド</h3>
+                    <p>日本最大級のLGBTQ+イベント・啓発活動</p>
+                    <a href="https://tokyorainbowpride.com/" target="_blank" rel="noopener">https://tokyorainbowpride.com/</a>
+                </div>
+            </div>
         </section>
 
         <section>
             <h2 id="faq">よくある質問（FAQ）</h2>
             <div class="faq">
                 <button class="faq-toggle" aria-expanded="false">Q: 性自認と性的指向は変わりますか？</button>
-                <div class="faq-body">A: 人によって異なります。ライフステージや自己理解の変化で変わることもあれば、変わらない人もいます。重要なのは本人の自己表現と選択を尊重することです。</div>
+                <div class="faq-body">A: 人によって異なります。ライフステージや自己理解の変化で変わることもあれば、変わらない人もいます。重要なのは本人の自己表現と選択を尊重することです。性的指向や性自認は「選択」や「流行」ではなく、その人の本質的な部分です。</div>
             </div>
             <div class="faq">
                 <button class="faq-toggle" aria-expanded="false">Q: トランスジェンダーの人は全員手術を受けますか？</button>
-                <div class="faq-body">A: いいえ。医療的介入（ホルモン治療や手術）を選ぶかは個人の選択で、必須ではありません。適切な支援と情報提供が重要です。</div>
+                <div class="faq-body">A: いいえ。医療的介入（ホルモン治療や手術）を選ぶかは個人の選択で、必須ではありません。トランスジェンダーであることと医療的移行は別の問題です。適切な支援と情報提供が重要です。</div>
             </div>
             <div class="faq">
                 <button class="faq-toggle" aria-expanded="false">Q: 子どもがLGBTQ+かもしれないと気づいたら？</button>
-                <div class="faq-body">A: 急に結論づけず、安心できる場と傾聴で応じてください。専門の相談窓口に繋ぐとともに、教育機関や医療機関と連携する場合もあります。</div>
+                <div class="faq-body">A: 急に結論づけず、安心できる場と傾聴で応じてください。専門の相談窓口に繋ぐとともに、教育機関や医療機関と連携する場合もあります。否定したり矯正しようとしたりせず、子どもの気持ちを受け止めることが最も重要です。</div>
+            </div>
+            <div class="faq">
+                <button class="faq-toggle" aria-expanded="false">Q: 「LGBT」と「LGBTQ+」の違いは？</button>
+                <div class="faq-body">A: 「LGBT」は4つの頭文字ですが、「LGBTQ+」はクィア/クエスチョニングを含み、さらに「+」でその他の多様なアイデンティティを包括します。より包括的な表現として「LGBTQ+」が推奨されています。</div>
+            </div>
+            <div class="faq">
+                <button class="faq-toggle" aria-expanded="false">Q: 間違った呼び方をしてしまったら？</button>
+                <div class="faq-body">A: 素直に謝罪し、正しい呼び方を確認して今後気をつけましょう。過度に謝罪し続けると相手を疲れさせることもあるので、簡潔に謝って前向きに改善する姿勢が大切です。</div>
+            </div>
+            <div class="faq">
+                <button class="faq-toggle" aria-expanded="false">Q: アライ（Ally）とは何ですか？</button>
+                <div class="faq-body">A: アライとは、LGBTQ+コミュニティを理解し、支援する人のことです。LGBTQ+当事者でなくても、差別に反対し、平等な社会を目指す行動をとる人をアライと呼びます。</div>
             </div>
         </section>
 
         <section>
-            <h2 id="references">参考・引用</h2>
-            <ul>
-                <li>内閣府・男女共同参画局の資料（ジェンダーに関する基礎知識）</li>
-                <li>各種NPO・支援団体の公開リソース</li>
+            <h2 id="next-steps">さらに学ぶために</h2>
+            <p>より詳しい情報を学びたい方は、以下のリソースをご活用ください。</p>
+            <div class="next-link">
+                <a href="../1/blog1.html">📖 LGBTQ+深掘り解説 — 歴史・法制度・具体的事例（blog1）</a>
+            </div>
+        </section>
+
+        <section>
+            <h2 id="references">参考文献・出典一覧</h2>
+            <ul class="reference-list">
+                <li>内閣府男女共同参画局「性的指向・性自認に関する取組」<a href="https://www.gender.go.jp/" target="_blank" rel="noopener">https://www.gender.go.jp/</a></li>
+                <li>厚生労働省「性的指向及び性自認を理由とする職場における差別の解消に向けた取組について」令和2年</li>
+                <li>認定NPO法人 虹色ダイバーシティ「LGBTQ+基礎知識」<a href="https://nijiirodiversity.jp/" target="_blank" rel="noopener">https://nijiirodiversity.jp/</a></li>
+                <li>認定NPO法人 ReBit「LGBT子ども・若者調査2020」<a href="https://rebitlgbt.org/" target="_blank" rel="noopener">https://rebitlgbt.org/</a></li>
+                <li>電通ダイバーシティ・ラボ「LGBTQ+調査2020」</li>
+                <li>日本労働組合総連合会「LGBTに関する職場の意識調査」2016</li>
+                <li>American Psychological Association「Understanding Sexual Orientation and Gender Identity」<a href="https://www.apa.org/topics/lgbtq" target="_blank" rel="noopener">https://www.apa.org/topics/lgbtq</a></li>
             </ul>
         </section>
 
