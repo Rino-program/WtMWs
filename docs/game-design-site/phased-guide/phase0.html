@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 0: MVP - バーチャル水族館ゲーム開発ガイド</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="progress-indicator">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo">
+                <span class="logo-icon">🐠</span>
+                <span class="logo-text">バーチャル水族館ゲーム</span>
+            </div>
+            <h1 class="header-title">Phase 0: MVP</h1>
+        </div>
+    </header>
+
+    <nav class="phase-navigation">
+        <div class="nav-container">
+            <button class="phase-btn" data-phase="overview">
+                <span class="phase-icon">📖</span>
+                <span class="phase-label">概要</span>
+            </button>
+            <button class="phase-btn active" data-phase="phase0">
+                <span class="phase-icon">🎯</span>
+                <span class="phase-label">Phase 0<br>MVP</span>
+            </button>
+            <button class="phase-btn" data-phase="phase1">
+                <span class="phase-icon">🏗️</span>
+                <span class="phase-label">Phase 1<br>基本構造</span>
+            </button>
+            <button class="phase-btn" data-phase="phase2">
+                <span class="phase-icon">⚙️</span>
+                <span class="phase-label">Phase 2<br>ロジック</span>
+            </button>
+            <button class="phase-btn" data-phase="phase3">
+                <span class="phase-icon">💻</span>
+                <span class="phase-label">Phase 3<br>UI</span>
+            </button>
+            <button class="phase-btn" data-phase="phase4">
+                <span class="phase-icon">📦</span>
+                <span class="phase-label">Phase 4<br>データ</span>
+            </button>
+            <button class="phase-btn" data-phase="phase5">
+                <span class="phase-icon">✨</span>
+                <span class="phase-label">Phase 5<br>追加機能</span>
+            </button>
+            <button class="phase-btn" data-phase="bugfix">
+                <span class="phase-icon">🐛</span>
+                <span class="phase-label">バグ対策</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section class="phase-section active">
+            <div class="section-container">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="title-icon">🎯</span>
+                        Phase 0: MVP（最小限の機能）
+                    </h2>
+                    <p class="section-subtitle">まず動くものを作る - シンプルな水族館ゲームの基礎</p>
+                </div>
+
+                <!-- このフェーズの目標 -->
+                <div class="content-card">
+                    <h3>🎯 このフェーズの目標</h3>
+                    <p>Phase 0では、<strong>最小限の機能で動作するゲーム</strong>を作ります。完璧を目指さず、まず「動くもの」を作ることが重要です。</p>
+                    
+                    <div class="alert alert-info">
+                        <strong>💡 MVPとは？</strong><br>
+                        Minimum Viable Product（最小実行可能製品）の略。必要最小限の機能だけを実装し、早く動くものを作ることで、開発の方向性を確認できます。
+                    </div>
+
+                    <h4>達成すべきこと：</h4>
+                    <ul>
+                        <li>✅ 水槽を1つ作成できる</li>
+                        <li>✅ 魚を追加できる（名前と種類のみ）</li>
+                        <li>✅ 魚のリストを表示できる</li>
+                        <li>✅ 簡単なコマンド操作ができる</li>
+                        <li>✅ プログラムを終了できる</li>
+                    </ul>
+
+                    <div class="alert alert-warning">
+                        <strong>⚠️ このフェーズで「やらない」こと：</strong><br>
+                        複雑な水質管理、健康状態、時間経過、セーブ/ロード機能などは後のフェーズで実装します。まずはシンプルに！
+                    </div>
+                </div>
+
+                <!-- 所要時間と前提知識 -->
+                <div class="content-card">
+                    <h3>⏱️ 所要時間と前提知識</h3>
+                    
+                    <div class="requirements-list">
+                        <div class="requirement-item">
+                            <span class="req-icon">⏰</span>
+                            <div class="req-content">
+                                <h4>所要時間</h4>
+                                <p>約2〜3時間（コーディング + テスト）</p>
+                            </div>
+                        </div>
+                        <div class="requirement-item">
+                            <span class="req-icon">📚</span>
+                            <div class="req-content">
+                                <h4>必要な知識</h4>
+                                <p>Pythonの基本文法（クラス、リスト、辞書、関数）</p>
+                            </div>
+                        </div>
+                        <div class="requirement-item">
+                            <span class="req-icon">🛠️</span>
+                            <div class="req-content">
+                                <h4>必要なツール</h4>
+                                <p>Python 3.9以上、テキストエディタ</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ステップ1: プロジェクト構造の作成 -->
+                <div class="content-card">
+                    <h3><span class="step-number">1</span>プロジェクト構造の作成</h3>
+                    <p>まず、プロジェクトのフォルダとファイルを作成しましょう。</p>
+
+                    <h4>📁 ディレクトリ構造：</h4>
+                    <pre><code>virtual-aquarium/
+├── main.py          # メインプログラム（ここから実行）
+├── tank.py          # 水槽クラス
+└── fish.py          # 魚クラス</code></pre>
+
+                    <h4>🖥️ コマンド実行：</h4>
+                    <pre><code># プロジェクトフォルダを作成
+mkdir virtual-aquarium
+cd virtual-aquarium
+
+# 必要なファイルを作成
+touch main.py tank.py fish.py
+
+# 確認
+ls -la</code></pre>
+
+                    <div class="alert alert-success">
+                        <strong>✅ 確認ポイント：</strong><br>
+                        3つのファイル（main.py, tank.py, fish.py）が作成されていればOKです！
+                    </div>
+                </div>
+
+                <!-- ステップ2: 魚クラスの実装 -->
+                <div class="content-card">
+                    <h3><span class="step-number">2</span>魚クラスの実装（fish.py）</h3>
+                    <p>最もシンプルなクラスから始めます。魚は「名前」と「種類」だけを持ちます。</p>
+
+                    <h4>💻 完全なコード（fish.py）：</h4>
+                    <pre><code>"""
+魚クラス - Phase 0 MVP版
+最小限の機能のみ実装
+"""
+
+class Fish:
+    """
+    水族館の魚を表すクラス
+    
+    Phase 0では名前と種類のみを管理します
+    """
+    
+    def __init__(self, name: str, species: str):
+        """
+        魚を初期化
+        
+        Args:
+            name (str): 魚の名前（例: "ニモ"）
+            species (str): 魚の種類（例: "金魚"）
+        """
+        self.name = name
+        self.species = species
+    
+    def __str__(self) -> str:
+        """
+        魚の情報を文字列で返す
+        
+        Returns:
+            str: 魚の情報（例: "ニモ (金魚)"）
+        """
+        return f"{self.name} ({self.species})"
+    
+    def __repr__(self) -> str:
+        """
+        魚のデバッグ用文字列を返す
+        
+        Returns:
+            str: デバッグ情報
+        """
+        return f"Fish(name='{self.name}', species='{self.species}')"
+
+
+# ===== テストコード =====
+# このファイルを直接実行したときのみ動作
+if __name__ == "__main__":
+    print("🐠 魚クラスのテスト開始")
+    print("-" * 40)
+    
+    # テスト1: 魚の作成
+    fish1 = Fish("ニモ", "クマノミ")
+    print(f"✅ テスト1: {fish1}")
+    
+    # テスト2: 別の魚を作成
+    fish2 = Fish("金太郎", "金魚")
+    print(f"✅ テスト2: {fish2}")
+    
+    # テスト3: 魚の名前にアクセス
+    print(f"✅ テスト3: {fish1.name}の種類は{fish1.species}です")
+    
+    print("-" * 40)
+    print("🎉 すべてのテスト完了！")
+</code></pre>
+
+                    <h4>🧪 テスト実行：</h4>
+                    <pre><code># fish.pyを実行してテスト
+python fish.py</code></pre>
+
+                    <h4>期待される出力：</h4>
+                    <pre><code>🐠 魚クラスのテスト開始
+----------------------------------------
+✅ テスト1: ニモ (クマノミ)
+✅ テスト2: 金太郎 (金魚)
+✅ テスト3: ニモの種類はクマノミです
+----------------------------------------
+🎉 すべてのテスト完了！</code></pre>
+
+                    <div class="alert alert-info">
+                        <strong>📝 コードの解説：</strong><br>
+                        <ul>
+                            <li><code>__init__</code>: クラスの初期化メソッド（コンストラクタ）</li>
+                            <li><code>__str__</code>: print()で呼ばれる文字列表現</li>
+                            <li><code>__repr__</code>: デバッグ用の詳細な文字列表現</li>
+                            <li><code>if __name__ == "__main__"</code>: このファイルを直接実行したときのみ動作</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- ステップ3: 水槽クラスの実装 -->
+                <div class="content-card">
+                    <h3><span class="step-number">3</span>水槽クラスの実装（tank.py）</h3>
+                    <p>魚を入れる水槽を作ります。水槽は複数の魚を管理できます。</p>
+
+                    <h4>💻 完全なコード（tank.py）：</h4>
+                    <pre><code>"""
+水槽クラス - Phase 0 MVP版
+魚のリストを管理するシンプルな実装
+"""
+
+from fish import Fish
+from typing import List, Optional
+
+
+class Tank:
+    """
+    水族館の水槽を表すクラス
+    
+    Phase 0では魚のリスト管理のみ実装
+    """
+    
+    def __init__(self, name: str = "メイン水槽"):
+        """
+        水槽を初期化
+        
+        Args:
+            name (str): 水槽の名前
+        """
+        self.name = name
+        self.fish_list: List[Fish] = []
+    
+    def add_fish(self, fish: Fish) -> bool:
+        """
+        水槽に魚を追加
+        
+        Args:
+            fish (Fish): 追加する魚
+            
+        Returns:
+            bool: 追加成功ならTrue
+        """
+        self.fish_list.append(fish)
+        return True
+    
+    def remove_fish(self, fish_name: str) -> bool:
+        """
+        水槽から魚を削除
+        
+        Args:
+            fish_name (str): 削除する魚の名前
+            
+        Returns:
+            bool: 削除成功ならTrue、魚が見つからなければFalse
+        """
+        for fish in self.fish_list:
+            if fish.name == fish_name:
+                self.fish_list.remove(fish)
+                return True
+        return False
+    
+    def find_fish(self, fish_name: str) -> Optional[Fish]:
+        """
+        名前で魚を検索
+        
+        Args:
+            fish_name (str): 検索する魚の名前
+            
+        Returns:
+            Optional[Fish]: 見つかった魚、見つからなければNone
+        """
+        for fish in self.fish_list:
+            if fish.name == fish_name:
+                return fish
+        return None
+    
+    def get_fish_count(self) -> int:
+        """
+        水槽内の魚の数を返す
+        
+        Returns:
+            int: 魚の数
+        """
+        return len(self.fish_list)
+    
+    def list_all_fish(self) -> List[Fish]:
+        """
+        水槽内のすべての魚のリストを返す
+        
+        Returns:
+            List[Fish]: 魚のリスト
+        """
+        return self.fish_list.copy()
+    
+    def __str__(self) -> str:
+        """
+        水槽の情報を文字列で返す
+        
+        Returns:
+            str: 水槽の情報
+        """
+        fish_count = self.get_fish_count()
+        return f"{self.name} (魚: {fish_count}匹)"
+
+
+# ===== テストコード =====
+if __name__ == "__main__":
+    print("🏊 水槽クラスのテスト開始")
+    print("-" * 40)
+    
+    # テスト1: 水槽の作成
+    tank = Tank("テスト水槽")
+    print(f"✅ テスト1: {tank}")
+    
+    # テスト2: 魚を追加
+    fish1 = Fish("ニモ", "クマノミ")
+    tank.add_fish(fish1)
+    print(f"✅ テスト2: 魚を追加 → {tank}")
+    
+    # テスト3: 複数の魚を追加
+    tank.add_fish(Fish("ドリー", "ナンヨウハギ"))
+    tank.add_fish(Fish("金太郎", "金魚"))
+    print(f"✅ テスト3: 魚を追加 → {tank}")
+    
+    # テスト4: 魚のリストを表示
+    print("✅ テスト4: 魚リスト:")
+    for fish in tank.list_all_fish():
+        print(f"   - {fish}")
+    
+    # テスト5: 魚を検索
+    found_fish = tank.find_fish("ニモ")
+    if found_fish:
+        print(f"✅ テスト5: 魚を検索 → 見つかりました: {found_fish}")
+    
+    # テスト6: 魚を削除
+    tank.remove_fish("ドリー")
+    print(f"✅ テスト6: 魚を削除 → {tank}")
+    
+    print("-" * 40)
+    print("🎉 すべてのテスト完了！")
+</code></pre>
+
+                    <h4>🧪 テスト実行：</h4>
+                    <pre><code># tank.pyを実行してテスト
+python tank.py</code></pre>
+
+                    <div class="alert alert-info">
+                        <strong>📝 重要なポイント：</strong><br>
+                        <ul>
+                            <li><code>List[Fish]</code>: 型ヒント - Fishオブジェクトのリストであることを明示</li>
+                            <li><code>Optional[Fish]</code>: 魚が見つかるか、Noneを返す可能性がある</li>
+                            <li><code>.copy()</code>: リストのコピーを返すことで、元のリストを保護</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- ステップ4: メインプログラムの実装 -->
+                <div class="content-card">
+                    <h3><span class="step-number">4</span>メインプログラムの実装（main.py）</h3>
+                    <p>ユーザーがコマンドを入力してゲームを操作できるようにします。</p>
+
+                    <h4>💻 完全なコード（main.py）：</h4>
+                    <pre><code>"""
+バーチャル水族館ゲーム - Phase 0 MVP版
+メインプログラム
+"""
+
+from tank import Tank
+from fish import Fish
+
+
+def print_header():
+    """ゲームのヘッダーを表示"""
+    print("\n" + "=" * 50)
+    print("🐠 バーチャル水族館ゲーム - Phase 0 MVP")
+    print("=" * 50 + "\n")
+
+
+def print_menu():
+    """コマンドメニューを表示"""
+    print("\n📋 利用可能なコマンド:")
+    print("  1. add    - 魚を追加")
+    print("  2. list   - 魚のリストを表示")
+    print("  3. remove - 魚を削除")
+    print("  4. find   - 魚を検索")
+    print("  5. help   - ヘルプを表示")
+    print("  6. quit   - ゲームを終了")
+    print()
+
+
+def cmd_add_fish(tank: Tank):
+    """魚を追加するコマンド"""
+    print("\n🐟 魚を追加します")
+    name = input("魚の名前を入力: ").strip()
+    
+    if not name:
+        print("❌ 名前を入力してください")
+        return
+    
+    # 同じ名前の魚がいないかチェック
+    if tank.find_fish(name):
+        print(f"❌ '{name}'という名前の魚はすでにいます")
+        return
+    
+    species = input("魚の種類を入力（例: 金魚、クマノミ）: ").strip()
+    
+    if not species:
+        species = "不明"
+    
+    fish = Fish(name, species)
+    tank.add_fish(fish)
+    print(f"✅ {fish}を追加しました！")
+
+
+def cmd_list_fish(tank: Tank):
+    """魚のリストを表示するコマンド"""
+    print("\n🐠 魚のリスト")
+    print("-" * 40)
+    
+    fish_list = tank.list_all_fish()
+    
+    if not fish_list:
+        print("水槽に魚はいません")
+    else:
+        for i, fish in enumerate(fish_list, 1):
+            print(f"{i}. {fish}")
+    
+    print(f"\n合計: {tank.get_fish_count()}匹")
+    print("-" * 40)
+
+
+def cmd_remove_fish(tank: Tank):
+    """魚を削除するコマンド"""
+    print("\n🗑️ 魚を削除します")
+    name = input("削除する魚の名前を入力: ").strip()
+    
+    if not name:
+        print("❌ 名前を入力してください")
+        return
+    
+    if tank.remove_fish(name):
+        print(f"✅ {name}を削除しました")
+    else:
+        print(f"❌ {name}という名前の魚は見つかりませんでした")
+
+
+def cmd_find_fish(tank: Tank):
+    """魚を検索するコマンド"""
+    print("\n🔍 魚を検索します")
+    name = input("検索する魚の名前を入力: ").strip()
+    
+    if not name:
+        print("❌ 名前を入力してください")
+        return
+    
+    fish = tank.find_fish(name)
+    
+    if fish:
+        print(f"✅ 見つかりました: {fish}")
+    else:
+        print(f"❌ {name}という名前の魚は見つかりませんでした")
+
+
+def main():
+    """メイン処理"""
+    print_header()
+    print("🎮 ゲームを開始します！")
+    print("'help'と入力するとコマンド一覧が表示されます")
+    
+    # 水槽を作成
+    tank = Tank("メイン水槽")
+    
+    # テスト用の魚を追加（オプション）
+    tank.add_fish(Fish("サンプル太郎", "金魚"))
+    print(f"\n水槽を作成しました: {tank}")
+    
+    # コマンドループ
+    while True:
+        command = input("\n🎮 コマンド> ").strip().lower()
+        
+        if command == "quit" or command == "q":
+            print("\n👋 ゲームを終了します。ありがとうございました！")
+            break
+        
+        elif command == "add" or command == "a":
+            cmd_add_fish(tank)
+        
+        elif command == "list" or command == "l":
+            cmd_list_fish(tank)
+        
+        elif command == "remove" or command == "r":
+            cmd_remove_fish(tank)
+        
+        elif command == "find" or command == "f":
+            cmd_find_fish(tank)
+        
+        elif command == "help" or command == "h":
+            print_menu()
+        
+        elif command == "":
+            # 何も入力されなかった場合はスキップ
+            continue
+        
+        else:
+            print(f"❌ 不明なコマンド: '{command}'")
+            print("'help'と入力してコマンド一覧を確認してください")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n\n👋 ゲームを中断しました")
+    except Exception as e:
+        print(f"\n❌ エラーが発生しました: {e}")
+</code></pre>
+
+                    <h4>🎮 ゲーム実行：</h4>
+                    <pre><code># ゲームを起動
+python main.py</code></pre>
+
+                    <h4>実行例：</h4>
+                    <pre><code>==================================================
+🐠 バーチャル水族館ゲーム - Phase 0 MVP
+==================================================
+
+🎮 ゲームを開始します！
+'help'と入力するとコマンド一覧が表示されます
+
+水槽を作成しました: メイン水槽 (魚: 1匹)
+
+🎮 コマンド> help
+
+📋 利用可能なコマンド:
+  1. add    - 魚を追加
+  2. list   - 魚のリストを表示
+  3. remove - 魚を削除
+  4. find   - 魚を検索
+  5. help   - ヘルプを表示
+  6. quit   - ゲームを終了
+
+🎮 コマンド> list
+
+🐠 魚のリスト
+----------------------------------------
+1. サンプル太郎 (金魚)
+
+合計: 1匹
+----------------------------------------
+
+🎮 コマンド> add
+
+🐟 魚を追加します
+魚の名前を入力: ニモ
+魚の種類を入力（例: 金魚、クマノミ）: クマノミ
+✅ ニモ (クマノミ)を追加しました！
+
+🎮 コマンド> list
+
+🐠 魚のリスト
+----------------------------------------
+1. サンプル太郎 (金魚)
+2. ニモ (クマノミ)
+
+合計: 2匹
+----------------------------------------
+
+🎮 コマンド> quit
+
+👋 ゲームを終了します。ありがとうございました！
+</code></pre>
+                </div>
+
+                <!-- ステップ5: 動作確認 -->
+                <div class="content-card">
+                    <h3><span class="step-number">5</span>動作確認とテスト</h3>
+                    <p>すべてのコマンドが正しく動作するか確認しましょう。</p>
+
+                    <h4>✅ チェックリスト：</h4>
+                    <ul class="checklist">
+                        <li>ゲームが起動できる</li>
+                        <li>helpコマンドでメニューが表示される</li>
+                        <li>addコマンドで魚を追加できる</li>
+                        <li>listコマンドで魚のリストが表示される</li>
+                        <li>findコマンドで魚を検索できる</li>
+                        <li>removeコマンドで魚を削除できる</li>
+                        <li>quitコマンドでゲームを終了できる</li>
+                        <li>同じ名前の魚を追加しようとするとエラーが表示される</li>
+                        <li>存在しない魚を削除しようとするとエラーが表示される</li>
+                    </ul>
+
+                    <h4>🧪 テストシナリオ：</h4>
+                    <div class="alert alert-info">
+                        <strong>推奨テスト手順：</strong><br>
+                        <ol>
+                            <li>ゲームを起動</li>
+                            <li><code>help</code>でコマンド一覧を確認</li>
+                            <li><code>list</code>で初期状態を確認</li>
+                            <li><code>add</code>で魚を3匹追加</li>
+                            <li><code>list</code>で3匹が表示されることを確認</li>
+                            <li><code>find</code>で1匹を検索</li>
+                            <li><code>remove</code>で1匹を削除</li>
+                            <li><code>list</code>で2匹になっていることを確認</li>
+                            <li><code>quit</code>で終了</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- よくある問題と解決方法 -->
+                <div class="content-card">
+                    <h3>🐛 よくある問題と解決方法</h3>
+
+                    <h4>問題1: ModuleNotFoundError: No module named 'fish'</h4>
+                    <div class="alert alert-danger">
+                        <strong>原因：</strong> fish.pyやtank.pyが同じディレクトリにない<br>
+                        <strong>解決方法：</strong>
+                        <ul>
+                            <li>main.py、fish.py、tank.pyが同じフォルダにあるか確認</li>
+                            <li>正しいディレクトリで実行しているか確認: <code>ls -la</code></li>
+                        </ul>
+                    </div>
+
+                    <h4>問題2: KeyboardInterrupt が正しく動作しない</h4>
+                    <div class="alert alert-danger">
+                        <strong>原因：</strong> Ctrl+Cで中断したときの処理<br>
+                        <strong>解決方法：</strong> これは正常な動作です。<code>quit</code>コマンドで終了するか、Ctrl+Cで強制終了できます
+                    </div>
+
+                    <h4>問題3: 日本語が文字化けする</h4>
+                    <div class="alert alert-danger">
+                        <strong>原因：</strong> ターミナルの文字コード設定<br>
+                        <strong>解決方法：</strong>
+                        <ul>
+                            <li>ファイルをUTF-8で保存</li>
+                            <li>ターミナルの文字コードをUTF-8に設定</li>
+                            <li>Windowsの場合: <code>chcp 65001</code> を実行</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 改善のアイデア -->
+                <div class="content-card">
+                    <h3>💡 このMVPを改善するアイデア</h3>
+                    <p>Phase 0が完成したら、以下のような改善を考えてみましょう（Phase 1以降で実装します）：</p>
+
+                    <div class="tips-grid">
+                        <div class="tip-card">
+                            <h4>🎨 より良い表示</h4>
+                            <p>魚のサイズ、健康状態、色などの情報を追加</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4>⏰ 時間の概念</h4>
+                            <p>日数が経過すると魚が成長したり、空腹になったり</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4>💧 水質管理</h4>
+                            <p>pH、温度、清潔度などのパラメータ</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4>💾 セーブ機能</h4>
+                            <p>ゲームの状態をファイルに保存して、後で再開できる</p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success">
+                        <strong>🎉 でも今は焦らず...</strong><br>
+                        まずはPhase 0のMVPを完成させましょう！動くものができたら大きな一歩です。
+                    </div>
+                </div>
+
+                <!-- 完了チェックリスト -->
+                <div class="content-card">
+                    <h3>✅ Phase 0 完了チェックリスト</h3>
+                    <p>すべてにチェックが入ったら、Phase 1に進む準備ができています！</p>
+
+                    <ul class="checklist">
+                        <li>3つのファイル（main.py、fish.py、tank.py）を作成した</li>
+                        <li>fish.pyのテストが通る</li>
+                        <li>tank.pyのテストが通る</li>
+                        <li>ゲームが起動する</li>
+                        <li>魚を追加できる</li>
+                        <li>魚のリストを表示できる</li>
+                        <li>魚を検索できる</li>
+                        <li>魚を削除できる</li>
+                        <li>エラー処理が正しく動作する</li>
+                        <li>コードにコメントを追加した</li>
+                    </ul>
+                </div>
+
+                <!-- 次のステップ -->
+                <div class="content-card next-step-card">
+                    <h3>🎉 おめでとうございます！</h3>
+                    <p>Phase 0のMVPが完成しました！動くゲームができましたね。次はPhase 1で、より本格的なクラス設計を行います。</p>
+                    
+                    <div class="button-group">
+                        <a href="phase1.html" class="btn btn-primary btn-large">
+                            <span class="btn-icon">🏗️</span>
+                            Phase 1: 基本構造の実装へ進む
+                        </a>
+                        <a href="index.html" class="btn btn-secondary">
+                            <span class="btn-icon">📖</span>
+                            概要ページに戻る
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <p>© 2025 バーチャル水族館ゲーム開発プロジェクト</p>
+            <p>Phase 0: MVP - まず動くものを作る</p>
+        </div>
+    </footer>
+
+    <script src="navigation.js"></script>
+    <script>
+        // このページ専用の初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeChecklist('phase0');
+        });
+    </script>
+</body>
+</html>
