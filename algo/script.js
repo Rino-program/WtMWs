@@ -752,7 +752,7 @@ class SortingAlgorithms {
     // 描画メソッド（ちらつき防止）
     draw(array, highlightIndices = [], colors = []) {
         // requestAnimationFrame を使って描画
-        this.drawAnimated(array, highlightIndices, colors);
+        this.canvas.drawArrayAnimated(array, highlightIndices, colors);
     }
     
     // バブルソート
@@ -4100,51 +4100,76 @@ class PerformanceGraph {
             swaps: []
         };
         this.labels = [];
+        this.chartAvailable = typeof Chart !== 'undefined';
         this.initChart();
     }
     
     initChart() {
-        const ctx = document.getElementById('performance-graph').getContext('2d');
+        // Check if Chart.js is available
+        if (!this.chartAvailable) {
+            console.warn('Chart.js is not available. Performance graph will not be displayed.');
+            // Hide the graph section if Chart.js is not available
+            const graphSection = document.querySelector('.graph-section');
+            if (graphSection) {
+                graphSection.style.display = 'none';
+            }
+            return;
+        }
         
-        this.chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: '実行時間 (ms)',
-                    data: [],
-                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
-                    borderColor: 'rgba(102, 126, 234, 1)',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
+        const canvas = document.getElementById('performance-graph');
+        if (!canvas) {
+            console.error('Performance graph canvas not found');
+            return;
+        }
+        
+        try {
+            const ctx = canvas.getContext('2d');
+            
+            this.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '実行時間 (ms)',
+                        data: [],
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'ミリ秒 (ms)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
                         title: {
                             display: true,
-                            text: 'ミリ秒 (ms)'
+                            text: 'アルゴリズムパフォーマンス比較'
                         }
                     }
-                },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    },
-                    title: {
-                        display: true,
-                        text: 'アルゴリズムパフォーマンス比較'
-                    }
                 }
-            }
-        });
+            });
+        } catch (error) {
+            console.error('Failed to initialize performance graph:', error);
+            this.chartAvailable = false;
+        }
     }
     
     updateGraph(algorithmName, timeMs, comparisons, swaps) {
+        if (!this.chartAvailable || !this.chart) return;
+        
         // Add data to all datasets
         this.labels.push(algorithmName);
         this.datasets.time.push(timeMs);
@@ -4164,6 +4189,8 @@ class PerformanceGraph {
     }
     
     updateGraphCompare(algo1Name, algo2Name, stats1, stats2) {
+        if (!this.chartAvailable || !this.chart) return;
+        
         // For compare mode, show both algorithms side by side
         const label = `${algo1Name} vs ${algo2Name}`;
         this.labels.push(label);
@@ -4186,6 +4213,8 @@ class PerformanceGraph {
     }
     
     updateGraphBenchmark(results) {
+        if (!this.chartAvailable || !this.chart) return;
+        
         // For benchmark mode, show average values for each algorithm
         results.forEach(result => {
             this.labels.push(result.algorithm);
@@ -4206,6 +4235,7 @@ class PerformanceGraph {
     }
     
     refreshChart() {
+        if (!this.chartAvailable || !this.chart) return;
         this.chart.data.labels = [...this.labels];
         
         // Get data for current type
@@ -4239,11 +4269,15 @@ class PerformanceGraph {
     }
     
     switchDataType(type) {
+        if (!this.chartAvailable || !this.chart) return;
+        
         this.currentDataType = type;
         this.refreshChart();
     }
     
     clear() {
+        if (!this.chartAvailable || !this.chart) return;
+        
         this.labels = [];
         this.datasets.time = [];
         this.datasets.comparisons = [];
@@ -4252,6 +4286,11 @@ class PerformanceGraph {
     }
     
     saveAsImage() {
+        if (!this.chartAvailable || !this.chart) {
+            alert('グラフが利用できません。Chart.jsが読み込まれているか確認してください。');
+            return;
+        }
+        
         const canvas = document.getElementById('performance-graph');
         const filename = `performance-graph-${Date.now()}.png`;
         DataExporter.exportGraphPNG('performance-graph', filename);
