@@ -258,7 +258,7 @@
                             配列サイズ: 
                             <span id="size-value" class="value-display">50</span>
                         </label>
-                        <input type="range" id="array-size" min="5" max="100" value="50" class="slider">
+                        <input type="range" id="array-size" min="5" max="3000" value="50" class="slider">
                     </div>
                     <div class="control-group">
                         <label for="value-range-min">値の範囲:</label>
@@ -391,6 +391,10 @@
                                 <input type="checkbox" id="sound-enabled">
                                 <span>効果音</span>
                             </label>
+                            <label class="checkbox-label" title="大配列時の描画を軽量化（1000要素以上で自動有効）">
+                                <input type="checkbox" id="lightweight-mode">
+                                <span>軽量モード 🚀</span>
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -405,7 +409,8 @@
                     <div class="canvas-wrapper">
                         <canvas id="canvas-single"></canvas>
                     </div>
-                    <!-- コードハイライトエリア -->
+                    <!-- TEMPORARILY DISABLED: コードハイライトエリア - バグが多いため一時的に無効化 -->
+                    <!-- 
                     <div class="code-highlight-area" id="code-highlight-single">
                         <h3>実行中のコード</h3>
                         <pre id="running-code-single"><code></code></pre>
@@ -414,6 +419,7 @@
                             <span id="current-line-text-single"></span>
                         </div>
                     </div>
+                    -->
                 </div>
 
                 <!-- 比較モード用キャンバス -->
