@@ -41,10 +41,6 @@ class AppState {
         this.isPaused = false;
         this.stepMode = false;
         
-        // 軽量モード関連
-        this.lightweightMode = false;
-        this.lightweightThreshold = 1000; // 1000要素以上で自動的に軽量モード
-        
         // 統計情報
         this.stats = {
             comparisons: 0,
@@ -109,9 +105,7 @@ class CanvasManager {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
-        this.resizeObserver = null;
         this.setupCanvas();
-        this.setupResizeObserver();
     }
     
     setupCanvas() {
@@ -120,77 +114,36 @@ class CanvasManager {
         const containerWidth = container.clientWidth - 40; // パディングを考慮
         const containerHeight = Math.min(500, Math.max(300, window.innerHeight * 0.3));
         
+        this.canvas.width = containerWidth;
+        this.canvas.height = containerHeight;
+        
         // ディスプレイの解像度に合わせてスケーリング
         const dpr = window.devicePixelRatio || 1;
-        
-        // CSS サイズを設定
         this.canvas.style.width = containerWidth + 'px';
         this.canvas.style.height = containerHeight + 'px';
         
-        // 実際の canvas サイズを DPR に合わせて設定
         this.canvas.width = containerWidth * dpr;
         this.canvas.height = containerHeight * dpr;
         
-        // コンテキストをスケーリング（論理ピクセル単位で描画できるように）
         this.ctx.scale(dpr, dpr);
-        
-        // 内部的に使用する論理サイズを保存
-        this.logicalWidth = containerWidth;
-        this.logicalHeight = containerHeight;
-    }
-    
-    setupResizeObserver() {
-        // ResizeObserver でコンテナサイズ変更を監視
-        if (typeof ResizeObserver !== 'undefined') {
-            this.resizeObserver = new ResizeObserver(() => {
-                this.setupCanvas();
-                // 現在の配列を再描画
-                if (appState.array && appState.array.length > 0) {
-                    this.drawArray(appState.array);
-                }
-            });
-            this.resizeObserver.observe(this.canvas.parentElement);
-        }
-    }
-    
-    setSize(container) {
-        // 外部から呼び出し可能なサイズ設定メソッド
-        this.setupCanvas();
-    }
-    
-    applyDPR() {
-        // DPR を適用（既に setupCanvas で行われているため、互換性のために残す）
-        this.setupCanvas();
+        this.ctx.canvas.style.width = containerWidth + 'px';
+        this.ctx.canvas.style.height = containerHeight + 'px';
     }
     
     clear() {
-        // 論理サイズでクリア
-        this.ctx.clearRect(0, 0, this.logicalWidth || this.canvas.width, this.logicalHeight || this.canvas.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
     
     drawArray(array, highlightIndices = [], colors = []) {
         this.clear();
         
-        // 論理サイズを使用して描画
-        const width = this.logicalWidth || this.canvas.width;
-        const height = this.logicalHeight || this.canvas.height;
-        
-        // マージン確保（軸やラベル用）
-        const marginTop = 40;
-        const marginBottom = 40;
-        const marginLeft = 20;
-        const marginRight = 20;
-        
-        const availableWidth = width - marginLeft - marginRight;
-        const availableHeight = height - marginTop - marginBottom;
-        
-        const barWidth = availableWidth / array.length;
+        const barWidth = this.canvas.width / array.length;
         const maxHeight = Math.max(...array, 1);
         
         for (let i = 0; i < array.length; i++) {
-            const barHeight = (array[i] / maxHeight) * availableHeight;
-            const x = marginLeft + (i * barWidth);
-            const y = marginTop + (availableHeight - barHeight);
+            const barHeight = (array[i] / maxHeight) * (this.canvas.height - 60);
+            const x = i * barWidth;
+            const y = this.canvas.height - barHeight - 10;
             
             // 色の決定
             let color = COLORS.DEFAULT;
@@ -208,26 +161,21 @@ class CanvasManager {
             this.ctx.lineWidth = 1;
             this.ctx.strokeRect(x + 2, y, barWidth - 4, barHeight);
             
-            // 値の表示（配列が小さい場合のみ）
-            if (appState.showValues && array.length <= 50) {
+            // 値の表示
+            if (appState.showValues && array.length <= 30) {
                 this.ctx.fillStyle = '#2d3748';
-                this.ctx.font = 'bold 11px Arial';
+                this.ctx.font = 'bold 12px Arial';
                 this.ctx.textAlign = 'center';
                 this.ctx.fillText(array[i], x + barWidth / 2, y - 5);
             }
             
-            // インデックスの表示（配列が小さい場合のみ）
-            if (appState.showIndices && array.length <= 50) {
+            // インデックスの表示
+            if (appState.showIndices && array.length <= 30) {
                 this.ctx.fillStyle = '#718096';
-                this.ctx.font = '9px Arial';
-                this.ctx.fillText(i, x + barWidth / 2, height - marginBottom + 15);
+                this.ctx.font = '10px Arial';
+                this.ctx.fillText(i, x + barWidth / 2, this.canvas.height - 2);
             }
         }
-    }
-    
-    // requestAnimationFrame を使った描画（ちらつき防止）
-    drawArrayAnimated(array, highlightIndices = [], colors = []) {
-        animationRenderer.requestDraw(this, array, highlightIndices, colors);
     }
     
     // グラフアルゴリズム用の描画
@@ -432,15 +380,6 @@ class CanvasManager {
 
 // スリープ関数（一時停止対応）
 function sleep(ms) {
-    // 軽量モード時はアニメーション間引き
-    if (appState.lightweightMode) {
-        // アニメーション頻度を下げる（10ステップに1回だけ描画）
-        appState.stats.currentStep = (appState.stats.currentStep || 0) + 1;
-        if (appState.stats.currentStep % 10 !== 0) {
-            ms = 0; // スキップ
-        }
-    }
-    
     return new Promise(resolve => {
         const checkPause = () => {
             if (!appState.isPaused && !appState.stepMode) {
@@ -462,55 +401,6 @@ function sleep(ms) {
         checkPause();
     });
 }
-
-// 軽量モードの自動切り替え
-function updateLightweightMode() {
-    const shouldEnable = appState.arraySize >= appState.lightweightThreshold;
-    if (shouldEnable !== appState.lightweightMode) {
-        appState.lightweightMode = shouldEnable;
-        if (shouldEnable) {
-            console.log(`🚀 軽量モードが有効になりました（配列サイズ: ${appState.arraySize}）`);
-        }
-    }
-}
-
-// ==========================================
-// アニメーションフレーム描画管理クラス（ちらつき防止）
-// ==========================================
-class AnimationFrameRenderer {
-    constructor() {
-        this.pendingDraws = new Map(); // canvasId -> {array, indices, colors}
-        this.isScheduled = false;
-    }
-    
-    // 描画リクエストをキューに追加（同じキャンバスの場合は上書き）
-    requestDraw(canvasManager, array, highlightIndices = [], colors = []) {
-        const canvasId = canvasManager.canvas.id;
-        this.pendingDraws.set(canvasId, {
-            manager: canvasManager,
-            array: [...array], // コピーして保存
-            highlightIndices: [...highlightIndices],
-            colors: [...colors]
-        });
-        
-        if (!this.isScheduled) {
-            this.isScheduled = true;
-            requestAnimationFrame(() => this.flush());
-        }
-    }
-    
-    // 溜まった描画を一括実行
-    flush() {
-        this.pendingDraws.forEach(({ manager, array, highlightIndices, colors }) => {
-            manager.drawArray(array, highlightIndices, colors);
-        });
-        this.pendingDraws.clear();
-        this.isScheduled = false;
-    }
-}
-
-// グローバルレンダラーインスタンス
-const animationRenderer = new AnimationFrameRenderer();
 
 // 配列のシャッフル
 function shuffleArray(array) {
@@ -749,12 +639,6 @@ class SortingAlgorithms {
         this.canvas = canvas;
     }
     
-    // 描画メソッド（ちらつき防止）
-    draw(array, highlightIndices = [], colors = []) {
-        // requestAnimationFrame を使って描画
-        this.canvas.drawArrayAnimated(array, highlightIndices, colors);
-    }
-    
     // バブルソート
     async bubbleSort(array) {
         const n = array.length;
@@ -771,7 +655,7 @@ class SortingAlgorithms {
                 appState.stats.currentStep++;
                 updateStats();
                 
-                this.draw(array, [j, j + 1], [COLORS.COMPARING, COLORS.COMPARING]);
+                this.canvas.drawArray(array, [j, j + 1], [COLORS.COMPARING, COLORS.COMPARING]);
                 
                 // Play compare sound
                 if (window.app && window.app.soundManager) {
@@ -787,7 +671,7 @@ class SortingAlgorithms {
                     swapped = true;
                     updateStats();
                     
-                    this.draw(array, [j, j + 1], [COLORS.SWAPPING, COLORS.SWAPPING]);
+                    this.canvas.drawArray(array, [j, j + 1], [COLORS.SWAPPING, COLORS.SWAPPING]);
                     
                     // Play swap sound
                     if (window.app && window.app.soundManager) {
@@ -803,7 +687,7 @@ class SortingAlgorithms {
                 }
             }
             
-            this.draw(array, [n - i - 1], [COLORS.SORTED]);
+            this.canvas.drawArray(array, [n - i - 1], [COLORS.SORTED]);
             await sleep(appState.delay / 2);
             
             if (!swapped) break;
@@ -828,7 +712,7 @@ class SortingAlgorithms {
                 appState.stats.currentStep++;
                 updateStats();
                 
-                this.draw(array, [i, j, minIdx], 
+                this.canvas.drawArray(array, [i, j, minIdx], 
                     [COLORS.SORTED, COLORS.COMPARING, COLORS.SWAPPING]);
                 
                 // Play compare sound
@@ -849,7 +733,7 @@ class SortingAlgorithms {
                 appState.stats.arrayAccesses += 4;
                 updateStats();
                 
-                this.draw(array, [i, minIdx], [COLORS.SWAPPING, COLORS.SWAPPING]);
+                this.canvas.drawArray(array, [i, minIdx], [COLORS.SWAPPING, COLORS.SWAPPING]);
                 
                 // Play swap sound
                 if (window.app && window.app.soundManager) {
@@ -859,7 +743,7 @@ class SortingAlgorithms {
                 await sleep(appState.delay);
             }
             
-            this.draw(array, [i], [COLORS.SORTED]);
+            this.canvas.drawArray(array, [i], [COLORS.SORTED]);
             await sleep(appState.delay / 2);
         }
         
@@ -878,7 +762,7 @@ class SortingAlgorithms {
             appState.stats.arrayAccesses++;
             appState.stats.currentStep++;
             
-            this.draw(array, [i], [COLORS.COMPARING]);
+            this.canvas.drawArray(array, [i], [COLORS.COMPARING]);
             await sleep(appState.delay);
             
             while (j >= 0 && array[j] > key) {
@@ -892,7 +776,7 @@ class SortingAlgorithms {
                 appState.stats.swaps++;
                 appState.stats.arrayAccesses += 2;
                 
-                this.draw(array, [j, j + 1], [COLORS.SWAPPING, COLORS.SWAPPING]);
+                this.canvas.drawArray(array, [j, j + 1], [COLORS.SWAPPING, COLORS.SWAPPING]);
                 
                 // Play swap sound
                 if (window.app && window.app.soundManager) {
@@ -912,7 +796,7 @@ class SortingAlgorithms {
             appState.stats.arrayAccesses++;
             updateStats();
             
-            this.draw(array, [j + 1], [COLORS.SORTED]);
+            this.canvas.drawArray(array, [j + 1], [COLORS.SORTED]);
             await sleep(appState.delay / 2);
         }
         
@@ -949,7 +833,7 @@ class SortingAlgorithms {
             appState.stats.currentStep++;
             updateStats();
             
-            this.draw(array, [k, left + i, mid + 1 + j], 
+            this.canvas.drawArray(array, [k, left + i, mid + 1 + j], 
                 [COLORS.COMPARING, COLORS.SWAPPING, COLORS.SWAPPING]);
             
             // Play compare sound
@@ -976,7 +860,7 @@ class SortingAlgorithms {
         while (i < leftArr.length) {
             if (!appState.isRunning) return; // Check if stopped
             array[k] = leftArr[i];
-            this.draw(array, [k], [COLORS.SORTED]);
+            this.canvas.drawArray(array, [k], [COLORS.SORTED]);
             await sleep(appState.delay / 2);
             i++;
             k++;
@@ -986,7 +870,7 @@ class SortingAlgorithms {
         while (j < rightArr.length) {
             if (!appState.isRunning) return; // Check if stopped
             array[k] = rightArr[j];
-            this.draw(array, [k], [COLORS.SORTED]);
+            this.canvas.drawArray(array, [k], [COLORS.SORTED]);
             await sleep(appState.delay / 2);
             j++;
             k++;
@@ -1021,7 +905,7 @@ class SortingAlgorithms {
             appState.stats.currentStep++;
             updateStats();
             
-            this.draw(array, [j, high, i + 1], 
+            this.canvas.drawArray(array, [j, high, i + 1], 
                 [COLORS.COMPARING, COLORS.SWAPPING, COLORS.SORTED]);
             
             // Play compare sound
@@ -1038,7 +922,7 @@ class SortingAlgorithms {
                 appState.stats.arrayAccesses += 4;
                 updateStats();
                 
-                this.draw(array, [i, j], [COLORS.SWAPPING, COLORS.SWAPPING]);
+                this.canvas.drawArray(array, [i, j], [COLORS.SWAPPING, COLORS.SWAPPING]);
                 
                 // Play swap sound
                 if (window.app && window.app.soundManager) {
@@ -1054,7 +938,7 @@ class SortingAlgorithms {
         appState.stats.arrayAccesses += 4;
         updateStats();
         
-        this.draw(array, [i + 1], [COLORS.SORTED]);
+        this.canvas.drawArray(array, [i + 1], [COLORS.SORTED]);
         
         // Play swap sound
         if (window.app && window.app.soundManager) {
@@ -1086,7 +970,7 @@ class SortingAlgorithms {
             appState.stats.currentStep++;
             updateStats();
             
-            this.draw(array, [0, i], [COLORS.SWAPPING, COLORS.SORTED]);
+            this.canvas.drawArray(array, [0, i], [COLORS.SWAPPING, COLORS.SORTED]);
             
             // Play swap sound
             if (window.app && window.app.soundManager) {
@@ -1144,7 +1028,7 @@ class SortingAlgorithms {
             appState.stats.arrayAccesses += 4;
             updateStats();
             
-            this.draw(array, [i, largest], [COLORS.SWAPPING, COLORS.SWAPPING]);
+            this.canvas.drawArray(array, [i, largest], [COLORS.SWAPPING, COLORS.SWAPPING]);
             
             // Play swap sound
             if (window.app && window.app.soundManager) {
@@ -1206,7 +1090,7 @@ class SortingAlgorithms {
             appState.stats.arrayAccesses++;
             appState.stats.currentStep++;
             
-            this.draw(array, [i], [COLORS.COMPARING]);
+            this.canvas.drawArray(array, [i], [COLORS.COMPARING]);
             await sleep(appState.delay / 2);
             
             while (j >= left && array[j] > key) {
@@ -1248,12 +1132,6 @@ class SearchingAlgorithms {
         this.canvas = canvas;
     }
     
-    // 描画メソッド（ちらつき防止）
-    draw(array, highlightIndices = [], colors = []) {
-        // requestAnimationFrame を使って描画
-        this.canvas.drawArrayAnimated(array, highlightIndices, colors);
-    }
-    
     // 線形探索
     async linearSearch(array, target) {
         for (let i = 0; i < array.length; i++) {
@@ -1262,16 +1140,16 @@ class SearchingAlgorithms {
             appState.stats.currentStep++;
             updateStats();
             
-            this.draw(array, [i], [COLORS.COMPARING]);
+            this.canvas.drawArray(array, [i], [COLORS.COMPARING]);
             await sleep(appState.delay);
             
             if (array[i] === target) {
-                this.draw(array, [i], [COLORS.SORTED]);
+                this.canvas.drawArray(array, [i], [COLORS.SORTED]);
                 await sleep(appState.delay * 3);
                 return i;
             }
             
-            this.draw(array, [i], [COLORS.SWAPPING]);
+            this.canvas.drawArray(array, [i], [COLORS.SWAPPING]);
             await sleep(appState.delay / 2);
         }
         
@@ -1291,12 +1169,12 @@ class SearchingAlgorithms {
             appState.stats.currentStep++;
             updateStats();
             
-            this.draw(array, [left, mid, right], 
+            this.canvas.drawArray(array, [left, mid, right], 
                 [COLORS.COMPARING, COLORS.SWAPPING, COLORS.COMPARING]);
             await sleep(appState.delay * 2);
             
             if (array[mid] === target) {
-                this.draw(array, [mid], [COLORS.SORTED]);
+                this.canvas.drawArray(array, [mid], [COLORS.SORTED]);
                 await sleep(appState.delay * 3);
                 return mid;
             }
@@ -1326,7 +1204,7 @@ class SearchingAlgorithms {
             appState.stats.currentStep++;
             updateStats();
             
-            this.draw(array, [curr], [COLORS.COMPARING]);
+            this.canvas.drawArray(array, [curr], [COLORS.COMPARING]);
             await sleep(appState.delay * 2);
             
             prev = curr;
@@ -1340,11 +1218,11 @@ class SearchingAlgorithms {
             appState.stats.currentStep++;
             updateStats();
             
-            this.draw(array, [i], [COLORS.SWAPPING]);
+            this.canvas.drawArray(array, [i], [COLORS.SWAPPING]);
             await sleep(appState.delay);
             
             if (array[i] === target) {
-                this.draw(array, [i], [COLORS.SORTED]);
+                this.canvas.drawArray(array, [i], [COLORS.SORTED]);
                 await sleep(appState.delay * 3);
                 return i;
             }
@@ -1361,12 +1239,6 @@ class SearchingAlgorithms {
 class GraphAlgorithms {
     constructor(canvas) {
         this.canvas = canvas;
-    }
-    
-    // 描画メソッド（ちらつき防止）
-    draw(graph, visitedNodes = [], currentNode = null, path = []) {
-        // グラフの描画は直接呼び出し（drawGraph は配列ではないため）
-        this.canvas.drawGraph(graph, visitedNodes, currentNode, path);
     }
     
     // グラフ生成（ランダム）
@@ -1623,12 +1495,6 @@ class TreeAlgorithms {
         this.root = null;
     }
     
-    // 描画メソッド（ちらつき防止）
-    draw(root, highlightNodes = []) {
-        // 木構造の描画は直接呼び出し
-        this.canvas.drawTree(root, highlightNodes);
-    }
-    
     // BST挿入
     async insert(value) {
         this.root = await this.insertNode(this.root, value);
@@ -1751,12 +1617,6 @@ class TreeAlgorithms {
 class RecursiveAlgorithms {
     constructor(canvas) {
         this.canvas = canvas;
-    }
-    
-    // 描画メソッド（ちらつき防止）
-    draw(array, highlightIndices = [], colors = []) {
-        // requestAnimationFrame を使って描画
-        this.canvas.drawArrayAnimated(array, highlightIndices, colors);
     }
     
     // フィボナッチ数列
@@ -2032,12 +1892,6 @@ class DynamicProgramming {
 class StringAlgorithms {
     constructor(canvas) {
         this.canvas = canvas;
-    }
-    
-    // 描画メソッド（ちらつき防止）
-    draw(array, highlightIndices = [], colors = []) {
-        // requestAnimationFrame を使って描画
-        this.canvas.drawArrayAnimated(array, highlightIndices, colors);
     }
         // KMP法（Knuth-Morris-Pratt）- 続き
     async kmp(text, pattern) {
@@ -2719,7 +2573,6 @@ class UIController {
         document.getElementById('array-size').addEventListener('input', (e) => {
             appState.arraySize = parseInt(e.target.value);
             document.getElementById('size-value').textContent = appState.arraySize;
-            updateLightweightMode(); // 軽量モードの自動切り替え
             this.generateNewArray();
         });
         
@@ -2835,19 +2688,6 @@ class UIController {
             });
         }
         
-        // 軽量モード切り替え
-        const lightweightModeEl = document.getElementById('lightweight-mode');
-        if (lightweightModeEl) {
-            // 初期値を設定（配列サイズに応じて）
-            updateLightweightMode();
-            lightweightModeEl.checked = appState.lightweightMode;
-            
-            lightweightModeEl.addEventListener('change', (e) => {
-                appState.lightweightMode = e.target.checked;
-                console.log(`軽量モード: ${appState.lightweightMode ? '有効' : '無効'}`);
-            });
-        }
-        
         // コードコピーボタン
         document.getElementById('copy-code-btn').addEventListener('click', () => {
             this.copyCode();
@@ -2931,8 +2771,8 @@ class UIController {
                 throw new Error('配列が空です');
             }
             
-            if (values.length > 3000) {
-                throw new Error('配列のサイズは3000以下にしてください');
+            if (values.length > 100) {
+                throw new Error('配列のサイズは100以下にしてください');
             }
             
             appState.array = values;
@@ -3336,24 +3176,7 @@ class UIController {
             merge: 'マージソート',
             quick: 'クイックソート',
             heap: 'ヒープソート',
-            tim: 'ティムソート',
-            linear: '線形探索',
-            binary: '二分探索',
-            jump: 'ジャンプ探索',
-            bfs: '幅優先探索',
-            dfs: '深さ優先探索',
-            dijkstra: 'ダイクストラ法',
-            astar: 'A*アルゴリズム',
-            'bst-insert': '二分探索木 - 挿入',
-            'bst-search': '二分探索木 - 探索',
-            'bst-delete': '二分探索木 - 削除',
-            fibonacci: 'フィボナッチ数列',
-            hanoi: 'ハノイの塔',
-            factorial: '階乗計算',
-            knapsack: '0-1ナップサック問題',
-            lcs: '最長共通部分列',
-            kmp: 'KMP法',
-            'boyer-moore': 'Boyer-Moore法'
+            tim: 'ティムソート'
         };
         return names[algo] || algo;
     }
@@ -4100,76 +3923,51 @@ class PerformanceGraph {
             swaps: []
         };
         this.labels = [];
-        this.chartAvailable = typeof Chart !== 'undefined';
         this.initChart();
     }
     
     initChart() {
-        // Check if Chart.js is available
-        if (!this.chartAvailable) {
-            console.warn('Chart.js is not available. Performance graph will not be displayed.');
-            // Hide the graph section if Chart.js is not available
-            const graphSection = document.querySelector('.graph-section');
-            if (graphSection) {
-                graphSection.style.display = 'none';
-            }
-            return;
-        }
+        const ctx = document.getElementById('performance-graph').getContext('2d');
         
-        const canvas = document.getElementById('performance-graph');
-        if (!canvas) {
-            console.error('Performance graph canvas not found');
-            return;
-        }
-        
-        try {
-            const ctx = canvas.getContext('2d');
-            
-            this.chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: '実行時間 (ms)',
-                        data: [],
-                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
-                        borderColor: 'rgba(102, 126, 234, 1)',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'ミリ秒 (ms)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        },
+        this.chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: '実行時間 (ms)',
+                    data: [],
+                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'アルゴリズムパフォーマンス比較'
+                            text: 'ミリ秒 (ms)'
                         }
                     }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    title: {
+                        display: true,
+                        text: 'アルゴリズムパフォーマンス比較'
+                    }
                 }
-            });
-        } catch (error) {
-            console.error('Failed to initialize performance graph:', error);
-            this.chartAvailable = false;
-        }
+            }
+        });
     }
     
     updateGraph(algorithmName, timeMs, comparisons, swaps) {
-        if (!this.chartAvailable || !this.chart) return;
-        
         // Add data to all datasets
         this.labels.push(algorithmName);
         this.datasets.time.push(timeMs);
@@ -4189,8 +3987,6 @@ class PerformanceGraph {
     }
     
     updateGraphCompare(algo1Name, algo2Name, stats1, stats2) {
-        if (!this.chartAvailable || !this.chart) return;
-        
         // For compare mode, show both algorithms side by side
         const label = `${algo1Name} vs ${algo2Name}`;
         this.labels.push(label);
@@ -4213,8 +4009,6 @@ class PerformanceGraph {
     }
     
     updateGraphBenchmark(results) {
-        if (!this.chartAvailable || !this.chart) return;
-        
         // For benchmark mode, show average values for each algorithm
         results.forEach(result => {
             this.labels.push(result.algorithm);
@@ -4235,7 +4029,6 @@ class PerformanceGraph {
     }
     
     refreshChart() {
-        if (!this.chartAvailable || !this.chart) return;
         this.chart.data.labels = [...this.labels];
         
         // Get data for current type
@@ -4269,15 +4062,11 @@ class PerformanceGraph {
     }
     
     switchDataType(type) {
-        if (!this.chartAvailable || !this.chart) return;
-        
         this.currentDataType = type;
         this.refreshChart();
     }
     
     clear() {
-        if (!this.chartAvailable || !this.chart) return;
-        
         this.labels = [];
         this.datasets.time = [];
         this.datasets.comparisons = [];
@@ -4286,11 +4075,6 @@ class PerformanceGraph {
     }
     
     saveAsImage() {
-        if (!this.chartAvailable || !this.chart) {
-            alert('グラフが利用できません。Chart.jsが読み込まれているか確認してください。');
-            return;
-        }
-        
         const canvas = document.getElementById('performance-graph');
         const filename = `performance-graph-${Date.now()}.png`;
         DataExporter.exportGraphPNG('performance-graph', filename);
