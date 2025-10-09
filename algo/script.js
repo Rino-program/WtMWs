@@ -225,6 +225,11 @@ class CanvasManager {
         }
     }
     
+    // requestAnimationFrame を使った描画（ちらつき防止）
+    drawArrayAnimated(array, highlightIndices = [], colors = []) {
+        animationRenderer.requestDraw(this, array, highlightIndices, colors);
+    }
+    
     // グラフアルゴリズム用の描画
     drawGraph(graph, visitedNodes = [], currentNode = null, path = []) {
         this.clear();
@@ -469,6 +474,44 @@ function updateLightweightMode() {
     }
 }
 
+// ==========================================
+// アニメーションフレーム描画管理クラス（ちらつき防止）
+// ==========================================
+class AnimationFrameRenderer {
+    constructor() {
+        this.pendingDraws = new Map(); // canvasId -> {array, indices, colors}
+        this.isScheduled = false;
+    }
+    
+    // 描画リクエストをキューに追加（同じキャンバスの場合は上書き）
+    requestDraw(canvasManager, array, highlightIndices = [], colors = []) {
+        const canvasId = canvasManager.canvas.id;
+        this.pendingDraws.set(canvasId, {
+            manager: canvasManager,
+            array: [...array], // コピーして保存
+            highlightIndices: [...highlightIndices],
+            colors: [...colors]
+        });
+        
+        if (!this.isScheduled) {
+            this.isScheduled = true;
+            requestAnimationFrame(() => this.flush());
+        }
+    }
+    
+    // 溜まった描画を一括実行
+    flush() {
+        this.pendingDraws.forEach(({ manager, array, highlightIndices, colors }) => {
+            manager.drawArray(array, highlightIndices, colors);
+        });
+        this.pendingDraws.clear();
+        this.isScheduled = false;
+    }
+}
+
+// グローバルレンダラーインスタンス
+const animationRenderer = new AnimationFrameRenderer();
+
 // 配列のシャッフル
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -706,6 +749,12 @@ class SortingAlgorithms {
         this.canvas = canvas;
     }
     
+    // 描画メソッド（ちらつき防止）
+    draw(array, highlightIndices = [], colors = []) {
+        // requestAnimationFrame を使って描画
+        this.drawAnimated(array, highlightIndices, colors);
+    }
+    
     // バブルソート
     async bubbleSort(array) {
         const n = array.length;
@@ -722,7 +771,7 @@ class SortingAlgorithms {
                 appState.stats.currentStep++;
                 updateStats();
                 
-                this.canvas.drawArray(array, [j, j + 1], [COLORS.COMPARING, COLORS.COMPARING]);
+                this.draw(array, [j, j + 1], [COLORS.COMPARING, COLORS.COMPARING]);
                 
                 // Play compare sound
                 if (window.app && window.app.soundManager) {
@@ -738,7 +787,7 @@ class SortingAlgorithms {
                     swapped = true;
                     updateStats();
                     
-                    this.canvas.drawArray(array, [j, j + 1], [COLORS.SWAPPING, COLORS.SWAPPING]);
+                    this.draw(array, [j, j + 1], [COLORS.SWAPPING, COLORS.SWAPPING]);
                     
                     // Play swap sound
                     if (window.app && window.app.soundManager) {
@@ -754,7 +803,7 @@ class SortingAlgorithms {
                 }
             }
             
-            this.canvas.drawArray(array, [n - i - 1], [COLORS.SORTED]);
+            this.draw(array, [n - i - 1], [COLORS.SORTED]);
             await sleep(appState.delay / 2);
             
             if (!swapped) break;
@@ -779,7 +828,7 @@ class SortingAlgorithms {
                 appState.stats.currentStep++;
                 updateStats();
                 
-                this.canvas.drawArray(array, [i, j, minIdx], 
+                this.draw(array, [i, j, minIdx], 
                     [COLORS.SORTED, COLORS.COMPARING, COLORS.SWAPPING]);
                 
                 // Play compare sound
@@ -800,7 +849,7 @@ class SortingAlgorithms {
                 appState.stats.arrayAccesses += 4;
                 updateStats();
                 
-                this.canvas.drawArray(array, [i, minIdx], [COLORS.SWAPPING, COLORS.SWAPPING]);
+                this.draw(array, [i, minIdx], [COLORS.SWAPPING, COLORS.SWAPPING]);
                 
                 // Play swap sound
                 if (window.app && window.app.soundManager) {
@@ -810,7 +859,7 @@ class SortingAlgorithms {
                 await sleep(appState.delay);
             }
             
-            this.canvas.drawArray(array, [i], [COLORS.SORTED]);
+            this.draw(array, [i], [COLORS.SORTED]);
             await sleep(appState.delay / 2);
         }
         
@@ -829,7 +878,7 @@ class SortingAlgorithms {
             appState.stats.arrayAccesses++;
             appState.stats.currentStep++;
             
-            this.canvas.drawArray(array, [i], [COLORS.COMPARING]);
+            this.draw(array, [i], [COLORS.COMPARING]);
             await sleep(appState.delay);
             
             while (j >= 0 && array[j] > key) {
@@ -843,7 +892,7 @@ class SortingAlgorithms {
                 appState.stats.swaps++;
                 appState.stats.arrayAccesses += 2;
                 
-                this.canvas.drawArray(array, [j, j + 1], [COLORS.SWAPPING, COLORS.SWAPPING]);
+                this.draw(array, [j, j + 1], [COLORS.SWAPPING, COLORS.SWAPPING]);
                 
                 // Play swap sound
                 if (window.app && window.app.soundManager) {
@@ -863,7 +912,7 @@ class SortingAlgorithms {
             appState.stats.arrayAccesses++;
             updateStats();
             
-            this.canvas.drawArray(array, [j + 1], [COLORS.SORTED]);
+            this.draw(array, [j + 1], [COLORS.SORTED]);
             await sleep(appState.delay / 2);
         }
         
@@ -900,7 +949,7 @@ class SortingAlgorithms {
             appState.stats.currentStep++;
             updateStats();
             
-            this.canvas.drawArray(array, [k, left + i, mid + 1 + j], 
+            this.draw(array, [k, left + i, mid + 1 + j], 
                 [COLORS.COMPARING, COLORS.SWAPPING, COLORS.SWAPPING]);
             
             // Play compare sound
@@ -927,7 +976,7 @@ class SortingAlgorithms {
         while (i < leftArr.length) {
             if (!appState.isRunning) return; // Check if stopped
             array[k] = leftArr[i];
-            this.canvas.drawArray(array, [k], [COLORS.SORTED]);
+            this.draw(array, [k], [COLORS.SORTED]);
             await sleep(appState.delay / 2);
             i++;
             k++;
@@ -937,7 +986,7 @@ class SortingAlgorithms {
         while (j < rightArr.length) {
             if (!appState.isRunning) return; // Check if stopped
             array[k] = rightArr[j];
-            this.canvas.drawArray(array, [k], [COLORS.SORTED]);
+            this.draw(array, [k], [COLORS.SORTED]);
             await sleep(appState.delay / 2);
             j++;
             k++;
@@ -972,7 +1021,7 @@ class SortingAlgorithms {
             appState.stats.currentStep++;
             updateStats();
             
-            this.canvas.drawArray(array, [j, high, i + 1], 
+            this.draw(array, [j, high, i + 1], 
                 [COLORS.COMPARING, COLORS.SWAPPING, COLORS.SORTED]);
             
             // Play compare sound
@@ -989,7 +1038,7 @@ class SortingAlgorithms {
                 appState.stats.arrayAccesses += 4;
                 updateStats();
                 
-                this.canvas.drawArray(array, [i, j], [COLORS.SWAPPING, COLORS.SWAPPING]);
+                this.draw(array, [i, j], [COLORS.SWAPPING, COLORS.SWAPPING]);
                 
                 // Play swap sound
                 if (window.app && window.app.soundManager) {
@@ -1005,7 +1054,7 @@ class SortingAlgorithms {
         appState.stats.arrayAccesses += 4;
         updateStats();
         
-        this.canvas.drawArray(array, [i + 1], [COLORS.SORTED]);
+        this.draw(array, [i + 1], [COLORS.SORTED]);
         
         // Play swap sound
         if (window.app && window.app.soundManager) {
@@ -1037,7 +1086,7 @@ class SortingAlgorithms {
             appState.stats.currentStep++;
             updateStats();
             
-            this.canvas.drawArray(array, [0, i], [COLORS.SWAPPING, COLORS.SORTED]);
+            this.draw(array, [0, i], [COLORS.SWAPPING, COLORS.SORTED]);
             
             // Play swap sound
             if (window.app && window.app.soundManager) {
@@ -1095,7 +1144,7 @@ class SortingAlgorithms {
             appState.stats.arrayAccesses += 4;
             updateStats();
             
-            this.canvas.drawArray(array, [i, largest], [COLORS.SWAPPING, COLORS.SWAPPING]);
+            this.draw(array, [i, largest], [COLORS.SWAPPING, COLORS.SWAPPING]);
             
             // Play swap sound
             if (window.app && window.app.soundManager) {
@@ -1157,7 +1206,7 @@ class SortingAlgorithms {
             appState.stats.arrayAccesses++;
             appState.stats.currentStep++;
             
-            this.canvas.drawArray(array, [i], [COLORS.COMPARING]);
+            this.draw(array, [i], [COLORS.COMPARING]);
             await sleep(appState.delay / 2);
             
             while (j >= left && array[j] > key) {
@@ -1199,6 +1248,12 @@ class SearchingAlgorithms {
         this.canvas = canvas;
     }
     
+    // 描画メソッド（ちらつき防止）
+    draw(array, highlightIndices = [], colors = []) {
+        // requestAnimationFrame を使って描画
+        this.canvas.drawArrayAnimated(array, highlightIndices, colors);
+    }
+    
     // 線形探索
     async linearSearch(array, target) {
         for (let i = 0; i < array.length; i++) {
@@ -1207,16 +1262,16 @@ class SearchingAlgorithms {
             appState.stats.currentStep++;
             updateStats();
             
-            this.canvas.drawArray(array, [i], [COLORS.COMPARING]);
+            this.draw(array, [i], [COLORS.COMPARING]);
             await sleep(appState.delay);
             
             if (array[i] === target) {
-                this.canvas.drawArray(array, [i], [COLORS.SORTED]);
+                this.draw(array, [i], [COLORS.SORTED]);
                 await sleep(appState.delay * 3);
                 return i;
             }
             
-            this.canvas.drawArray(array, [i], [COLORS.SWAPPING]);
+            this.draw(array, [i], [COLORS.SWAPPING]);
             await sleep(appState.delay / 2);
         }
         
@@ -1236,12 +1291,12 @@ class SearchingAlgorithms {
             appState.stats.currentStep++;
             updateStats();
             
-            this.canvas.drawArray(array, [left, mid, right], 
+            this.draw(array, [left, mid, right], 
                 [COLORS.COMPARING, COLORS.SWAPPING, COLORS.COMPARING]);
             await sleep(appState.delay * 2);
             
             if (array[mid] === target) {
-                this.canvas.drawArray(array, [mid], [COLORS.SORTED]);
+                this.draw(array, [mid], [COLORS.SORTED]);
                 await sleep(appState.delay * 3);
                 return mid;
             }
@@ -1271,7 +1326,7 @@ class SearchingAlgorithms {
             appState.stats.currentStep++;
             updateStats();
             
-            this.canvas.drawArray(array, [curr], [COLORS.COMPARING]);
+            this.draw(array, [curr], [COLORS.COMPARING]);
             await sleep(appState.delay * 2);
             
             prev = curr;
@@ -1285,11 +1340,11 @@ class SearchingAlgorithms {
             appState.stats.currentStep++;
             updateStats();
             
-            this.canvas.drawArray(array, [i], [COLORS.SWAPPING]);
+            this.draw(array, [i], [COLORS.SWAPPING]);
             await sleep(appState.delay);
             
             if (array[i] === target) {
-                this.canvas.drawArray(array, [i], [COLORS.SORTED]);
+                this.draw(array, [i], [COLORS.SORTED]);
                 await sleep(appState.delay * 3);
                 return i;
             }
@@ -1306,6 +1361,12 @@ class SearchingAlgorithms {
 class GraphAlgorithms {
     constructor(canvas) {
         this.canvas = canvas;
+    }
+    
+    // 描画メソッド（ちらつき防止）
+    draw(graph, visitedNodes = [], currentNode = null, path = []) {
+        // グラフの描画は直接呼び出し（drawGraph は配列ではないため）
+        this.canvas.drawGraph(graph, visitedNodes, currentNode, path);
     }
     
     // グラフ生成（ランダム）
@@ -1562,6 +1623,12 @@ class TreeAlgorithms {
         this.root = null;
     }
     
+    // 描画メソッド（ちらつき防止）
+    draw(root, highlightNodes = []) {
+        // 木構造の描画は直接呼び出し
+        this.canvas.drawTree(root, highlightNodes);
+    }
+    
     // BST挿入
     async insert(value) {
         this.root = await this.insertNode(this.root, value);
@@ -1684,6 +1751,12 @@ class TreeAlgorithms {
 class RecursiveAlgorithms {
     constructor(canvas) {
         this.canvas = canvas;
+    }
+    
+    // 描画メソッド（ちらつき防止）
+    draw(array, highlightIndices = [], colors = []) {
+        // requestAnimationFrame を使って描画
+        this.canvas.drawArrayAnimated(array, highlightIndices, colors);
     }
     
     // フィボナッチ数列
@@ -1959,6 +2032,12 @@ class DynamicProgramming {
 class StringAlgorithms {
     constructor(canvas) {
         this.canvas = canvas;
+    }
+    
+    // 描画メソッド（ちらつき防止）
+    draw(array, highlightIndices = [], colors = []) {
+        // requestAnimationFrame を使って描画
+        this.canvas.drawArrayAnimated(array, highlightIndices, colors);
     }
         // KMP法（Knuth-Morris-Pratt）- 続き
     async kmp(text, pattern) {
@@ -2753,6 +2832,19 @@ class UIController {
                     }
                     window.app.soundManager.setEnabled(e.target.checked);
                 }
+            });
+        }
+        
+        // 軽量モード切り替え
+        const lightweightModeEl = document.getElementById('lightweight-mode');
+        if (lightweightModeEl) {
+            // 初期値を設定（配列サイズに応じて）
+            updateLightweightMode();
+            lightweightModeEl.checked = appState.lightweightMode;
+            
+            lightweightModeEl.addEventListener('change', (e) => {
+                appState.lightweightMode = e.target.checked;
+                console.log(`軽量モード: ${appState.lightweightMode ? '有効' : '無効'}`);
             });
         }
         
