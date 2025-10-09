@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>バーチャル水族館ゲーム - 設計ドキュメント</title>
+    <meta name="description" content="Pythonで実装するバーチャル水族館シミュレーションゲームの完全設計ドキュメント">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <h1>🐠 バーチャル水族館ゲーム</h1>
+            <p class="subtitle">設計ドキュメント & 実装ガイド</p>
+        </div>
+    </header>
+
+    <nav class="search-bar">
+        <div class="container">
+            <input type="text" id="search-box" placeholder="🔍 ドキュメント内を検索..." aria-label="検索ボックス">
+        </div>
+    </nav>
+
+    <div class="container main-container">
+        <aside class="sidebar">
+            <nav class="table-of-contents">
+                <h3>📑 目次</h3>
+                <ul id="toc-list">
+                    <!-- JavaScriptで動的生成 -->
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <!-- ゲーム概要 -->
+            <section id="overview" class="doc-section">
+                <h2>🎮 ゲーム概要</h2>
+                <div class="section-content">
+                    <p>バーチャル水族館ゲームは、プレイヤーが自分だけの水族館を管理・運営するCUI（キャラクターユーザーインターフェース）ベースのシミュレーションゲームです。魚の飼育、水槽の管理、装飾の配置を通じて、美しく健全な水族館を作り上げます。</p>
+                    
+                    <h3>ゲームの目標</h3>
+                    <ul>
+                        <li><strong>魚の健康維持：</strong>適切な餌やり、水質管理により魚を健康に保つ</li>
+                        <li><strong>水族館の発展：</strong>来客数と評価を高め、収益を増やす</li>
+                        <li><strong>コレクション完成：</strong>様々な種類の魚や装飾を集める</li>
+                        <li><strong>美観の追求：</strong>デザイン性の高い水槽レイアウトを実現</li>
+                    </ul>
+
+                    <h3>スコアリング基準</h3>
+                    <table class="info-table">
+                        <thead>
+                            <tr>
+                                <th>評価項目</th>
+                                <th>配点</th>
+                                <th>詳細</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>魚の健康度</td>
+                                <td>40%</td>
+                                <td>全魚の平均健康値（0-100）</td>
+                            </tr>
+                            <tr>
+                                <td>水質スコア</td>
+                                <td>25%</td>
+                                <td>pH、温度、清潔度の総合評価</td>
+                            </tr>
+                            <tr>
+                                <td>美観スコア</td>
+                                <td>20%</td>
+                                <td>装飾配置とバランス</td>
+                            </tr>
+                            <tr>
+                                <td>来客満足度</td>
+                                <td>15%</td>
+                                <td>訪問者の評価平均</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- プレイヤーアクション -->
+            <section id="player-actions" class="doc-section">
+                <h2>🎯 プレイヤーアクション</h2>
+                <div class="section-content">
+                    <h3>基本操作</h3>
+                    <div class="action-grid">
+                        <div class="action-card">
+                            <h4>🍽️ 餌やり</h4>
+                            <p>魚に餌を与えて健康を維持</p>
+                            <code>feed &lt;tank_id&gt; [fish_name]</code>
+                        </div>
+                        <div class="action-card">
+                            <h4>💧 水質管理</h4>
+                            <p>水換え、フィルター清掃</p>
+                            <code>clean &lt;tank_id&gt;</code>
+                        </div>
+                        <div class="action-card">
+                            <h4>🐟 魚の購入</h4>
+                            <p>新しい魚を追加</p>
+                            <code>buy fish &lt;species&gt;</code>
+                        </div>
+                        <div class="action-card">
+                            <h4>🎨 装飾配置</h4>
+                            <p>水槽を美しく飾る</p>
+                            <code>decorate &lt;tank_id&gt; &lt;item&gt;</code>
+                        </div>
+                        <div class="action-card">
+                            <h4>🔍 状態確認</h4>
+                            <p>水槽や魚の詳細を表示</p>
+                            <code>status [tank_id]</code>
+                        </div>
+                        <div class="action-card">
+                            <h4>⏭️ 日送り</h4>
+                            <p>時間を進めてシミュレート</p>
+                            <code>next_day [days]</code>
+                        </div>
+                    </div>
+
+                    <h3>状態管理</h3>
+                    <p>ゲームは内部で以下の状態を管理します：</p>
+                    <ul>
+                        <li><strong>ゲーム時間：</strong>日数、季節の変化</li>
+                        <li><strong>資金：</strong>収入（入場料）、支出（餌、装備、メンテナンス）</li>
+                        <li><strong>水槽状態：</strong>各水槽の水質パラメータ、温度、容量</li>
+                        <li><strong>魚の状態：</strong>健康度、空腹度、ストレスレベル、成長段階</li>
+                        <li><strong>イベント：</strong>来客、魚の繁殖、病気発生、特別イベント</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- クラス設計 -->
+            <section id="class-design" class="doc-section">
+                <h2>🏗️ クラス設計</h2>
+                <div class="section-content">
+                    <h3>クラス関係図</h3>
+                    <div class="diagram-container">
+                        <svg viewBox="0 0 800 600" class="class-diagram" role="img" aria-label="クラス関係図">
+                            <!-- Aquarium クラス -->
+                            <g id="aquarium-class">
+                                <rect x="300" y="30" width="200" height="120" class="class-box" />
+                                <text x="400" y="60" class="class-name">Aquarium</text>
+                                <line x1="300" y1="70" x2="500" y2="70" class="class-divider" />
+                                <text x="310" y="90" class="class-attr">- name: str</text>
+                                <text x="310" y="110" class="class-attr">- funds: float</text>
+                                <text x="310" y="130" class="class-attr">- tanks: List[Tank]</text>
+                            </g>
+
+                            <!-- Tank クラス -->
+                            <g id="tank-class">
+                                <rect x="300" y="220" width="200" height="140" class="class-box" />
+                                <text x="400" y="250" class="class-name">Tank</text>
+                                <line x1="300" y1="260" x2="500" y2="260" class="class-divider" />
+                                <text x="310" y="280" class="class-attr">- capacity: int</text>
+                                <text x="310" y="300" class="class-attr">- water_quality: dict</text>
+                                <text x="310" y="320" class="class-attr">- fish_list: List[Fish]</text>
+                                <text x="310" y="340" class="class-attr">- decorations: List</text>
+                            </g>
+
+                            <!-- Fish クラス -->
+                            <g id="fish-class">
+                                <rect x="50" y="430" width="180" height="140" class="class-box" />
+                                <text x="140" y="460" class="class-name">Fish</text>
+                                <line x1="50" y1="470" x2="230" y2="470" class="class-divider" />
+                                <text x="60" y="490" class="class-attr">- species: str</text>
+                                <text x="60" y="510" class="class-attr">- health: int</text>
+                                <text x="60" y="530" class="class-attr">- hunger: int</text>
+                                <text x="60" y="550" class="class-attr">- age: int</text>
+                            </g>
+
+                            <!-- Equipment クラス -->
+                            <g id="equipment-class">
+                                <rect x="300" y="430" width="180" height="120" class="class-box" />
+                                <text x="390" y="460" class="class-name">Equipment</text>
+                                <line x1="300" y1="470" x2="480" y2="470" class="class-divider" />
+                                <text x="310" y="490" class="class-attr">- type: str</text>
+                                <text x="310" y="510" class="class-attr">- efficiency: float</text>
+                                <text x="310" y="530" class="class-attr">- condition: int</text>
+                            </g>
+
+                            <!-- Decoration クラス -->
+                            <g id="decoration-class">
+                                <rect x="550" y="430" width="180" height="120" class="class-box" />
+                                <text x="640" y="460" class="class-name">Decoration</text>
+                                <line x1="550" y1="470" x2="730" y2="470" class="class-divider" />
+                                <text x="560" y="490" class="class-attr">- name: str</text>
+                                <text x="560" y="510" class="class-attr">- beauty_value: int</text>
+                                <text x="560" y="530" class="class-attr">- size: int</text>
+                            </g>
+
+                            <!-- 関係線 -->
+                            <line x1="400" y1="150" x2="400" y2="220" class="relation-line" />
+                            <text x="410" y="190" class="relation-label">1:*</text>
+                            <polygon points="400,220 395,210 405,210" class="arrow" />
+
+                            <line x1="300" y1="320" x2="140" y2="430" class="relation-line" />
+                            <text x="210" y="370" class="relation-label">1:*</text>
+                            <polygon points="140,430 145,420 135,425" class="arrow" />
+
+                            <line x1="390" y1="360" x2="390" y2="430" class="relation-line" />
+                            <text x="400" y="400" class="relation-label">1:*</text>
+                            <polygon points="390,430 385,420 395,420" class="arrow" />
+
+                            <line x1="500" y1="320" x2="640" y2="430" class="relation-line" />
+                            <text x="570" y="370" class="relation-label">1:*</text>
+                            <polygon points="640,430 635,425 645,420" class="arrow" />
+                        </svg>
+                    </div>
+
+                    <h3>クラス詳細</h3>
+
+                    <div class="class-detail">
+                        <h4>🏛️ Aquarium クラス</h4>
+                        <p><strong>責務：</strong>水族館全体の管理、資金管理、複数の水槽の統括</p>
+                        
+                        <h5>属性</h5>
+                        <ul>
+                            <li><code>name: str</code> - 水族館の名前</li>
+                            <li><code>funds: float</code> - 現在の資金</li>
+                            <li><code>tanks: List[Tank]</code> - 所有する水槽のリスト</li>
+                            <li><code>current_day: int</code> - 経過日数</li>
+                            <li><code>reputation: int</code> - 評判スコア（0-100）</li>
+                            <li><code>visitors_count: int</code> - 累計来客数</li>
+                        </ul>
+
+                        <h5>主要メソッド</h5>
+                        <ul>
+                            <li><code>add_tank(capacity: int) -> Tank</code> - 新しい水槽を追加</li>
+                            <li><code>remove_tank(tank_id: str) -> bool</code> - 水槽を削除</li>
+                            <li><code>calculate_daily_income() -> float</code> - 日次収入を計算</li>
+                            <li><code>calculate_total_score() -> float</code> - 総合スコアを算出</li>
+                            <li><code>process_day() -> dict</code> - 1日の処理を実行</li>
+                            <li><code>generate_report() -> str</code> - 状況レポートを生成</li>
+                        </ul>
+                    </div>
+
+                    <div class="class-detail">
+                        <h4>🏺 Tank クラス</h4>
+                        <p><strong>責務：</strong>個別水槽の管理、水質維持、魚と装飾の管理</p>
+                        
+                        <h5>属性</h5>
+                        <ul>
+                            <li><code>tank_id: str</code> - 水槽の一意識別子</li>
+                            <li><code>capacity: int</code> - 容量（リットル）</li>
+                            <li><code>water_quality: dict</code> - 水質パラメータ
+                                <ul>
+                                    <li><code>ph: float</code> - pH値（0-14）</li>
+                                    <li><code>temperature: float</code> - 温度（℃）</li>
+                                    <li><code>cleanliness: int</code> - 清潔度（0-100）</li>
+                                    <li><code>oxygen: int</code> - 酸素濃度（0-100）</li>
+                                </ul>
+                            </li>
+                            <li><code>fish_list: List[Fish]</code> - 飼育中の魚リスト</li>
+                            <li><code>equipment: List[Equipment]</code> - 設置された装備</li>
+                            <li><code>decorations: List[Decoration]</code> - 装飾品リスト</li>
+                        </ul>
+
+                        <h5>主要メソッド</h5>
+                        <ul>
+                            <li><code>add_fish(fish: Fish) -> bool</code> - 魚を追加（容量チェック）</li>
+                            <li><code>remove_fish(fish_id: str) -> Fish</code> - 魚を削除</li>
+                            <li><code>update_water_quality(days: int) -> None</code> - 水質を経時変化</li>
+                            <li><code>clean_tank() -> None</code> - 水槽清掃を実行</li>
+                            <li><code>add_decoration(deco: Decoration) -> bool</code> - 装飾を追加</li>
+                            <li><code>calculate_beauty_score() -> int</code> - 美観スコアを算出</li>
+                            <li><code>get_status() -> dict</code> - 現在の状態を取得</li>
+                        </ul>
+                    </div>
+
+                    <div class="class-detail">
+                        <h4>🐠 Fish クラス</h4>
+                        <p><strong>責務：</strong>個別の魚の状態管理、成長、健康維持</p>
+                        
+                        <h5>属性</h5>
+                        <ul>
+                            <li><code>fish_id: str</code> - 魚の一意識別子</li>
+                            <li><code>species: str</code> - 種類（例：金魚、熱帯魚、クマノミ）</li>
+                            <li><code>name: str</code> - 個体名（任意）</li>
+                            <li><code>health: int</code> - 健康度（0-100）</li>
+                            <li><code>hunger: int</code> - 空腹度（0-100、高いほど空腹）</li>
+                            <li><code>age: int</code> - 年齢（日数）</li>
+                            <li><code>size: float</code> - サイズ（cm）</li>
+                            <li><code>stress_level: int</code> - ストレスレベル（0-100）</li>
+                            <li><code>price: int</code> - 購入価格</li>
+                        </ul>
+
+                        <h5>主要メソッド</h5>
+                        <ul>
+                            <li><code>feed(amount: int) -> None</code> - 餌を与える</li>
+                            <li><code>update_status(environment: dict) -> None</code> - 環境に応じて状態更新</li>
+                            <li><code>grow() -> None</code> - 成長処理</li>
+                            <li><code>calculate_happiness() -> int</code> - 幸福度を算出</li>
+                            <li><code>is_compatible_with(other: Fish) -> bool</code> - 他の魚との相性チェック</li>
+                            <li><code>get_care_requirements() -> dict</code> - 飼育要件を取得</li>
+                        </ul>
+                    </div>
+
+                    <div class="class-detail">
+                        <h4>⚙️ Equipment クラス</h4>
+                        <p><strong>責務：</strong>水槽装備（フィルター、ヒーター等）の管理</p>
+                        
+                        <h5>属性</h5>
+                        <ul>
+                            <li><code>equipment_id: str</code> - 装備ID</li>
+                            <li><code>type: str</code> - 種類（filter, heater, aerator）</li>
+                            <li><code>name: str</code> - 装備名</li>
+                            <li><code>efficiency: float</code> - 効率（0-1.0）</li>
+                            <li><code>condition: int</code> - 状態（0-100、劣化度）</li>
+                            <li><code>maintenance_cost: int</code> - 維持費</li>
+                            <li><code>effect: dict</code> - 効果パラメータ</li>
+                        </ul>
+
+                        <h5>主要メソッド</h5>
+                        <ul>
+                            <li><code>apply_effect(tank: Tank) -> None</code> - 水槽に効果を適用</li>
+                            <li><code>degrade(days: int) -> None</code> - 経年劣化処理</li>
+                            <li><code>repair() -> int</code> - 修理（コスト返却）</li>
+                            <li><code>calculate_power_consumption() -> float</code> - 消費電力計算</li>
+                        </ul>
+                    </div>
+
+                    <div class="class-detail">
+                        <h4>🎨 Decoration クラス</h4>
+                        <p><strong>責務：</strong>装飾品の管理、美観効果の提供</p>
+                        
+                        <h5>属性</h5>
+                        <ul>
+                            <li><code>decoration_id: str</code> - 装飾ID</li>
+                            <li><code>name: str</code> - 装飾名</li>
+                            <li><code>category: str</code> - カテゴリ（rock, plant, castle, etc.）</li>
+                            <li><code>beauty_value: int</code> - 美観値（1-50）</li>
+                            <li><code>size: int</code> - サイズ（占有スペース）</li>
+                            <li><code>price: int</code> - 価格</li>
+                            <li><code>rarity: str</code> - レア度（common, rare, epic, legendary）</li>
+                        </ul>
+
+                        <h5>主要メソッド</h5>
+                        <ul>
+                            <li><code>get_beauty_contribution() -> int</code> - 美観貢献度を取得</li>
+                            <li><code>provides_shelter() -> bool</code> - 隠れ家になるか判定</li>
+                            <li><code>get_description() -> str</code> - 説明文を取得</li>
+                        </ul>
+                    </div>
+
+                    <div class="class-detail">
+                        <h4>📦 Item クラス（ベース）</h4>
+                        <p><strong>責務：</strong>ゲーム内アイテムの基底クラス</p>
+                        
+                        <h5>属性</h5>
+                        <ul>
+                            <li><code>item_id: str</code> - アイテムID</li>
+                            <li><code>name: str</code> - 名前</li>
+                            <li><code>description: str</code> - 説明</li>
+                            <li><code>price: int</code> - 価格</li>
+                            <li><code>category: str</code> - カテゴリ</li>
+                        </ul>
+
+                        <h5>主要メソッド</h5>
+                        <ul>
+                            <li><code>use() -> bool</code> - アイテムを使用（サブクラスで実装）</li>
+                            <li><code>get_info() -> dict</code> - アイテム情報を取得</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- モジュール構造 -->
+            <section id="module-structure" class="doc-section">
+                <h2>📂 モジュール構造</h2>
+                <div class="section-content">
+                    <h3>モジュール依存関係図</h3>
+                    <div class="diagram-container">
+                        <svg viewBox="0 0 700 400" class="module-diagram" role="img" aria-label="モジュール依存関係図">
+                            <!-- ui.py モジュール -->
+                            <g id="ui-module">
+                                <rect x="250" y="30" width="200" height="80" class="module-box ui-module" />
+                                <text x="350" y="60" class="module-name">ui.py</text>
+                                <text x="260" y="85" class="module-desc">ユーザーインターフェース</text>
+                                <text x="260" y="100" class="module-desc">CUIコマンド処理</text>
+                            </g>
+
+                            <!-- logic.py モジュール -->
+                            <g id="logic-module">
+                                <rect x="250" y="160" width="200" height="80" class="module-box logic-module" />
+                                <text x="350" y="190" class="module-name">logic.py</text>
+                                <text x="260" y="215" class="module-desc">ゲームロジック</text>
+                                <text x="260" y="230" class="module-desc">シミュレーション処理</text>
+                            </g>
+
+                            <!-- models.py モジュール -->
+                            <g id="models-module">
+                                <rect x="250" y="290" width="200" height="80" class="module-box models-module" />
+                                <text x="350" y="320" class="module-name">models.py</text>
+                                <text x="260" y="345" class="module-desc">データモデル</text>
+                                <text x="260" y="360" class="module-desc">クラス定義</text>
+                            </g>
+
+                            <!-- 依存関係の矢印 -->
+                            <g class="dependency-arrows">
+                                <defs>
+                                    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                        <polygon points="0 0, 10 3, 0 6" fill="#4a5568" />
+                                    </marker>
+                                </defs>
+                                
+                                <line x1="350" y1="110" x2="350" y2="160" stroke="#4a5568" stroke-width="2" marker-end="url(#arrowhead)" />
+                                <text x="360" y="140" class="dependency-label">使用</text>
+                                
+                                <line x1="350" y1="240" x2="350" y2="290" stroke="#4a5568" stroke-width="2" marker-end="url(#arrowhead)" />
+                                <text x="360" y="270" class="dependency-label">使用</text>
+                            </g>
+
+                            <!-- 補助モジュール -->
+                            <g id="utils-module">
+                                <rect x="500" y="160" width="150" height="60" class="module-box utils-module" />
+                                <text x="575" y="185" class="module-name small">utils.py</text>
+                                <text x="510" y="205" class="module-desc small">ユーティリティ関数</text>
+                            </g>
+
+                            <g id="config-module">
+                                <rect x="500" y="250" width="150" height="60" class="module-box config-module" />
+                                <text x="575" y="275" class="module-name small">config.py</text>
+                                <text x="510" y="295" class="module-desc small">設定・定数</text>
+                            </g>
+
+                            <line x1="450" y1="200" x2="500" y2="190" stroke="#718096" stroke-width="1.5" stroke-dasharray="5,5" />
+                            <line x1="450" y1="210" x2="500" y2="280" stroke="#718096" stroke-width="1.5" stroke-dasharray="5,5" />
+                        </svg>
+                    </div>
+
+                    <h3>ファイル構成</h3>
+                    <pre class="code-block"><code>aquarium_game/
+├── main.py              # エントリーポイント
+├── models.py            # データモデル（Aquarium, Tank, Fish等）
+├── logic.py             # ゲームロジック
+├── ui.py                # CUIインターフェース
+├── utils.py             # ユーティリティ関数
+├── config.py            # 設定ファイル
+├── data/
+│   ├── fish_species.json    # 魚種データ
+│   ├── equipment.json       # 装備データ
+│   └── decorations.json     # 装飾データ
+├── saves/               # セーブデータ保存先
+└── tests/               # テストコード
+    ├── test_models.py
+    ├── test_logic.py
+    └── test_ui.py</code></pre>
+
+                    <h3>各モジュールの責務</h3>
+
+                    <div class="module-detail">
+                        <h4>📄 models.py - データモデル</h4>
+                        <p><strong>役割：</strong>ゲーム内のエンティティを表現するクラス群</p>
+                        <p><strong>含まれるクラス：</strong>Aquarium, Tank, Fish, Equipment, Decoration, Item</p>
+                        
+                        <h5>サンプルコード</h5>
+                        <pre class="code-block"><code class="python"># models.py の一部
+from dataclasses import dataclass
+from typing import List, Dict
+import uuid
+
+@dataclass
+class Fish:
+    """魚クラス - 個別の魚の状態を管理"""
+    fish_id: str
+    species: str
+    name: str
+    health: int = 100
+    hunger: int = 0
+    age: int = 0
+    size: float = 5.0
+    stress_level: int = 0
+    price: int = 100
+    
+    def __post_init__(self):
+        if not self.fish_id:
+            self.fish_id = str(uuid.uuid4())
+    
+    def feed(self, amount: int = 20):
+        """餌を与える"""
+        self.hunger = max(0, self.hunger - amount)
+        self.health = min(100, self.health + amount // 4)
+    
+    def update_status(self, environment: Dict):
+        """環境に基づいて状態を更新"""
+        # 空腹度増加
+        self.hunger = min(100, self.hunger + 5)
+        
+        # 健康度の変化
+        if self.hunger > 80:
+            self.health -= 10
+        
+        # 水質による影響
+        water_quality = environment.get('cleanliness', 50)
+        if water_quality < 30:
+            self.health -= 5
+            self.stress_level = min(100, self.stress_level + 10)
+        
+        # 年齢増加
+        self.age += 1
+        self.grow()
+    
+    def grow(self):
+        """成長処理"""
+        if self.age % 30 == 0:  # 30日ごとに成長
+            self.size *= 1.1
+    
+    def calculate_happiness(self) -> int:
+        """幸福度を計算"""
+        happiness = 50
+        happiness += (100 - self.hunger) // 5
+        happiness += (100 - self.stress_level) // 5
+        happiness += self.health // 5
+        return min(100, max(0, happiness))
+
+class Tank:
+    """水槽クラス"""
+    def __init__(self, tank_id: str, capacity: int):
+        self.tank_id = tank_id
+        self.capacity = capacity
+        self.water_quality = {
+            'ph': 7.0,
+            'temperature': 25.0,
+            'cleanliness': 100,
+            'oxygen': 100
+        }
+        self.fish_list: List[Fish] = []
+        self.equipment: List[Equipment] = []
+        self.decorations: List[Decoration] = []
+    
+    def add_fish(self, fish: Fish) -> bool:
+        """魚を追加"""
+        current_load = sum(f.size for f in self.fish_list)
+        if current_load + fish.size <= self.capacity:
+            self.fish_list.append(fish)
+            return True
+        return False
+    
+    def update_water_quality(self, days: int = 1):
+        """水質を経時変化させる"""
+        # 清潔度低下
+        self.water_quality['cleanliness'] -= days * 5
+        self.water_quality['cleanliness'] = max(0, self.water_quality['cleanliness'])
+        
+        # 酸素濃度変化
+        fish_count = len(self.fish_list)
+        oxygen_consumption = fish_count * 2
+        self.water_quality['oxygen'] -= oxygen_consumption
+        self.water_quality['oxygen'] = max(20, self.water_quality['oxygen'])
+    
+    def clean_tank(self):
+        """水槽を清掃"""
+        self.water_quality['cleanliness'] = 100
+        self.water_quality['oxygen'] = 100</code></pre>
+                    </div>
+
+                    <div class="module-detail">
+                        <h4>⚙️ logic.py - ゲームロジック</h4>
+                        <p><strong>役割：</strong>ゲームのシミュレーション、イベント処理、スコア計算</p>
+                        
+                        <h5>サンプルコード</h5>
+                        <pre class="code-block"><code class="python"># logic.py の一部
+import random
+from models import Aquarium, Tank, Fish
+
+class GameEngine:
+    """ゲームエンジン - コアロジック"""
+    
+    def __init__(self, aquarium: Aquarium):
+        self.aquarium = aquarium
+        self.event_log = []
+    
+    def simulate_day(self) -> Dict:
+        """1日のシミュレーション"""
+        events = []
+        
+        # 各水槽の処理
+        for tank in self.aquarium.tanks:
+            # 水質更新
+            tank.update_water_quality()
+            
+            # 各魚の状態更新
+            for fish in tank.fish_list:
+                environment = tank.water_quality.copy()
+                fish.update_status(environment)
+                
+                # 魚の死亡判定
+                if fish.health <= 0:
+                    events.append({
+                        'type': 'fish_died',
+                        'fish': fish.name,
+                        'tank': tank.tank_id
+                    })
+                    tank.fish_list.remove(fish)
+            
+            # 装備の効果適用
+            for equipment in tank.equipment:
+                equipment.apply_effect(tank)
+                equipment.degrade(1)
+        
+        # 来客処理
+        visitors = self.calculate_visitors()
+        income = visitors * 10  # 1人あたり10円
+        self.aquarium.funds += income
+        
+        events.append({
+            'type': 'daily_income',
+            'visitors': visitors,
+            'income': income
+        })
+        
+        # 日数カウント
+        self.aquarium.current_day += 1
+        
+        # イベント発生判定
+        if random.random() < 0.1:  # 10%の確率
+            event = self.generate_random_event()
+            events.append(event)
+        
+        self.event_log.extend(events)
+        return {
+            'day': self.aquarium.current_day,
+            'events': events,
+            'funds': self.aquarium.funds
+        }
+    
+    def calculate_visitors(self) -> int:
+        """来客数を計算"""
+        base_visitors = 50
+        
+        # 評判によるボーナス
+        reputation_bonus = self.aquarium.reputation * 2
+        
+        # 魚の総数によるボーナス
+        total_fish = sum(len(tank.fish_list) for tank in self.aquarium.tanks)
+        fish_bonus = total_fish * 5
+        
+        # 美観スコアによるボーナス
+        beauty_score = sum(tank.calculate_beauty_score() for tank in self.aquarium.tanks)
+        beauty_bonus = beauty_score // 10
+        
+        total = base_visitors + reputation_bonus + fish_bonus + beauty_bonus
+        return max(0, total + random.randint(-20, 20))
+    
+    def feed_all_fish(self, tank_id: str):
+        """特定水槽の全魚に餌やり"""
+        tank = self.get_tank_by_id(tank_id)
+        if tank:
+            for fish in tank.fish_list:
+                fish.feed()
+            return True
+        return False
+    
+    def update_water_quality_all(self):
+        """全水槽の水質を更新"""
+        for tank in self.aquarium.tanks:
+            tank.update_water_quality()
+    
+    def generate_random_event(self) -> Dict:
+        """ランダムイベント生成"""
+        events = [
+            {'type': 'donation', 'amount': 1000, 'message': '匿名の寄付がありました！'},
+            {'type': 'inspection', 'message': '保健所の検査がありました'},
+            {'type': 'media', 'reputation': 10, 'message': 'メディアに取り上げられました！'},
+        ]
+        return random.choice(events)</code></pre>
+                    </div>
+
+                    <div class="module-detail">
+                        <h4>🖥️ ui.py - ユーザーインターフェース</h4>
+                        <p><strong>役割：</strong>コマンドライン入出力、コマンド解析、表示整形</p>
+                        
+                        <h5>サンプルコード</h5>
+                        <pre class="code-block"><code class="python"># ui.py の一部
+import cmd
+from logic import GameEngine
+from models import Aquarium, Tank, Fish
+
+class AquariumCUI(cmd.Cmd):
+    """水族館ゲームのCUI"""
+    
+    intro = '''
+╔═══════════════════════════════════════╗
+║   🐠 バーチャル水族館ゲーム 🐠     ║
+║   'help'でコマンド一覧を表示       ║
+╚═══════════════════════════════════════╝
+'''
+    prompt = '🐠 > '
+    
+    def __init__(self, aquarium: Aquarium):
+        super().__init__()
+        self.aquarium = aquarium
+        self.engine = GameEngine(aquarium)
+    
+    def do_status(self, arg):
+        """水族館の状態を表示
+        使用法: status [tank_id]"""
+        if arg:
+            self.show_tank_status(arg)
+        else:
+            self.show_aquarium_status()
+    
+    def show_aquarium_status(self):
+        """水族館全体の状態表示"""
+        print("\n" + "="*50)
+        print(f"🏛️  {self.aquarium.name}")
+        print(f"💰 資金: ¥{self.aquarium.funds:,}")
+        print(f"📅 経過日数: {self.aquarium.current_day}日")
+        print(f"⭐ 評判: {self.aquarium.reputation}/100")
+        print(f"🚪 累計来客: {self.aquarium.visitors_count:,}人")
+        print("="*50)
+        
+        print(f"\n🏺 水槽一覧 ({len(self.aquarium.tanks)}個)")
+        for i, tank in enumerate(self.aquarium.tanks, 1):
+            fish_count = len(tank.fish_list)
+            quality = tank.water_quality['cleanliness']
+            status_icon = '✅' if quality > 70 else '⚠️' if quality > 40 else '❌'
+            print(f"  {i}. {tank.tank_id} - {fish_count}匹 {status_icon}")
+    
+    def do_feed(self, arg):
+        """魚に餌を与える
+        使用法: feed <tank_id> [fish_name]"""
+        args = arg.split()
+        if not args:
+            print("❌ エラー: 水槽IDを指定してください")
+            return
+        
+        tank_id = args[0]
+        if self.engine.feed_all_fish(tank_id):
+            print(f"✅ {tank_id}の全魚に餌を与えました")
+        else:
+            print(f"❌ エラー: 水槽'{tank_id}'が見つかりません")
+    
+    def do_next_day(self, arg):
+        """時間を進める
+        使用法: next_day [日数]"""
+        days = int(arg) if arg and arg.isdigit() else 1
+        
+        for _ in range(days):
+            result = self.engine.simulate_day()
+            
+            # イベント表示
+            for event in result['events']:
+                self.display_event(event)
+        
+        print(f"\n⏭️  {days}日が経過しました")
+        print(f"💰 現在の資金: ¥{result['funds']:,}")
+    
+    def display_event(self, event):
+        """イベントを表示"""
+        event_type = event.get('type')
+        if event_type == 'fish_died':
+            print(f"💀 {event['fish']}が死亡しました ({event['tank']})")
+        elif event_type == 'daily_income':
+            print(f"🚪 本日の来客: {event['visitors']}人 (+¥{event['income']})")
+        elif event_type == 'donation':
+            print(f"🎁 {event['message']} (+¥{event['amount']})")
+    
+    def do_quit(self, arg):
+        """ゲームを終了"""
+        print("\n👋 またのご来館をお待ちしております！")
+        return True
+    
+    def do_EOF(self, arg):
+        """Ctrl+Dで終了"""
+        return self.do_quit(arg)</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CUIコマンドリファレンス -->
+            <section id="cui-commands" class="doc-section">
+                <h2>💻 CUIコマンドリファレンス</h2>
+                <div class="section-content">
+                    <p>ゲームで使用可能な全コマンドの一覧と使用例です。</p>
+
+                    <div class="command-reference">
+                        <div class="command-item">
+                            <h4><code>status [tank_id]</code></h4>
+                            <p class="command-desc">水族館または特定水槽の状態を表示</p>
+                            <div class="command-example">
+                                <strong>例：</strong>
+                                <pre><code>🐠 > status
+🐠 > status tank_001</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="command-item">
+                            <h4><code>feed &lt;tank_id&gt; [fish_name]</code></h4>
+                            <p class="command-desc">魚に餌を与える</p>
+                            <div class="command-example">
+                                <strong>例：</strong>
+                                <pre><code>🐠 > feed tank_001
+🐠 > feed tank_001 ニモ</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="command-item">
+                            <h4><code>clean &lt;tank_id&gt;</code></h4>
+                            <p class="command-desc">水槽を清掃し、水質を改善</p>
+                            <div class="command-example">
+                                <strong>例：</strong>
+                                <pre><code>🐠 > clean tank_001</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="command-item">
+                            <h4><code>buy &lt;type&gt; &lt;name&gt;</code></h4>
+                            <p class="command-desc">魚、装備、装飾を購入</p>
+                            <div class="command-example">
+                                <strong>例：</strong>
+                                <pre><code>🐠 > buy fish clownfish
+🐠 > buy equipment filter_pro
+🐠 > buy decoration castle</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="command-item">
+                            <h4><code>add_tank &lt;capacity&gt;</code></h4>
+                            <p class="command-desc">新しい水槽を追加</p>
+                            <div class="command-example">
+                                <strong>例：</strong>
+                                <pre><code>🐠 > add_tank 100</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="command-item">
+                            <h4><code>decorate &lt;tank_id&gt; &lt;item&gt;</code></h4>
+                            <p class="command-desc">水槽に装飾を配置</p>
+                            <div class="command-example">
+                                <strong>例：</strong>
+                                <pre><code>🐠 > decorate tank_001 coral_reef</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="command-item">
+                            <h4><code>next_day [days]</code></h4>
+                            <p class="command-desc">指定した日数を進める（デフォルト1日）</p>
+                            <div class="command-example">
+                                <strong>例：</strong>
+                                <pre><code>🐠 > next_day
+🐠 > next_day 7</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="command-item">
+                            <h4><code>list &lt;type&gt;</code></h4>
+                            <p class="command-desc">利用可能なアイテムをリスト表示</p>
+                            <div class="command-example">
+                                <strong>例：</strong>
+                                <pre><code>🐠 > list fish
+🐠 > list equipment
+🐠 > list decorations</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="command-item">
+                            <h4><code>save [filename]</code></h4>
+                            <p class="command-desc">ゲームを保存</p>
+                            <div class="command-example">
+                                <strong>例：</strong>
+                                <pre><code>🐠 > save my_aquarium</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="command-item">
+                            <h4><code>load &lt;filename&gt;</code></h4>
+                            <p class="command-desc">保存したゲームを読み込み</p>
+                            <div class="command-example">
+                                <strong>例：</strong>
+                                <pre><code>🐠 > load my_aquarium</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="command-item">
+                            <h4><code>help [command]</code></h4>
+                            <p class="command-desc">コマンドのヘルプを表示</p>
+                            <div class="command-example">
+                                <strong>例：</strong>
+                                <pre><code>🐠 > help
+🐠 > help feed</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="command-item">
+                            <h4><code>quit</code></h4>
+                            <p class="command-desc">ゲームを終了</p>
+                            <div class="command-example">
+                                <strong>例：</strong>
+                                <pre><code>🐠 > quit</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 開発ガイダンス -->
+            <section id="development-guide" class="doc-section">
+                <h2>👨‍💻 開発ガイダンス</h2>
+                <div class="section-content">
+                    <h3>開発の進め方</h3>
+                    <ol class="dev-steps">
+                        <li>
+                            <strong>Phase 1: 基本構造の実装</strong>
+                            <ul>
+                                <li>models.pyにクラス定義を作成</li>
+                                <li>基本的な属性とメソッドを実装</li>
+                                <li>ユニットテストを作成</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>Phase 2: ゲームロジックの実装</strong>
+                            <ul>
+                                <li>logic.pyにGameEngineクラスを実装</li>
+                                <li>シミュレーション処理を実装</li>
+                                <li>統合テストを作成</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>Phase 3: UIの実装</strong>
+                            <ul>
+                                <li>ui.pyにCUIを実装</li>
+                                <li>コマンド処理を実装</li>
+                                <li>表示フォーマットを整える</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>Phase 4: データファイルの作成</strong>
+                            <ul>
+                                <li>魚種、装備、装飾のJSONデータを作成</li>
+                                <li>バランス調整</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>Phase 5: 追加機能の実装</strong>
+                            <ul>
+                                <li>セーブ/ロード機能</li>
+                                <li>イベントシステム</li>
+                                <li>実績システム</li>
+                            </ul>
+                        </li>
+                    </ol>
+
+                    <h3>推奨ツールとライブラリ</h3>
+                    <ul>
+                        <li><strong>Python 3.9+</strong> - 最新の型ヒント機能を活用</li>
+                        <li><strong>pytest</strong> - テストフレームワーク</li>
+                        <li><strong>dataclasses</strong> - シンプルなクラス定義</li>
+                        <li><strong>json</strong> - データファイル管理</li>
+                        <li><strong>cmd</strong> - CUI実装（標準ライブラリ）</li>
+                        <li><strong>colorama</strong> (オプション) - カラフルな出力</li>
+                    </ul>
+
+                    <h3>コーディング規約</h3>
+                    <ul>
+                        <li>PEP 8に準拠したコードスタイル</li>
+                        <li>型ヒントの使用を推奨</li>
+                        <li>docstringによるドキュメント化</li>
+                        <li>関数は単一責任の原則に従う</li>
+                        <li>マジックナンバーを避け、定数を使用</li>
+                    </ul>
+
+                    <h3>テスト戦略</h3>
+                    <div class="test-strategy">
+                        <h4>ユニットテスト</h4>
+                        <ul>
+                            <li>各クラスのメソッドを個別にテスト</li>
+                            <li>境界値テストを含める</li>
+                            <li>異常系のテストも忘れずに</li>
+                        </ul>
+
+                        <h4>統合テスト</h4>
+                        <ul>
+                            <li>複数クラスの連携をテスト</li>
+                            <li>ゲームフローの主要パスをカバー</li>
+                        </ul>
+
+                        <h4>E2Eテスト</h4>
+                        <ul>
+                            <li>実際のゲームプレイシナリオをテスト</li>
+                            <li>コマンド入力から結果表示までの流れを検証</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- リソース -->
+            <section id="resources" class="doc-section">
+                <h2>📚 リソース</h2>
+                <div class="section-content">
+                    <h3>参考資料</h3>
+                    <ul>
+                        <li><a href="https://docs.python.org/ja/3/" target="_blank">Python公式ドキュメント</a></li>
+                        <li><a href="https://docs.python.org/ja/3/library/cmd.html" target="_blank">cmdモジュール - Python標準ライブラリ</a></li>
+                        <li><a href="https://docs.pytest.org/" target="_blank">pytest ドキュメント</a></li>
+                    </ul>
+
+                    <h3>関連ファイル</h3>
+                    <ul>
+                        <li><a href="structure.md">structure.md</a> - 実装の詳細設計</li>
+                        <li><a href="README.md">README.md</a> - このドキュメントサイトについて</li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>© 2025 バーチャル水族館ゲーム開発プロジェクト</p>
+            <p>このドキュメントは開発支援のために作成されました</p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>
