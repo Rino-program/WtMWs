@@ -41,10 +41,6 @@ class AppState {
         this.isPaused = false;
         this.stepMode = false;
         
-        // 軽量モード関連
-        this.lightweightMode = false;
-        this.lightweightThreshold = 1000; // 1000要素以上で自動的に軽量モード
-        
         // 統計情報
         this.stats = {
             comparisons: 0,
@@ -432,13 +428,9 @@ class CanvasManager {
 
 // スリープ関数（一時停止対応）
 function sleep(ms) {
-    // 軽量モード時はアニメーション間引き
-    if (appState.lightweightMode) {
-        // アニメーション頻度を下げる（10ステップに1回だけ描画）
-        appState.stats.currentStep = (appState.stats.currentStep || 0) + 1;
-        if (appState.stats.currentStep % 10 !== 0) {
-            ms = 0; // スキップ
-        }
+    // 0ms の場合は即座に解決（最速モード）
+    if (ms === 0) {
+        return Promise.resolve();
     }
     
     return new Promise(resolve => {
@@ -461,17 +453,6 @@ function sleep(ms) {
         };
         checkPause();
     });
-}
-
-// 軽量モードの自動切り替え
-function updateLightweightMode() {
-    const shouldEnable = appState.arraySize >= appState.lightweightThreshold;
-    if (shouldEnable !== appState.lightweightMode) {
-        appState.lightweightMode = shouldEnable;
-        if (shouldEnable) {
-            console.log(`🚀 軽量モードが有効になりました（配列サイズ: ${appState.arraySize}）`);
-        }
-    }
 }
 
 // ==========================================
@@ -1236,6 +1217,122 @@ class SortingAlgorithms {
             appState.stats.arrayAccesses++;
             updateStats();
         }
+    }
+    
+    // ゴボソート (Bogosort) - ジョークソート
+    async goboSort(array) {
+        const maxAttempts = Math.max(100000, array.length * 10000);
+        let attempts = 0;
+        
+        // ソート済みかチェックする関数
+        const isSorted = (arr) => {
+            for (let i = 0; i < arr.length - 1; i++) {
+                appState.stats.comparisons++;
+                if (arr[i] > arr[i + 1]) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        
+        // シャッフル関数
+        const shuffle = async (arr) => {
+            for (let i = arr.length - 1; i > 0; i--) {
+                if (!appState.isRunning) return false; // Check if stopped
+                
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+                appState.stats.swaps++;
+                appState.stats.arrayAccesses += 4;
+                appState.stats.currentStep++;
+                updateStats();
+                
+                this.draw(arr, [i, j], [COLORS.SWAPPING, COLORS.SWAPPING]);
+                
+                // Play swap sound
+                if (window.app && window.app.soundManager) {
+                    window.app.soundManager.playSwapSound();
+                }
+                
+                await sleep(appState.delay);
+            }
+            return true;
+        };
+        
+        // ソートされるまでシャッフルを繰り返す
+        while (!isSorted(array)) {
+            if (!appState.isRunning) return array; // Check if stopped
+            
+            attempts++;
+            if (attempts > maxAttempts) {
+                console.error(`🚫 ゴボソートが上限回数 (${maxAttempts}) に達しました。`);
+                if (this.canvas && this.canvas.runner && this.canvas.runner.showMessage) {
+                    this.canvas.runner.showMessage(
+                        `⚠️ ゴボソートが上限回数 (${maxAttempts.toLocaleString()} 回) に達しました。\n\n配列サイズが大きすぎるか、運が悪すぎます！\n現在の試行回数: ${attempts.toLocaleString()} 回`,
+                        'warning'
+                    );
+                }
+                return array;
+            }
+            
+            const continueShuffling = await shuffle(array);
+            if (!continueShuffling) return array;
+            
+            updateStats();
+        }
+        
+        console.log(`✅ ゴボソート完了！試行回数: ${attempts} 回`);
+        return array;
+    }
+    
+    // スターリンソート (Stalin Sort) - ジョークソート
+    async stalinSort(array) {
+        if (array.length === 0) return array;
+        
+        const result = [array[0]];
+        appState.stats.arrayAccesses++;
+        
+        for (let i = 1; i < array.length; i++) {
+            if (!appState.isRunning) return result; // Check if stopped
+            
+            appState.stats.comparisons++;
+            appState.stats.arrayAccesses += 2;
+            appState.stats.currentStep++;
+            updateStats();
+            
+            const lastValue = result[result.length - 1];
+            
+            this.draw(array, [i], [COLORS.COMPARING]);
+            await sleep(appState.delay);
+            
+            if (array[i] >= lastValue) {
+                // 適合要素 - 残す
+                result.push(array[i]);
+                this.draw(result, [result.length - 1], [COLORS.SORTED]);
+                
+                // Play sound
+                if (window.app && window.app.soundManager) {
+                    window.app.soundManager.playCompareSound(array[i]);
+                }
+            } else {
+                // 不適合要素 - 削除（描画から消す）
+                this.draw(result, [], []);
+                
+                // Play swap sound for removal
+                if (window.app && window.app.soundManager) {
+                    window.app.soundManager.playSwapSound();
+                }
+            }
+            
+            await sleep(appState.delay);
+        }
+        
+        // 最終結果を描画
+        this.draw(result, result.map((_, i) => i), result.map(() => COLORS.SORTED));
+        
+        console.log(`✅ スターリンソート完了！元の配列: ${array.length} 要素 → 結果: ${result.length} 要素`);
+        
+        return result;
     }
 }
 
@@ -2383,6 +2480,18 @@ class AlgorithmRunner {
                     await this.sortingAlgo.timSort([...array]);
                     break;
                 
+                // ジョークソート
+                case 'gobo':
+                    this.showMessage('🃏 ゴボソート (Bogosort) を開始します！\n\nランダムにシャッフルしてソート済みになるまで繰り返します。\n⚠️ 配列サイズが大きいと永遠に終わらないかもしれません...', 'warning');
+                    await this.sortingAlgo.goboSort([...array]);
+                    break;
+                    
+                case 'stalin':
+                    this.showMessage('🃏 スターリンソート (Stalin Sort) を開始します！\n\n並び順を乱す要素は容赦なく削除します！', 'info');
+                    const stalinResult = await this.sortingAlgo.stalinSort([...array]);
+                    this.showMessage(`✅ スターリンソート完了！\n\n元の配列: ${array.length} 要素\n結果: ${stalinResult.length} 要素\n削除: ${array.length - stalinResult.length} 要素`, 'success');
+                    break;
+                
                 // 探索アルゴリズム
                 case 'linear':
                     const searchArray = array.slice(0, appState.arraySize);
@@ -2629,6 +2738,8 @@ class AlgorithmRunner {
             quick: 'クイックソート',
             heap: 'ヒープソート',
             tim: 'ティムソート',
+            gobo: 'ゴボソート',
+            stalin: 'スターリンソート',
             linear: '線形探索',
             binary: '二分探索',
             jump: 'ジャンプ探索',
@@ -2719,7 +2830,6 @@ class UIController {
         document.getElementById('array-size').addEventListener('input', (e) => {
             appState.arraySize = parseInt(e.target.value);
             document.getElementById('size-value').textContent = appState.arraySize;
-            updateLightweightMode(); // 軽量モードの自動切り替え
             this.generateNewArray();
         });
         
@@ -2832,19 +2942,6 @@ class UIController {
                     }
                     window.app.soundManager.setEnabled(e.target.checked);
                 }
-            });
-        }
-        
-        // 軽量モード切り替え
-        const lightweightModeEl = document.getElementById('lightweight-mode');
-        if (lightweightModeEl) {
-            // 初期値を設定（配列サイズに応じて）
-            updateLightweightMode();
-            lightweightModeEl.checked = appState.lightweightMode;
-            
-            lightweightModeEl.addEventListener('change', (e) => {
-                appState.lightweightMode = e.target.checked;
-                console.log(`軽量モード: ${appState.lightweightMode ? '有効' : '無効'}`);
             });
         }
         
@@ -3671,6 +3768,52 @@ class UIController {
                     '繰り返し探索する場合',
                     'データベースのインデックス',
                     '辞書・電話帳のような静的データ'
+                ]
+            },
+            gobo: {
+                title: 'ゴボソート (Bogosort)',
+                timeComplexity: 'O((n+1)!) 平均、O(∞) 最悪',
+                complexityClass: 'terrible',
+                spaceComplexity: 'O(1)',
+                spaceComplexityClass: 'excellent',
+                stable: '不安定',
+                description: '配列をランダムにシャッフルし、ソートされているかチェックします。ソートされていなければ再度シャッフル...これを繰り返します。理論上は終わらない可能性があるジョークアルゴリズムですが、アルゴリズムの効率性を理解する良い反面教師です。',
+                features: [
+                    '❌ 最も非効率なソートアルゴリズム',
+                    '❌ 終了が保証されない',
+                    '❌ 実用性ゼロ',
+                    '✅ メモリ効率は良い',
+                    '✅ 教育目的には面白い',
+                    '⚠️ 5要素以上は危険'
+                ],
+                useCases: [
+                    '絶対に使わないでください！',
+                    '教育目的（悪い例として）',
+                    'アルゴリズムの効率性の理解',
+                    'ジョーク・エンターテイメント'
+                ]
+            },
+            stalin: {
+                title: 'スターリンソート (Stalin Sort)',
+                timeComplexity: 'O(n)',
+                complexityClass: 'excellent',
+                spaceComplexity: 'O(n)',
+                spaceComplexityClass: 'fair',
+                stable: 'N/A',
+                description: '配列を一度走査し、並び順を乱す要素を容赦なく削除します。結果として得られるのは「ソート済み」の配列ですが、元の配列とは全く異なるものです。独裁者スターリンの粛清になぞらえた、完全なジョークアルゴリズムです。',
+                features: [
+                    '✅ 線形時間で「完了」する',
+                    '✅ 実装が非常にシンプル',
+                    '❌ 元のデータが失われる',
+                    '❌ ソートアルゴリズムとして無意味',
+                    '⚠️ 政治的ジョーク',
+                    '😄 エンターテイメント性あり'
+                ],
+                useCases: [
+                    '絶対に使わないでください！',
+                    'ジョーク・エンターテイメント',
+                    'アルゴリズムの定義の理解',
+                    'プログラミングユーモアの理解'
                 ]
             }
         };
