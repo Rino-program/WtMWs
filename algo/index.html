@@ -101,6 +101,11 @@
                         <span class="category-name">文字列</span>
                         <span class="category-count">2種類</span>
                     </button>
+                    <button class="category-btn" data-category="joke">
+                        <span class="category-icon">🃏</span>
+                        <span class="category-name">ジョーク</span>
+                        <span class="category-count">2種類</span>
+                    </button>
                 </div>
             </section>
 
@@ -163,6 +168,12 @@
                             <optgroup label="📝 文字列アルゴリズム" id="string-group" style="display:none;">
                                 <option value="kmp">KMP法 (Knuth-Morris-Pratt) ⭐NEW</option>
                                 <option value="boyer-moore">Boyer-Moore法 ⭐NEW</option>
+                            </optgroup>
+                            
+                            <!-- ジョークソート -->
+                            <optgroup label="🃏 ジョークソート" id="joke-group" style="display:none;">
+                                <option value="gobo">ゴボソート (Bogosort) - O(∞)</option>
+                                <option value="stalin">スターリンソート (Stalin Sort) - O(n)</option>
                             </optgroup>
                         </select>
                     </div>
@@ -258,7 +269,7 @@
                             配列サイズ: 
                             <span id="size-value" class="value-display">50</span>
                         </label>
-                        <input type="range" id="array-size" min="5" max="100" value="50" class="slider">
+                        <input type="range" id="array-size" min="5" max="3000" value="50" class="slider">
                     </div>
                     <div class="control-group">
                         <label for="value-range-min">値の範囲:</label>
@@ -327,8 +338,9 @@
                             アニメーション速度: 
                             <span id="speed-value" class="value-display">50ms</span>
                         </label>
-                        <input type="range" id="speed" min="1" max="200" value="50" class="slider">
+                        <input type="range" id="speed" min="0" max="200" value="50" class="slider">
                         <div class="speed-presets">
+                            <button class="speed-preset-btn" data-speed="0">最速</button>
                             <button class="speed-preset-btn" data-speed="1">超高速</button>
                             <button class="speed-preset-btn" data-speed="25">高速</button>
                             <button class="speed-preset-btn" data-speed="50">標準</button>
@@ -405,7 +417,8 @@
                     <div class="canvas-wrapper">
                         <canvas id="canvas-single"></canvas>
                     </div>
-                    <!-- コードハイライトエリア -->
+                    <!-- TEMPORARILY DISABLED: コードハイライトエリア - バグが多いため一時的に無効化 -->
+                    <!-- 
                     <div class="code-highlight-area" id="code-highlight-single">
                         <h3>実行中のコード</h3>
                         <pre id="running-code-single"><code></code></pre>
@@ -414,6 +427,7 @@
                             <span id="current-line-text-single"></span>
                         </div>
                     </div>
+                    -->
                 </div>
 
                 <!-- 比較モード用キャンバス -->
