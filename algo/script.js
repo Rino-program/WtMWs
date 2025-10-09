@@ -41,6 +41,10 @@ class AppState {
         this.isPaused = false;
         this.stepMode = false;
         
+        // 軽量モード関連
+        this.lightweightMode = false;
+        this.lightweightThreshold = 1000; // 1000要素以上で自動的に軽量モード
+        
         // 統計情報
         this.stats = {
             comparisons: 0,
@@ -105,7 +109,9 @@ class CanvasManager {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
+        this.resizeObserver = null;
         this.setupCanvas();
+        this.setupResizeObserver();
     }
     
     setupCanvas() {
@@ -114,36 +120,77 @@ class CanvasManager {
         const containerWidth = container.clientWidth - 40; // パディングを考慮
         const containerHeight = Math.min(500, Math.max(300, window.innerHeight * 0.3));
         
-        this.canvas.width = containerWidth;
-        this.canvas.height = containerHeight;
-        
         // ディスプレイの解像度に合わせてスケーリング
         const dpr = window.devicePixelRatio || 1;
+        
+        // CSS サイズを設定
         this.canvas.style.width = containerWidth + 'px';
         this.canvas.style.height = containerHeight + 'px';
         
+        // 実際の canvas サイズを DPR に合わせて設定
         this.canvas.width = containerWidth * dpr;
         this.canvas.height = containerHeight * dpr;
         
+        // コンテキストをスケーリング（論理ピクセル単位で描画できるように）
         this.ctx.scale(dpr, dpr);
-        this.ctx.canvas.style.width = containerWidth + 'px';
-        this.ctx.canvas.style.height = containerHeight + 'px';
+        
+        // 内部的に使用する論理サイズを保存
+        this.logicalWidth = containerWidth;
+        this.logicalHeight = containerHeight;
+    }
+    
+    setupResizeObserver() {
+        // ResizeObserver でコンテナサイズ変更を監視
+        if (typeof ResizeObserver !== 'undefined') {
+            this.resizeObserver = new ResizeObserver(() => {
+                this.setupCanvas();
+                // 現在の配列を再描画
+                if (appState.array && appState.array.length > 0) {
+                    this.drawArray(appState.array);
+                }
+            });
+            this.resizeObserver.observe(this.canvas.parentElement);
+        }
+    }
+    
+    setSize(container) {
+        // 外部から呼び出し可能なサイズ設定メソッド
+        this.setupCanvas();
+    }
+    
+    applyDPR() {
+        // DPR を適用（既に setupCanvas で行われているため、互換性のために残す）
+        this.setupCanvas();
     }
     
     clear() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // 論理サイズでクリア
+        this.ctx.clearRect(0, 0, this.logicalWidth || this.canvas.width, this.logicalHeight || this.canvas.height);
     }
     
     drawArray(array, highlightIndices = [], colors = []) {
         this.clear();
         
-        const barWidth = this.canvas.width / array.length;
+        // 論理サイズを使用して描画
+        const width = this.logicalWidth || this.canvas.width;
+        const height = this.logicalHeight || this.canvas.height;
+        
+        // マージン確保（軸やラベル用）
+        const marginTop = 40;
+        const marginBottom = 40;
+        const marginLeft = 20;
+        const marginRight = 20;
+        
+        const availableWidth = width - marginLeft - marginRight;
+        const availableHeight = height - marginTop - marginBottom;
+        
+        const barWidth = availableWidth / array.length;
         const maxHeight = Math.max(...array, 1);
         
         for (let i = 0; i < array.length; i++) {
-            const barHeight = (array[i] / maxHeight) * (this.canvas.height - 60);
-            const x = i * barWidth;
-            const y = this.canvas.height - barHeight - 10;
+            const barHeight = (array[i] / maxHeight) * availableHeight;
+            const x = marginLeft + (i * barWidth);
+            const y = marginTop + (availableHeight - barHeight);
             
             // 色の決定
             let color = COLORS.DEFAULT;
@@ -161,19 +208,19 @@ class CanvasManager {
             this.ctx.lineWidth = 1;
             this.ctx.strokeRect(x + 2, y, barWidth - 4, barHeight);
             
-            // 値の表示
-            if (appState.showValues && array.length <= 30) {
+            // 値の表示（配列が小さい場合のみ）
+            if (appState.showValues && array.length <= 50) {
                 this.ctx.fillStyle = '#2d3748';
-                this.ctx.font = 'bold 12px Arial';
+                this.ctx.font = 'bold 11px Arial';
                 this.ctx.textAlign = 'center';
                 this.ctx.fillText(array[i], x + barWidth / 2, y - 5);
             }
             
-            // インデックスの表示
-            if (appState.showIndices && array.length <= 30) {
+            // インデックスの表示（配列が小さい場合のみ）
+            if (appState.showIndices && array.length <= 50) {
                 this.ctx.fillStyle = '#718096';
-                this.ctx.font = '10px Arial';
-                this.ctx.fillText(i, x + barWidth / 2, this.canvas.height - 2);
+                this.ctx.font = '9px Arial';
+                this.ctx.fillText(i, x + barWidth / 2, height - marginBottom + 15);
             }
         }
     }
@@ -380,6 +427,15 @@ class CanvasManager {
 
 // スリープ関数（一時停止対応）
 function sleep(ms) {
+    // 軽量モード時はアニメーション間引き
+    if (appState.lightweightMode) {
+        // アニメーション頻度を下げる（10ステップに1回だけ描画）
+        appState.stats.currentStep = (appState.stats.currentStep || 0) + 1;
+        if (appState.stats.currentStep % 10 !== 0) {
+            ms = 0; // スキップ
+        }
+    }
+    
     return new Promise(resolve => {
         const checkPause = () => {
             if (!appState.isPaused && !appState.stepMode) {
@@ -400,6 +456,17 @@ function sleep(ms) {
         };
         checkPause();
     });
+}
+
+// 軽量モードの自動切り替え
+function updateLightweightMode() {
+    const shouldEnable = appState.arraySize >= appState.lightweightThreshold;
+    if (shouldEnable !== appState.lightweightMode) {
+        appState.lightweightMode = shouldEnable;
+        if (shouldEnable) {
+            console.log(`🚀 軽量モードが有効になりました（配列サイズ: ${appState.arraySize}）`);
+        }
+    }
 }
 
 // 配列のシャッフル
@@ -2573,6 +2640,7 @@ class UIController {
         document.getElementById('array-size').addEventListener('input', (e) => {
             appState.arraySize = parseInt(e.target.value);
             document.getElementById('size-value').textContent = appState.arraySize;
+            updateLightweightMode(); // 軽量モードの自動切り替え
             this.generateNewArray();
         });
         
@@ -2771,8 +2839,8 @@ class UIController {
                 throw new Error('配列が空です');
             }
             
-            if (values.length > 100) {
-                throw new Error('配列のサイズは100以下にしてください');
+            if (values.length > 3000) {
+                throw new Error('配列のサイズは3000以下にしてください');
             }
             
             appState.array = values;
@@ -3176,7 +3244,24 @@ class UIController {
             merge: 'マージソート',
             quick: 'クイックソート',
             heap: 'ヒープソート',
-            tim: 'ティムソート'
+            tim: 'ティムソート',
+            linear: '線形探索',
+            binary: '二分探索',
+            jump: 'ジャンプ探索',
+            bfs: '幅優先探索',
+            dfs: '深さ優先探索',
+            dijkstra: 'ダイクストラ法',
+            astar: 'A*アルゴリズム',
+            'bst-insert': '二分探索木 - 挿入',
+            'bst-search': '二分探索木 - 探索',
+            'bst-delete': '二分探索木 - 削除',
+            fibonacci: 'フィボナッチ数列',
+            hanoi: 'ハノイの塔',
+            factorial: '階乗計算',
+            knapsack: '0-1ナップサック問題',
+            lcs: '最長共通部分列',
+            kmp: 'KMP法',
+            'boyer-moore': 'Boyer-Moore法'
         };
         return names[algo] || algo;
     }
