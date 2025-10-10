@@ -63,14 +63,400 @@
             <div class="section-container">
                 <div class="section-header">
                     <h2 class="section-title">
-                        <span class="title-icon">🏗️</span>
+                        <span class="title-icon">🐛</span>
                         バグ対策と改善
                     </h2>
-                    <p class="section-subtitle">品質向上とメンテナンス - デバッグ、最適化、ドキュメント</p>
+                    <p class="section-subtitle">品質向上とメンテナンス - デバッグ、最適化、リファクタリング</p>
+                </div>
+
+                <!-- 何をするか (What to Do) -->
+                <div class="content-card">
+                    <h3>🎯 何をするか（What to Do）</h3>
+                    <p>このページは継続的に参照する<strong>参考資料</strong>です。開発中に遭遇する<strong>バグの発見・修正方法</strong>、<strong>コードの品質向上</strong>、<strong>パフォーマンス最適化</strong>の技術を学びます。</p>
+
+                    <div class="alert alert-info">
+                        <strong>💡 バグ対策とは？</strong><br>
+                        プログラミングにおいて、バグ（不具合）は避けられません。重要なのは、バグを<strong>早く見つけ</strong>、<strong>効率的に修正し</strong>、<strong>再発を防ぐ</strong>スキルを身につけることです。
+                    </div>
+
+                    <h4>学べる内容：</h4>
+                    <ul>
+                        <li>✅ <strong>デバッグ技術</strong>: バグを特定するための実践的な手法</li>
+                        <li>✅ <strong>よくあるバグパターン</strong>: 遭遇しやすいバグとその解決策</li>
+                        <li>✅ <strong>ロギング</strong>: プログラムの動作を記録して分析</li>
+                        <li>✅ <strong>pdbの使い方</strong>: Pythonのデバッガの実践的な使用法</li>
+                        <li>✅ <strong>パフォーマンス最適化</strong>: 遅い処理を高速化する方法</li>
+                        <li>✅ <strong>リファクタリング</strong>: コードを整理して保守性を向上</li>
+                        <li>✅ <strong>コードレビューのポイント</strong>: 自分のコードを見直す観点</li>
+                    </ul>
+
+                    <div class="alert alert-warning">
+                        <strong>📌 このページの使い方</strong><br>
+                        Phase 0-5の開発中に問題が発生したら、このページに戻ってきて該当するセクションを読みましょう。すべてを一度に学ぶ必要はありません。
+                    </div>
+                </div>
+
+                <!-- なぜ重要か (Why Important) -->
+                <div class="content-card">
+                    <h3>🤔 なぜバグ対策が重要なのか（Why Important）</h3>
+                    
+                    <h4>1. なぜデバッグスキルが必須なのか？</h4>
+                    <div class="alert alert-info">
+                        <p>プログラミングにおけるデバッグの重要性：</p>
+                        <ul>
+                            <li><strong>現実</strong>: プログラミング時間の50-70%はデバッグに費やされる</li>
+                            <li><strong>生産性</strong>: デバッグが速いと開発スピードが劇的に向上</li>
+                            <li><strong>品質</strong>: バグを早期発見することで、重大な問題を防げる</li>
+                            <li><strong>学習</strong>: バグから学ぶことで、プログラミングスキルが向上</li>
+                        </ul>
+                    </div>
+
+                    <h4>2. なぜロギングが必要なのか？</h4>
+                    <div class="alert alert-warning">
+                        <p>print文だけでは不十分な理由：</p>
+                        <ul>
+                            <li><strong>永続性</strong>: ログはファイルに残せるが、print文は消えてしまう</li>
+                            <li><strong>レベル分け</strong>: DEBUG、INFO、WARNING、ERRORで重要度を分類できる</li>
+                            <li><strong>本番環境</strong>: print文は本番で邪魔だが、ログは必要な情報だけ出力できる</li>
+                            <li><strong>分析</strong>: ログファイルを後から解析して問題を特定できる</li>
+                        </ul>
+                    </div>
+
+                    <h4>3. なぜリファクタリングが大切なのか？</h4>
+                    <div class="alert alert-danger">
+                        <p>コードを整理する理由：</p>
+                        <ul>
+                            <li><strong>可読性</strong>: 後から読んだときに理解しやすい</li>
+                            <li><strong>保守性</strong>: 修正や機能追加がしやすくなる</li>
+                            <li><strong>バグ削減</strong>: コードが整理されていると、バグが混入しにくい</li>
+                            <li><strong>チーム作業</strong>: 他の人が読んでも理解できる</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- どうやるか (How to Do) -->
+                <div class="content-card">
+                    <h3>🛠️ デバッグの進め方（How to Debug）</h3>
+                    <p>効果的なデバッグは、体系的なアプローチで行います。以下のステップで進めましょう。</p>
+
+                    <div class="steps-list">
+                        <div class="step-item">
+                            <h4><span class="step-number">1</span>問題を再現する</h4>
+                            <p>バグを確実に再現できる手順を見つけます。</p>
+                            <ul>
+                                <li>どの操作でバグが発生するか</li>
+                                <li>どのような条件でバグが起きるか</li>
+                                <li>エラーメッセージは何か</li>
+                            </ul>
+                            <div class="alert alert-info">
+                                <strong>💡 再現できないバグは修正できません</strong><br>
+                                まずは「100%再現できる手順」を見つけることが最優先です。
+                            </div>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">2</span>問題を切り分ける</h4>
+                            <p>バグの原因がどこにあるか絞り込みます。</p>
+                            <ul>
+                                <li><strong>二分探索</strong>: コードの前半と後半、どちらに問題があるか</li>
+                                <li><strong>最小再現コード</strong>: 問題を再現する最小限のコードを作る</li>
+                                <li><strong>仮説検証</strong>: 「ここが怪しい」という仮説を立てて検証</li>
+                            </ul>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">3</span>デバッグツールを使う</h4>
+                            <p>print文だけでなく、専用ツールを活用します。</p>
+                            <ul>
+                                <li><strong>pdb</strong>: ブレークポイントを設定して変数を調査</li>
+                                <li><strong>logging</strong>: プログラムの実行フローを記録</li>
+                                <li><strong>IDE</strong>: VS Codeなどのデバッガ機能を活用</li>
+                            </ul>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">4</span>修正して検証する</h4>
+                            <p>修正後は必ず動作確認します。</p>
+                            <ul>
+                                <li>元の再現手順でバグが直っているか確認</li>
+                                <li>修正によって他の部分が壊れていないか確認（リグレッションテスト）</li>
+                                <li>同じバグが他の箇所にもないか確認</li>
+                            </ul>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">5</span>再発を防ぐ</h4>
+                            <p>同じバグが二度と起きないようにします。</p>
+                            <ul>
+                                <li><strong>テストを追加</strong>: そのバグを検出するテストケースを書く</li>
+                                <li><strong>コードレビュー</strong>: なぜバグが起きたか分析</li>
+                                <li><strong>ドキュメント化</strong>: 同じ間違いを繰り返さないようメモ</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 実践的なツールの使い方 -->
+                <div class="content-card">
+                    <h3>🔧 実践的なツールの使い方（Practical Tools）</h3>
+                    
+                    <h4>1. pdb（Python Debugger）の基本</h4>
+                    <div class="code-example">
+                        <p>pdbは対話的にコードをデバッグできる強力なツールです：</p>
+                        <pre><code># デバッグしたい箇所に挿入
+import pdb; pdb.set_trace()  # ← ここでプログラムが一時停止
+
+# よく使うコマンド：
+# n (next)      : 次の行へ
+# s (step)      : 関数の中に入る
+# c (continue)  : 次のブレークポイントまで実行
+# p 変数名       : 変数の値を表示
+# pp 変数名      : 変数を整形して表示
+# l (list)      : 現在のコードを表示
+# q (quit)      : デバッガを終了</code></pre>
+                        <p><strong>実例</strong>:</p>
+                        <pre><code>def calculate_happiness(fish):
+    import pdb; pdb.set_trace()  # ← ここで停止
+    health = fish.health
+    hunger = fish.hunger
+    happiness = (health * 0.5) + ((100 - hunger) * 0.5)
+    return happiness
+
+# 実行すると、set_trace()の行で停止し、
+# 変数の値を確認したり、一行ずつ実行できます</code></pre>
+                    </div>
+
+                    <h4>2. loggingモジュールの設定</h4>
+                    <div class="code-example">
+                        <p>適切なログ設定で、問題の追跡が容易になります：</p>
+                        <pre><code>import logging
+
+# ログの設定（プログラム起動時に1回だけ実行）
+logging.basicConfig(
+    level=logging.DEBUG,  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('aquarium.log'),  # ファイルに出力
+        logging.StreamHandler()  # コンソールにも出力
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
+# 使用例
+logger.debug("魚を追加: %s", fish.name)  # 詳細情報
+logger.info("セーブ完了")               # 一般情報
+logger.warning("水質が悪化しています")   # 警告
+logger.error("ファイル読み込み失敗")     # エラー
+logger.critical("致命的エラー")          # 重大エラー</code></pre>
+                    </div>
+
+                    <h4>3. assertを使った防御的プログラミング</h4>
+                    <div class="alert alert-info">
+                        <p>期待する条件をassertで明示的にチェック：</p>
+                        <pre><code>def add_fish(self, tank_id: int, fish: Fish):
+    """魚を水槽に追加"""
+    # 前提条件のチェック
+    assert 0 <= tank_id < len(self.tanks), f"無効な水槽ID: {tank_id}"
+    assert fish is not None, "fishがNoneです"
+    assert isinstance(fish, Fish), f"fishはFishクラスのインスタンスである必要があります: {type(fish)}"
+    
+    tank = self.tanks[tank_id]
+    assert len(tank.fish_list) < tank.capacity, "水槽が満杯です"
+    
+    tank.add_fish(fish)
+    logger.info(f"魚を追加しました: {fish.name} → 水槽{tank_id}")</code></pre>
+                        <p>assertは開発中にバグを早期発見するのに役立ちます。</p>
+                    </div>
+                </div>
+
+                <!-- よくあるバグパターン -->
+                <div class="content-card">
+                    <h3>🔍 よくあるバグパターンと解決策</h3>
+                    
+                    <h4>パターン1: 参照の共有問題</h4>
+                    <div class="alert alert-danger">
+                        <p><strong>問題</strong>: リストや辞書をデフォルト引数にすると、意図しない共有が起きる</p>
+                        <pre><code>❌ 悪い例:
+def __init__(self, fish_list=[]):  # ← すべてのインスタンスで共有される！
+    self.fish_list = fish_list
+
+✅ 良い例:
+def __init__(self, fish_list=None):
+    self.fish_list = fish_list if fish_list is not None else []</code></pre>
+                    </div>
+
+                    <h4>パターン2: 浮動小数点の比較</h4>
+                    <div class="alert alert-warning">
+                        <p><strong>問題</strong>: 浮動小数点数を==で比較すると誤差で一致しないことがある</p>
+                        <pre><code>❌ 悪い例:
+if temperature == 25.0:  # ← 24.999999999999とは一致しない
+
+✅ 良い例:
+import math
+if math.isclose(temperature, 25.0, rel_tol=1e-9):
+    # 許容誤差内で一致</code></pre>
+                    </div>
+
+                    <h4>パターン3: None チェック忘れ</h4>
+                    <div class="alert alert-info">
+                        <p><strong>問題</strong>: 変数がNoneの可能性を考慮していない</p>
+                        <pre><code>❌ 悪い例:
+fish = tank.get_fish(fish_id)
+print(fish.name)  # ← fishがNoneだとAttributeError
+
+✅ 良い例:
+fish = tank.get_fish(fish_id)
+if fish is not None:
+    print(fish.name)
+else:
+    print("魚が見つかりません")</code></pre>
+                    </div>
+
+                    <h4>パターン4: リストの変更中にイテレーション</h4>
+                    <div class="alert alert-danger">
+                        <p><strong>問題</strong>: ループ中にリストを変更すると予期しない動作になる</p>
+                        <pre><code>❌ 悪い例:
+for fish in tank.fish_list:
+    if fish.is_dead():
+        tank.fish_list.remove(fish)  # ← ループ中の変更は危険
+
+✅ 良い例:
+tank.fish_list = [f for f in tank.fish_list if not f.is_dead()]
+# または
+for fish in tank.fish_list[:]:  # コピーをループ
+    if fish.is_dead():
+        tank.fish_list.remove(fish)</code></pre>
+                    </div>
+                </div>
+
+                <!-- パフォーマンス最適化 -->
+                <div class="content-card">
+                    <h3>⚡ パフォーマンス最適化のヒント</h3>
+                    
+                    <h4>1. 測定してから最適化する</h4>
+                    <div class="alert alert-warning">
+                        <p><strong>鉄則</strong>: 推測で最適化せず、実測データに基づいて最適化する</p>
+                        <pre><code>import time
+
+# 処理時間の計測
+start = time.time()
+# ... 処理 ...
+end = time.time()
+print(f"処理時間: {end - start:.3f}秒")</code></pre>
+                    </div>
+
+                    <h4>2. よくある最適化ポイント</h4>
+                    <ul>
+                        <li><strong>ループの最適化</strong>: 不要な計算をループの外に出す</li>
+                        <li><strong>データ構造の選択</strong>: リストよりセットや辞書が速い場合がある</li>
+                        <li><strong>キャッシング</strong>: 同じ計算を繰り返さない</li>
+                        <li><strong>遅延評価</strong>: 必要になるまで計算しない</li>
+                    </ul>
+
+                    <div class="code-example">
+                        <pre><code>❌ 遅い例:
+for fish in all_fish:
+    if fish.species in [s for s in species_list]:  # 毎回リスト作成
+        process(fish)
+
+✅ 速い例:
+species_set = set(species_list)  # 一度だけセット化
+for fish in all_fish:
+    if fish.species in species_set:  # O(1)の検索
+        process(fish)</code></pre>
+                    </div>
+                </div>
+
+                <!-- リファクタリングの指針 -->
+                <div class="content-card">
+                    <h3>🔨 リファクタリングの指針</h3>
+                    
+                    <h4>リファクタリングすべきサイン（コードの臭い）</h4>
+                    <ul>
+                        <li>❌ <strong>長すぎる関数</strong>: 50行を超える関数は分割を検討</li>
+                        <li>❌ <strong>重複コード</strong>: 同じコードが2箇所以上にある</li>
+                        <li>❌ <strong>深すぎるネスト</strong>: if文が3段階以上ネストしている</li>
+                        <li>❌ <strong>マジックナンバー</strong>: 意味不明な数値がコードに直接書かれている</li>
+                        <li>❌ <strong>長すぎるパラメータリスト</strong>: 関数の引数が5個以上</li>
+                    </ul>
+
+                    <h4>リファクタリングの基本テクニック</h4>
+                    <div class="code-example">
+                        <p><strong>1. 関数の抽出</strong></p>
+                        <pre><code>❌ リファクタリング前:
+def process_tank(tank):
+    # 水質チェック
+    if tank.temperature < 18 or tank.temperature > 28:
+        print("警告: 温度異常")
+    if tank.ph < 6.0 or tank.ph > 8.0:
+        print("警告: pH異常")
+    # ... 長いコード
+
+✅ リファクタリング後:
+def check_water_quality(tank):
+    """水質チェックを別関数に抽出"""
+    if tank.temperature < 18 or tank.temperature > 28:
+        print("警告: 温度異常")
+    if tank.ph < 6.0 or tank.ph > 8.0:
+        print("警告: pH異常")
+
+def process_tank(tank):
+    check_water_quality(tank)
+    # ... 他の処理</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <p><strong>2. マジックナンバーの定数化</strong></p>
+                        <pre><code>❌ リファクタリング前:
+if fish.hunger > 80:  # 80って何？
+    fish.health -= 10  # 10って何？
+
+✅ リファクタリング後:
+HUNGER_THRESHOLD = 80  # 空腹警告レベル
+HEALTH_DECREASE_AMOUNT = 10  # 健康減少量
+
+if fish.hunger > HUNGER_THRESHOLD:
+    fish.health -= HEALTH_DECREASE_AMOUNT</code></pre>
+                    </div>
+                </div>
+
+                <!-- まとめと継続的改善 -->
+                <div class="content-card">
+                    <h3>📝 まとめと継続的改善</h3>
+                    
+                    <div class="alert alert-success">
+                        <h4>🎯 デバッグとリファクタリングの習慣</h4>
+                        <ul>
+                            <li>✅ <strong>早期発見</strong>: こまめにテストして、バグを早く見つける</li>
+                            <li>✅ <strong>記録</strong>: ログを活用して、問題の原因を追跡</li>
+                            <li>✅ <strong>整理</strong>: コードが汚くなったら、すぐにリファクタリング</li>
+                            <li>✅ <strong>学習</strong>: バグから学び、同じ間違いを繰り返さない</li>
+                            <li>✅ <strong>レビュー</strong>: 定期的に自分のコードを見直す</li>
+                        </ul>
+                    </div>
+
+                    <h4>継続的な改善のサイクル</h4>
+                    <pre><code>1. コードを書く
+   ↓
+2. テストする
+   ↓
+3. バグを見つける
+   ↓
+4. デバッグして修正
+   ↓
+5. リファクタリング
+   ↓
+1に戻る（繰り返し）</code></pre>
+
+                    <div class="alert alert-info">
+                        <strong>💡 最後のアドバイス</strong><br>
+                        完璧なコードを最初から書こうとしないでください。まず動くものを作り、徐々に改善していく姿勢が大切です。バグは学習の機会です。恐れずに挑戦しましょう！
+                    </div>
                 </div>
 
 
-                <!-- このフェーズの目標 -->
+                <!-- このフェーズの目標（古い内容を削除してここから始める） -->
                 <div class="content-card">
                     <h3>🎯 このフェーズの目標</h3>
                     <p>Phase 2では、<strong>ゲームロジック</strong>を実装します。時間経過、シミュレーション、イベント処理など、ゲームの核となる機能を作ります。</p>

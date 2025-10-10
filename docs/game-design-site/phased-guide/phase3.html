@@ -69,6 +69,199 @@
                     <p class="section-subtitle">使いやすいコマンドラインインターフェース - 15個のコマンド実装</p>
                 </div>
 
+                <!-- 何を作るか (What to Build) -->
+                <div class="content-card">
+                    <h3>🎯 何を作るか（What to Build）</h3>
+                    <p>Phase 3では、<strong>ユーザーがゲームと対話するためのインターフェース</strong>を構築します。これまでのPhase 1とPhase 2で作成したロジックを、実際に操作できる形にします。</p>
+
+                    <div class="alert alert-info">
+                        <strong>💡 UIとは？</strong><br>
+                        UI（User Interface）は、ユーザーとプログラムの橋渡しをする部分です。今回は<strong>コマンドラインUI（CUI）</strong>を作成します。
+                    </div>
+
+                    <h4>実装する機能：</h4>
+                    <ul>
+                        <li>✅ <strong>インタラクティブシェル</strong>: コマンドを入力して実行できる環境</li>
+                        <li>✅ <strong>15個のゲームコマンド</strong>: status, list, feed, clean, add_fish, buy, sell など</li>
+                        <li>✅ <strong>表示システム</strong>: 水槽や魚の状態を見やすく表示</li>
+                        <li>✅ <strong>ヘルプシステム</strong>: 各コマンドの使い方を説明</li>
+                        <li>✅ <strong>エラーハンドリング</strong>: 不正な入力に適切に対応</li>
+                        <li>✅ <strong>カラー表示</strong>: 重要な情報を色で強調（オプション）</li>
+                    </ul>
+
+                    <div class="alert alert-success">
+                        <strong>✨ 完成イメージ</strong><br>
+                        ユーザーが「水族館>」というプロンプトでコマンドを入力し、即座に結果が表示される、対話型のゲームになります。
+                    </div>
+                </div>
+
+                <!-- なぜ作るか (Why Build This) -->
+                <div class="content-card">
+                    <h3>🤔 なぜこう作るか（Why Build This）</h3>
+                    
+                    <h4>1. なぜcmdモジュールを使うのか？</h4>
+                    <div class="alert alert-info">
+                        <p>Pythonの標準ライブラリ<code>cmd</code>モジュールを使用する理由：</p>
+                        <ul>
+                            <li><strong>標準ライブラリ</strong>: 追加インストール不要で、誰でもすぐに使える</li>
+                            <li><strong>自動機能</strong>: コマンド補完、ヘルプ生成が自動で行われる</li>
+                            <li><strong>簡潔な実装</strong>: <code>do_commandname</code>メソッドを定義するだけでコマンド追加可能</li>
+                            <li><strong>拡張性</strong>: 後から新しいコマンドを簡単に追加できる</li>
+                        </ul>
+                    </div>
+
+                    <h4>2. なぜDisplayクラスを分離するのか？</h4>
+                    <div class="alert alert-warning">
+                        <p>表示ロジックを別クラスに分ける理由：</p>
+                        <ul>
+                            <li><strong>責任の分離</strong>: UIのロジックと表示の処理を分けることで、コードが整理される</li>
+                            <li><strong>再利用性</strong>: 同じ表示機能を複数の場所で使える</li>
+                            <li><strong>テストのしやすさ</strong>: 表示部分を独立してテストできる</li>
+                            <li><strong>変更の容易さ</strong>: 表示形式を変更しても、他の部分に影響しない</li>
+                        </ul>
+                    </div>
+
+                    <h4>3. なぜエラーハンドリングが重要なのか？</h4>
+                    <div class="alert alert-danger">
+                        <p>適切なエラー処理が必要な理由：</p>
+                        <ul>
+                            <li><strong>ユーザー体験</strong>: わかりやすいエラーメッセージで、ユーザーが迷わない</li>
+                            <li><strong>堅牢性</strong>: 不正な入力でプログラムがクラッシュしない</li>
+                            <li><strong>デバッグ</strong>: 問題の原因を特定しやすくなる</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- どう作るか (How to Build) -->
+                <div class="content-card">
+                    <h3>🛠️ どう作るか（How to Build）- 実装の流れ</h3>
+                    <p>Phase 3の実装は、以下の<strong>4つのステップ</strong>で進めます：</p>
+
+                    <div class="steps-list">
+                        <div class="step-item">
+                            <h4><span class="step-number">1</span>ディレクトリ構造の準備</h4>
+                            <p>UIモジュール用のディレクトリとファイルを作成します。</p>
+                            <pre><code>ui/
+├── __init__.py      # パッケージ初期化
+├── cli.py           # メインCLIクラス（600行程度）
+└── display.py       # 表示ユーティリティ（300行程度）</code></pre>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">2</span>Displayクラスの実装</h4>
+                            <p>表示処理を担当するヘルパークラスを先に作成します。これにより、CLIクラスで表示機能をすぐに使えます。</p>
+                            <ul>
+                                <li>色定義（Colors クラス）</li>
+                                <li>ヘッダー、区切り線などの表示メソッド</li>
+                                <li>テーブル形式での表示</li>
+                            </ul>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">3</span>AquariumCLIクラスの実装</h4>
+                            <p>cmdモジュールを継承したメインクラスを実装します。各コマンドを<code>do_xxx</code>メソッドとして定義していきます。</p>
+                            <ul>
+                                <li>基本的なコマンド（status, list, help）</li>
+                                <li>操作コマンド（feed, clean, add_fish）</li>
+                                <li>経済コマンド（buy, sell）</li>
+                                <li>時間進行コマンド（next_day, skip）</li>
+                                <li>システムコマンド（save, load, quit）</li>
+                            </ul>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">4</span>テストと動作確認</h4>
+                            <p>各コマンドが正しく動作するかテストします。特にエラーケースの確認が重要です。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- コーディングスタイル (Coding Style) -->
+                <div class="content-card">
+                    <h3>✍️ どう書くか（Coding Style & Best Practices）</h3>
+                    
+                    <h4>1. コマンドメソッドの命名規則</h4>
+                    <div class="code-example">
+                        <p>cmdモジュールでは、<code>do_</code>プレフィックスでコマンドを定義します：</p>
+                        <pre><code>def do_status(self, arg):
+    """水族館の状態を表示"""  # ← ここに書いたdocstringが自動的にヘルプになる
+    # 実装...</code></pre>
+                        <p><strong>ポイント</strong>: <code>do_status</code>というメソッド名が、<code>status</code>コマンドになります。</p>
+                    </div>
+
+                    <h4>2. docstringの書き方</h4>
+                    <div class="alert alert-info">
+                        <p>各コマンドのdocstringは、以下の要素を含めましょう：</p>
+                        <ul>
+                            <li><strong>1行目</strong>: コマンドの簡潔な説明</li>
+                            <li><strong>使用法</strong>: コマンドの使い方の例</li>
+                            <li><strong>引数</strong>: 必要な引数の説明（ある場合）</li>
+                            <li><strong>例</strong>: 具体的な使用例</li>
+                        </ul>
+                        <pre><code>def do_feed(self, arg):
+    """
+    魚に餌を与える
+    使用法: feed &lt;tank_id&gt; &lt;amount&gt;
+    
+    引数:
+        tank_id: 水槽番号（1から始まる）
+        amount: 餌の量（整数）
+    
+    例:
+        feed 1 10  # 水槽1に餌を10単位与える
+    """</code></pre>
+                    </div>
+
+                    <h4>3. エラーメッセージの書き方</h4>
+                    <div class="alert alert-warning">
+                        <p>ユーザーフレンドリーなエラーメッセージの書き方：</p>
+                        <ul>
+                            <li><strong>明確に</strong>: 何が問題なのかを具体的に</li>
+                            <li><strong>解決策を示す</strong>: どうすれば良いかを提示</li>
+                            <li><strong>例を示す</strong>: 正しい使い方の例を含める</li>
+                        </ul>
+                        <pre><code>❌ 悪い例: "エラー"
+✅ 良い例: "エラー: 引数が不足しています。使用法: feed &lt;tank_id&gt; &lt;amount&gt;"</code></pre>
+                    </div>
+
+                    <h4>4. コメントの書き方</h4>
+                    <div class="code-example">
+                        <p>コメントは「なぜ」を説明するために使います：</p>
+                        <pre><code># ❌ 悪いコメント: 何をしているかだけ
+fish_count = len(tank.fish_list)  # 魚の数を取得
+
+# ✅ 良いコメント: なぜ必要なのかを説明
+fish_count = len(tank.fish_list)  # 容量チェックのため、現在の魚の数を取得</code></pre>
+                    </div>
+                </div>
+
+                <!-- 実装前の準備 -->
+                <div class="content-card">
+                    <h3>📋 実装前の準備</h3>
+                    
+                    <h4>必要なもの：</h4>
+                    <ul>
+                        <li>✅ Phase 1, 2の完成したコード</li>
+                        <li>✅ Python 3.9以上</li>
+                        <li>✅ colorama（オプション）: <code>pip install colorama</code></li>
+                    </ul>
+
+                    <h4>推奨する作業の進め方：</h4>
+                    <ol>
+                        <li>まず<strong>display.py</strong>を完成させる（表示機能の基盤）</li>
+                        <li>次に<strong>cli.py</strong>の骨組みを作る（初期化とプロンプト）</li>
+                        <li><strong>基本コマンド</strong>から実装（status, help, quit）</li>
+                        <li><strong>操作コマンド</strong>を追加（feed, clean, add_fish）</li>
+                        <li><strong>高度なコマンド</strong>を追加（buy, sell, save, load）</li>
+                        <li>各ステップでテスト実行</li>
+                    </ol>
+
+                    <div class="alert alert-success">
+                        <strong>💡 アドバイス</strong><br>
+                        一度にすべてを実装しようとせず、1つずつコマンドを追加して動作確認していきましょう。動くものから始めることで、モチベーションが保てます！
+                    </div>
+                </div>
+
 <!-- AquariumCLI Complete Implementation - Part 1 -->
                 <div class="content-card">
                     <h3><span class="step-number">ステップ 3</span>AquariumCLIクラスの実装（完全版・前半）</h3>
