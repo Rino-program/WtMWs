@@ -111,242 +111,616 @@
 
                 <!-- プロジェクト構造 -->
                 <div class="content-card">
-                    <h3><span class="step-number">1</span>プロジェクト構造の更新</h3>
-                    <p>Phase 0の構造を拡張し、新しいクラスを追加します。</p>
+                    <h3><span class="step-number">1</span>プロジェクト構造の拡張</h3>
+                    <p>Phase 1で作成したクラスに、ゲームロジックを追加します。</p>
 
-                    <h4>📁 新しいディレクトリ構造：</h4>
+                    <h4>📁 ディレクトリ構造：</h4>
                     <pre><code>virtual-aquarium/
-├── models/
+├── models/              # Phase 1で作成済み
+│   ├── __init__.py
+│   ├── fish.py
+│   ├── tank.py
+│   ├── aquarium.py
+│   ├── equipment.py
+│   └── decoration.py
+├── logic/               # ← 新規作成
 │   ├── __init__.py      # モジュール初期化
-│   ├── fish.py          # Fishクラス（拡張版）
-│   ├── tank.py          # Tankクラス（拡張版）
-│   ├── aquarium.py      # Aquariumクラス（新規）
-│   ├── equipment.py     # Equipmentクラス（新規）
-│   └── decoration.py    # Decorationクラス（新規）
+│   └── game_engine.py   # ゲームエンジン（新規）
 ├── tests/
 │   ├── __init__.py
-│   ├── test_fish.py     # Fishのテスト
-│   ├── test_tank.py     # Tankのテスト
-│   └── test_aquarium.py # Aquariumのテスト
-├── main.py              # メインプログラム
-└── requirements.txt     # 依存パッケージ</code></pre>
+│   ├── test_fish.py
+│   ├── test_tank.py
+│   ├── test_aquarium.py
+│   └── test_game_engine.py  # ← 新規追加
+├── main.py
+└── requirements.txt</code></pre>
 
                     <h4>🖥️ セットアップコマンド：</h4>
-                    <pre><code># モジュールディレクトリを作成
-mkdir -p models tests
+                    <pre><code># logicディレクトリを作成
+mkdir -p logic
 
 # __init__.pyファイルを作成
-touch models/__init__.py tests/__init__.py
+touch logic/__init__.py
 
-# requirements.txtを作成
-cat > requirements.txt << EOF
-pytest>=7.0.0
-EOF
+# game_engine.pyファイルを作成
+touch logic/game_engine.py
 
-# pytestをインストール
-pip install -r requirements.txt</code></pre>
+# テストファイルを作成
+touch tests/test_game_engine.py
+
+# 確認
+ls -la logic/
+ls -la tests/</code></pre>
+
+                    <div class="alert alert-info">
+                        <strong>💡 Phase 2の概要：</strong><br>
+                        このフェーズでは、ゲームの「時間の流れ」を実装します。GameEngineクラスが1日の経過を管理し、魚の状態変化、水質劣化、収入・支出などを自動的に処理します。
+                    </div>
                 </div>
 
-                <!-- 完全なFishクラス -->
+                <!-- 完全なGameEngineクラス -->
                 <div class="content-card">
-                    <h3><span class="step-number">2</span>完全なFishクラスの実装</h3>
-                    <p>Phase 0の簡易版から、健康状態や成長など、本格的な機能を追加します。</p>
+                    <h3><span class="step-number">2</span>GameEngineクラスの実装</h3>
+                    <p>ゲーム全体のシミュレーションを制御する中核クラスです。</p>
 
-                    <h4>💻 完全なコード（models/fish.py）：</h4>
+                    <h4>💻 完全なコード（logic/game_engine.py）：</h4>
                     <pre><code>"""
-魚クラス - Phase 1 完全版
-健康管理、成長、状態変化を含む
+ゲームエンジン - Phase 2
+ゲームロジックとシミュレーションを担当
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, Optional
-import uuid
-from datetime import datetime
+from typing import Dict, List, Optional
+from models.aquarium import Aquarium
+from models.tank import Tank
+from models.fish import Fish
+import random
 
 
-@dataclass
-class Fish:
+class GameEngine:
     """
-    水族館の魚を表すクラス（完全版）
+    ゲームロジックを管理するエンジン
     
-    Phase 1では健康状態、成長、ストレス管理を含む
+    このクラスは、ゲームの時間経過、シミュレーション、
+    イベント処理などを統括します。
     """
-    # 基本情報
-    species: str  # 種類（例: "goldfish", "clownfish"）
-    name: str = ""  # 個体名
-    fish_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     
-    # 状態パラメータ（0-100）
-    health: int = 100  # 健康度
-    hunger: int = 0  # 空腹度（高いほど空腹）
-    stress_level: int = 0  # ストレスレベル
+    # ゲーム定数
+    TICKET_PRICE = 100  # 入場料（円）
+    EVENT_PROBABILITY = 0.1  # イベント発生確率（10%）
+    BASE_VISITORS = 10  # 基本来客数
     
-    # 成長パラメータ
-    age: int = 0  # 年齢（日数）
-    size: float = 5.0  # サイズ（cm）
-    growth_rate: float = 0.01  # 成長速度
-    
-    # 飼育要件
-    min_temperature: float = 20.0
-    max_temperature: float = 28.0
-    preferred_ph: float = 7.0
-    ph_tolerance: float = 1.0  # pH許容範囲
-    
-    # 経済・ゲーム
-    price: int = 100
-    is_sick: bool = False
-    birth_date: datetime = field(default_factory=datetime.now)
-    
-    def feed(self, amount: int = 20) -> None:
+    def __init__(self, aquarium: Aquarium):
         """
-        魚に餌を与える
+        ゲームエンジンを初期化
         
         Args:
-            amount: 餌の量（デフォルト20）
+            aquarium: 管理する水族館オブジェクト
         """
-        self.hunger = max(0, self.hunger - amount)
-        
-        # 食べ過ぎはストレス増加
-        if self.hunger < -20:
-            self.stress_level = min(100, self.stress_level + 5)
+        self.aquarium = aquarium
+        self.event_log: List[Dict] = []
+        self.paused = False
     
-    def update_status(self, water_quality: Dict[str, float]) -> None:
+    def simulate_day(self) -> Dict:
         """
-        環境に応じて魚の状態を更新
+        1日のシミュレーションを実行
         
-        Args:
-            water_quality: 水質パラメータの辞書
-        """
-        # 空腹度の増加
-        self.hunger = min(100, self.hunger + 5)
-        
-        # 空腹による健康への影響
-        if self.hunger > 80:
-            self.health = max(0, self.health - 5)
-            self.stress_level = min(100, self.stress_level + 3)
-        
-        # 水質による影響
-        temp = water_quality.get('temperature', 25.0)
-        ph = water_quality.get('ph', 7.0)
-        cleanliness = water_quality.get('cleanliness', 100)
-        
-        # 温度チェック
-        if not (self.min_temperature <= temp <= self.max_temperature):
-            self.health = max(0, self.health - 3)
-            self.stress_level = min(100, self.stress_level + 5)
-        
-        # pHチェック
-        ph_diff = abs(ph - self.preferred_ph)
-        if ph_diff > self.ph_tolerance:
-            self.health = max(0, self.health - 2)
-            self.stress_level = min(100, self.stress_level + 3)
-        
-        # 清潔度チェック
-        if cleanliness < 50:
-            self.health = max(0, self.health - 2)
-            self.stress_level = min(100, self.stress_level + 2)
-        
-        # 病気判定
-        if self.health < 30:
-            self.is_sick = True
-        elif self.health > 70:
-            self.is_sick = False
-        
-        # ストレスの自然減少（良好な環境では）
-        if cleanliness > 80 and ph_diff < 0.5:
-            self.stress_level = max(0, self.stress_level - 1)
-    
-    def grow(self) -> None:
-        """魚を成長させる"""
-        self.age += 1
-        
-        # サイズの増加（健康度が高いほど成長しやすい）
-        if self.health > 50:
-            growth = self.growth_rate * (self.health / 100)
-            self.size += growth
-    
-    def calculate_happiness(self) -> int:
-        """
-        幸福度を計算
+        このメソッドがゲームの核心部分です。
+        1日の全ての処理をこの関数で実行します。
         
         Returns:
-            int: 幸福度（0-100）
+            Dict: その日のイベント情報
+                {
+                    'day': 経過日数,
+                    'events': イベントリスト,
+                    'funds': 現在の資金,
+                    'reputation': 現在の評判
+                }
         """
-        happiness = 100
-        happiness -= self.hunger * 0.5
-        happiness -= self.stress_level * 0.3
-        happiness -= (100 - self.health) * 0.2
+        if self.paused:
+            return {'day': self.aquarium.current_day, 'events': []}
         
-        return int(max(0, min(100, happiness)))
+        events = []
+        
+        # ========================================
+        # ステップ1: 時間を進める
+        # ========================================
+        self.aquarium.current_day += 1
+        
+        # ========================================
+        # ステップ2: 各水槽の処理
+        # ========================================
+        for tank in self.aquarium.tanks:
+            # 2.1 水質を劣化させる
+            tank.update_water_quality(days=1)
+            
+            # 2.2 各魚の処理
+            dead_fish = []
+            for fish in tank.fish_list:
+                # 魚の状態を更新
+                fish.update_status(tank.water_quality)
+                
+                # 魚を成長させる
+                fish.grow()
+                
+                # 死亡判定
+                if fish.health <= 0:
+                    dead_fish.append(fish)
+                    cause = self._determine_death_cause(fish, tank)
+                    events.append({
+                        'type': 'fish_died',
+                        'fish_name': fish.name or fish.fish_id,
+                        'species': fish.species,
+                        'tank_id': tank.tank_id,
+                        'cause': cause,
+                        'age': fish.age
+                    })
+                    
+                    # 評判低下
+                    self.aquarium.reputation = max(0, 
+                        self.aquarium.reputation - 5)
+            
+            # 死んだ魚を削除
+            for fish in dead_fish:
+                tank.fish_list.remove(fish)
+                tank.total_fish_deaths += 1
+            
+            # 2.3 装備の効果を適用
+            for equipment in tank.equipment:
+                equipment.apply_effect(tank)
+                equipment.degrade(days=1)
+                
+                # 故障判定
+                if equipment.condition <= 0:
+                    events.append({
+                        'type': 'equipment_broken',
+                        'equipment': equipment.name,
+                        'tank_id': tank.tank_id
+                    })
+                    # 故障した装備は削除
+                    tank.equipment.remove(equipment)
+        
+        # ========================================
+        # ステップ3: 来客処理
+        # ========================================
+        visitors = self._calculate_visitors()
+        income = visitors * self.TICKET_PRICE
+        self.aquarium.funds += income
+        self.aquarium.visitors_count += visitors
+        self.aquarium.total_income += income
+        
+        events.append({
+            'type': 'daily_income',
+            'visitors': visitors,
+            'income': income
+        })
+        
+        # ========================================
+        # ステップ4: 支出処理
+        # ========================================
+        daily_expenses = self._calculate_daily_expenses()
+        self.aquarium.funds -= daily_expenses
+        self.aquarium.total_expenses += daily_expenses
+        
+        events.append({
+            'type': 'daily_expenses',
+            'amount': daily_expenses,
+            'breakdown': self._get_expense_breakdown()
+        })
+        
+        # ========================================
+        # ステップ5: ランダムイベント判定
+        # ========================================
+        if random.random() < self.EVENT_PROBABILITY:
+            random_event = self._generate_random_event()
+            self._process_event(random_event)
+            events.append(random_event)
+        
+        # ========================================
+        # ステップ6: 実績チェック
+        # ========================================
+        new_achievements = self._check_achievements()
+        if new_achievements:
+            events.append({
+                'type': 'achievements',
+                'achievements': new_achievements
+            })
+            
+            # 実績達成で評判アップ
+            self.aquarium.reputation = min(100,
+                self.aquarium.reputation + len(new_achievements) * 3)
+        
+        # ========================================
+        # ステップ7: 評判更新
+        # ========================================
+        self._update_reputation()
+        
+        # ========================================
+        # ステップ8: ゲームオーバー判定
+        # ========================================
+        if self.aquarium.funds < 0:
+            events.append({
+                'type': 'game_over',
+                'reason': 'bankruptcy'
+            })
+        
+        # イベントログに記録
+        log_entry = {
+            'day': self.aquarium.current_day,
+            'events': events,
+            'funds': self.aquarium.funds,
+            'reputation': self.aquarium.reputation
+        }
+        self.event_log.append(log_entry)
+        
+        return log_entry
     
-    def get_status_emoji(self) -> str:
-        """状態を絵文字で表現"""
-        if self.health < 30:
-            return "💀"  # 瀕死
-        elif self.health < 60:
-            return "😢"  # 不調
-        elif self.hunger > 70:
-            return "😫"  # 空腹
-        elif self.stress_level > 70:
-            return "😰"  # ストレス
-        elif self.health > 80 and self.hunger < 30:
-            return "😊"  # 元気
+    def _calculate_visitors(self) -> int:
+        """
+        来客数を計算
+        
+        来客数は以下の要因で決まります：
+        - 基本来客数
+        - 水槽の美観スコア
+        - 水族館の評判
+        - 魚の種類と数
+        
+        Returns:
+            int: 来客数
+        """
+        visitors = self.BASE_VISITORS
+        
+        # 水槽の美観による加算
+        for tank in self.aquarium.tanks:
+            beauty_score = tank.calculate_beauty_score()
+            visitors += int(beauty_score / 10)
+            
+            # 魚の数による加算
+            visitors += len(tank.fish_list) * 2
+        
+        # 評判による補正（±30%）
+        reputation_multiplier = 0.7 + (self.aquarium.reputation / 100) * 0.6
+        visitors = int(visitors * reputation_multiplier)
+        
+        # ランダム要素（±20%）
+        random_factor = random.uniform(0.8, 1.2)
+        visitors = int(visitors * random_factor)
+        
+        return max(0, visitors)
+    
+    def _calculate_daily_expenses(self) -> float:
+        """
+        日次支出を計算
+        
+        支出項目：
+        - 水槽の維持費
+        - 魚の餌代
+        - 装備の維持費
+        - 電気代
+        
+        Returns:
+            float: 総支出額
+        """
+        expenses = 0.0
+        
+        # 基本維持費（水槽数に比例）
+        expenses += len(self.aquarium.tanks) * 50
+        
+        # 魚の餌代
+        total_fish = sum(len(tank.fish_list) 
+                        for tank in self.aquarium.tanks)
+        expenses += total_fish * 10
+        
+        # 装備の維持費
+        for tank in self.aquarium.tanks:
+            for equipment in tank.equipment:
+                expenses += equipment.maintenance_cost
+        
+        # 電気代（装備数に比例）
+        total_equipment = sum(len(tank.equipment) 
+                            for tank in self.aquarium.tanks)
+        expenses += total_equipment * 20
+        
+        return expenses
+    
+    def _get_expense_breakdown(self) -> Dict[str, float]:
+        """
+        支出の内訳を取得
+        
+        Returns:
+            Dict[str, float]: 支出項目と金額の辞書
+        """
+        tank_count = len(self.aquarium.tanks)
+        fish_count = sum(len(tank.fish_list) 
+                        for tank in self.aquarium.tanks)
+        equipment_count = sum(len(tank.equipment) 
+                            for tank in self.aquarium.tanks)
+        
+        return {
+            'tank_maintenance': tank_count * 50,
+            'fish_feed': fish_count * 10,
+            'equipment_maintenance': sum(
+                eq.maintenance_cost 
+                for tank in self.aquarium.tanks 
+                for eq in tank.equipment
+            ),
+            'electricity': equipment_count * 20
+        }
+    
+    def _determine_death_cause(self, fish: Fish, tank: Tank) -> str:
+        """
+        魚の死因を判定
+        
+        Args:
+            fish: 死んだ魚
+            tank: 魚がいた水槽
+            
+        Returns:
+            str: 死因の説明
+        """
+        wq = tank.water_quality
+        
+        if fish.hunger > 80:
+            return "餓死"
+        elif wq['cleanliness'] < 30:
+            return "水質悪化"
+        elif not (fish.min_temperature <= wq['temperature'] 
+                 <= fish.max_temperature):
+            return "水温不適"
+        elif abs(wq['ph'] - fish.preferred_ph) > fish.ph_tolerance:
+            return "pH不適"
+        elif fish.stress_level > 80:
+            return "ストレス"
         else:
-            return "🙂"  # 普通
+            return "老衰"
     
-    def __str__(self) -> str:
-        """文字列表現"""
-        return f"{self.get_status_emoji()} {self.name or self.fish_id} ({self.species}) - HP:{self.health}"
+    def _generate_random_event(self) -> Dict:
+        """
+        ランダムイベントを生成
+        
+        Returns:
+            Dict: イベント情報
+        """
+        events = [
+            {
+                'type': 'random_event',
+                'name': '大セール',
+                'description': '魚屋さんが大セール中！魚が50%オフ',
+                'effect': 'sale',
+                'value': 0.5
+            },
+            {
+                'type': 'random_event',
+                'name': '水質トラブル',
+                'description': '配管の問題で全水槽の清潔度が低下',
+                'effect': 'water_trouble',
+                'value': -30
+            },
+            {
+                'type': 'random_event',
+                'name': '団体客来館',
+                'description': '学校の遠足で大量の来客！',
+                'effect': 'visitor_boost',
+                'value': 50
+            },
+            {
+                'type': 'random_event',
+                'name': 'メディア取材',
+                'description': 'テレビ局の取材で評判アップ！',
+                'effect': 'reputation_boost',
+                'value': 10
+            },
+            {
+                'type': 'random_event',
+                'name': '停電',
+                'description': '停電で装備が1日停止',
+                'effect': 'power_outage',
+                'value': 1
+            }
+        ]
+        
+        return random.choice(events)
+    
+    def _process_event(self, event: Dict) -> None:
+        """
+        イベントを処理して効果を適用
+        
+        Args:
+            event: イベント情報
+        """
+        effect = event.get('effect')
+        value = event.get('value', 0)
+        
+        if effect == 'water_trouble':
+            # 全水槽の清潔度低下
+            for tank in self.aquarium.tanks:
+                tank.water_quality['cleanliness'] = max(0,
+                    tank.water_quality['cleanliness'] + value)
+        
+        elif effect == 'reputation_boost':
+            # 評判アップ
+            self.aquarium.reputation = min(100,
+                self.aquarium.reputation + value)
+        
+        elif effect == 'power_outage':
+            # 装備停止（実際の効果は次の日に反映）
+            pass
+    
+    def _check_achievements(self) -> List[str]:
+        """
+        実績をチェック
+        
+        Returns:
+            List[str]: 新たに達成した実績のリスト
+        """
+        new_achievements = []
+        
+        # 7日生存
+        if (self.aquarium.current_day == 7 and 
+            '7日間生存' not in self.aquarium.achievements):
+            new_achievements.append('7日間生存')
+            self.aquarium.achievements.append('7日間生存')
+        
+        # 30日生存
+        if (self.aquarium.current_day == 30 and 
+            '30日間生存' not in self.aquarium.achievements):
+            new_achievements.append('30日間生存')
+            self.aquarium.achievements.append('30日間生存')
+        
+        # 資金10,000円達成
+        if (self.aquarium.funds >= 10000 and 
+            '資金10,000円達成' not in self.aquarium.achievements):
+            new_achievements.append('資金10,000円達成')
+            self.aquarium.achievements.append('資金10,000円達成')
+        
+        # 10種類の魚を飼育
+        all_species = set()
+        for tank in self.aquarium.tanks:
+            for fish in tank.fish_list:
+                all_species.add(fish.species)
+        
+        if (len(all_species) >= 10 and 
+            '10種類コレクター' not in self.aquarium.achievements):
+            new_achievements.append('10種類コレクター')
+            self.aquarium.achievements.append('10種類コレクター')
+        
+        return new_achievements
+    
+    def _update_reputation(self) -> None:
+        """
+        評判を更新
+        
+        評判は以下の要因で変動：
+        - 水槽の美観
+        - 魚の健康状態
+        - 水質管理
+        """
+        # 水槽の平均美観スコア
+        if self.aquarium.tanks:
+            avg_beauty = sum(tank.calculate_beauty_score() 
+                           for tank in self.aquarium.tanks) / len(self.aquarium.tanks)
+            
+            # 美観スコアが高いと評判アップ
+            if avg_beauty > 80:
+                self.aquarium.reputation = min(100,
+                    self.aquarium.reputation + 1)
+            elif avg_beauty < 40:
+                self.aquarium.reputation = max(0,
+                    self.aquarium.reputation - 1)
+        
+        # 魚の平均健康度
+        all_fish = []
+        for tank in self.aquarium.tanks:
+            all_fish.extend(tank.fish_list)
+        
+        if all_fish:
+            avg_health = sum(fish.health for fish in all_fish) / len(all_fish)
+            
+            # 健康度が高いと評判アップ
+            if avg_health > 80:
+                self.aquarium.reputation = min(100,
+                    self.aquarium.reputation + 1)
+            elif avg_health < 40:
+                self.aquarium.reputation = max(0,
+                    self.aquarium.reputation - 1)
+    
+    def pause(self) -> None:
+        """ゲームを一時停止"""
+        self.paused = True
+    
+    def resume(self) -> None:
+        """ゲームを再開"""
+        self.paused = False
+    
+    def get_statistics(self) -> Dict:
+        """
+        ゲーム統計を取得
+        
+        Returns:
+            Dict: 統計情報
+        """
+        all_fish = []
+        for tank in self.aquarium.tanks:
+            all_fish.extend(tank.fish_list)
+        
+        return {
+            'days': self.aquarium.current_day,
+            'funds': self.aquarium.funds,
+            'reputation': self.aquarium.reputation,
+            'total_fish': len(all_fish),
+            'total_tanks': len(self.aquarium.tanks),
+            'total_visitors': self.aquarium.visitors_count,
+            'total_income': self.aquarium.total_income,
+            'total_expenses': self.aquarium.total_expenses,
+            'net_profit': self.aquarium.total_income - self.aquarium.total_expenses,
+            'achievements': len(self.aquarium.achievements)
+        }
 
 
 # ===== テストコード =====
 if __name__ == "__main__":
-    print("🐠 魚クラス（完全版）のテスト開始")
-    print("-" * 50)
+    from models.fish import Fish
+    from models.tank import Tank
+    from models.aquarium import Aquarium
     
-    # テスト1: 魚の作成
-    fish = Fish(species="goldfish", name="金太郎")
-    print(f"✅ テスト1: {fish}")
+    print("🎮 ゲームエンジンのテスト開始")
+    print("=" * 50)
     
-    # テスト2: 餌やり
-    fish.hunger = 50
-    fish.feed(30)
-    print(f"✅ テスト2: 餌やり後 - 空腹度:{fish.hunger}")
+    # テスト1: ゲームエンジンの作成
+    aquarium = Aquarium(name="テスト水族館")
+    engine = GameEngine(aquarium)
+    print(f"✅ テスト1: エンジン作成完了")
     
-    # テスト3: 状態更新（良好な環境）
-    good_water = {
-        'temperature': 25.0,
-        'ph': 7.0,
-        'cleanliness': 90
-    }
-    fish.update_status(good_water)
-    print(f"✅ テスト3: 良好な環境 - {fish}")
+    # テスト2: 水槽と魚を追加
+    tank = aquarium.add_tank(capacity=100)
+    fish1 = Fish(species="goldfish", name="金太郎")
+    fish2 = Fish(species="goldfish", name="金次郎")
+    tank.add_fish(fish1)
+    tank.add_fish(fish2)
+    print(f"✅ テスト2: 水槽と魚を追加 - {len(tank.fish_list)}匹")
     
-    # テスト4: 状態更新（悪い環境）
-    bad_water = {
-        'temperature': 15.0,  # 低すぎる
-        'ph': 9.0,  # 高すぎる
-        'cleanliness': 30  # 汚い
-    }
-    fish.update_status(bad_water)
-    print(f"✅ テスト4: 悪い環境 - {fish}")
+    # テスト3: 1日シミュレーション
+    result = engine.simulate_day()
+    print(f"✅ テスト3: 1日目シミュレーション完了")
+    print(f"   - 経過日数: {result['day']}日")
+    print(f"   - 資金: ¥{result['funds']:,.0f}")
+    print(f"   - 評判: {result['reputation']}/100")
+    print(f"   - イベント数: {len(result['events'])}")
     
-    # テスト5: 成長
-    fish.health = 80
-    fish.grow()
-    print(f"✅ テスト5: 成長 - サイズ:{fish.size:.2f}cm, 年齢:{fish.age}日")
+    # テスト4: 10日間シミュレーション
+    print("\\n📅 10日間シミュレーション...")
+    for day in range(2, 11):
+        result = engine.simulate_day()
+        print(f"   {day}日目: 資金¥{result['funds']:,.0f}, 評判{result['reputation']}")
     
-    # テスト6: 幸福度
-    happiness = fish.calculate_happiness()
-    print(f"✅ テスト6: 幸福度 - {happiness}/100")
+    # テスト5: 統計情報取得
+    stats = engine.get_statistics()
+    print(f"\\n✅ テスト5: 統計情報")
+    print(f"   - 経過日数: {stats['days']}日")
+    print(f"   - 総収入: ¥{stats['total_income']:,.0f}")
+    print(f"   - 総支出: ¥{stats['total_expenses']:,.0f}")
+    print(f"   - 純利益: ¥{stats['net_profit']:,.0f}")
+    print(f"   - 累計来客: {stats['total_visitors']}人")
     
-    print("-" * 50)
+    print("=" * 50)
     print("🎉 すべてのテスト完了！")
 </code></pre>
 
                     <h4>🧪 テスト実行：</h4>
-                    <pre><code># Fishクラスのテスト
-python -m models.fish</code></pre>
+                    <pre><code># GameEngineクラスのテスト
+python -m logic.game_engine
+
+# または単体テストとして
+pytest tests/test_game_engine.py -v</code></pre>
+
+                    <div class="alert alert-success">
+                        <strong>✅ 確認ポイント：</strong><br>
+                        <ul>
+                            <li>ゲームエンジンが正しく初期化される</li>
+                            <li>simulate_day()が正常に実行される</li>
+                            <li>資金の収支が正しく計算される</li>
+                            <li>イベントが適切に記録される</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <!-- 完全なTankクラス -->
