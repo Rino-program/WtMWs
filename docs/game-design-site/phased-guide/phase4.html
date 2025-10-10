@@ -63,516 +63,866 @@
             <div class="section-container">
                 <div class="section-header">
                     <h2 class="section-title">
-                        <span class="title-icon">🏗️</span>
+                        <span class="title-icon">📦</span>
                         Phase 4: データファイルの作成
                     </h2>
                     <p class="section-subtitle">ゲームコンテンツの追加 - 魚種、装備、装飾のデータ</p>
                 </div>
 
+<!-- Phase 4: データファイルの作成 - Part 1: 概要とfish_species.json -->
 
-                <!-- このフェーズの目標 -->
-                <div class="content-card">
-                    <h3>🎯 このフェーズの目標</h3>
-                    <p>Phase 2では、<strong>ゲームロジック</strong>を実装します。時間経過、シミュレーション、イベント処理など、ゲームの核となる機能を作ります。</p>
-                    
-                    <div class="alert alert-info">
-                        <strong>💡 Phase 2のポイント</strong><br>
-                        GameEngineクラスがゲーム全体を制御します。1日の経過処理、魚の状態変化、水質変化、収入・支出など、すべての動的な要素をここで実装します。
-                    </div>
+<section class="implementation-section">
+    <h2>🎯 Phase 4の目標</h2>
+    <div class="goal-box">
+        <h3>このフェーズで実装すること</h3>
+        <ul>
+            <li>📦 <strong>fish_species.json</strong>: 15種類の魚データ（400行）</li>
+            <li>⚙️ <strong>equipment.json</strong>: 10種類以上の装備データ（200行）</li>
+            <li>🎨 <strong>decorations.json</strong>: 15種類以上の装飾データ（200行）</li>
+            <li>🔧 <strong>DataLoaderクラス</strong>: データ読み込みシステム（400行）</li>
+            <li>⚖️ <strong>バランス調整ガイド</strong>: ゲームバランスの調整方法（200行）</li>
+            <li>✅ <strong>データテスト</strong>: JSON検証とテスト（100行）</li>
+        </ul>
+        <p class="estimate">⏱️ <strong>推定時間</strong>: 3-4日</p>
+    </div>
+</section>
 
-                    <h4>達成すべきこと：</h4>
-                    <ul>
-                        <li>✅ GameEngineクラスの実装</li>
-                        <li>✅ 時間経過シミュレーション（simulate_day）</li>
-                        <li>✅ 魚の自動状態更新</li>
-                        <li>✅ 水質の経時変化</li>
-                        <li>✅ 経済システム（収入・支出）</li>
-                        <li>✅ イベントシステムの基礎</li>
-                        <li>✅ 統合テスト</li>
-                    </ul>
+<section class="phase-connection">
+    <h2>🔗 Phase 3からの接続</h2>
+    <div class="connection-box">
+        <h3>Phase 3で学んだこと</h3>
+        <ul>
+            <li>✅ UIシステム（display.py, cli.py）の実装</li>
+            <li>✅ 15個のコマンドの実装</li>
+            <li>✅ ユーザーインタラクション</li>
+            <li>✅ エラーハンドリング</li>
+        </ul>
+        
+        <h3>Phase 4で追加すること</h3>
+        <ul>
+            <li>🆕 魚のデータをハードコードから外部ファイルへ</li>
+            <li>🆕 装備と装飾のデータ定義</li>
+            <li>🆕 柔軟なデータ管理システム</li>
+            <li>🆕 簡単なゲームバランス調整</li>
+        </ul>
+        
+        <div class="preview-box">
+            <h4>→ Phase 5へのプレビュー</h4>
+            <p>Phase 5では、このデータを使って<strong>セーブ/ロードシステム</strong>、<strong>ランダムイベント</strong>、<strong>実績システム</strong>を実装します。</p>
+        </div>
+    </div>
+</section>
 
-                    <div class="requirements-list">
-                        <div class="requirement-item">
-                            <span class="req-icon">⏰</span>
-                            <div class="req-content">
-                                <h4>所要時間</h4>
-                                <p>約4〜5日（ロジック実装 + テスト + デバッグ）</p>
-                            </div>
-                        </div>
-                        <div class="requirement-item">
-                            <span class="req-icon">📚</span>
-                            <div class="req-content">
-                                <h4>必要な知識</h4>
-                                <p>ゲームループ、状態管理、イベント駆動プログラミング</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<section class="implementation-section">
+    <h2>📁 プロジェクト構造の更新</h2>
+    <div class="code-block">
+        <h3>ステップ1: dataディレクトリの作成</h3>
+        <pre><code class="language-bash"># プロジェクトルートで実行
+mkdir -p data
+cd data
 
-                <!-- プロジェクト構造 -->
-                <div class="content-card">
-                    <h3><span class="step-number">1</span>プロジェクト構造の更新</h3>
-                    <p>Phase 0の構造を拡張し、新しいクラスを追加します。</p>
-
-                    <h4>📁 新しいディレクトリ構造：</h4>
-                    <pre><code>virtual-aquarium/
+# 以下のファイルを作成します
+touch fish_species.json
+touch equipment.json
+touch decorations.json</code></pre>
+    </div>
+    
+    <div class="file-structure">
+        <h3>完成後のプロジェクト構造</h3>
+        <pre><code>virtual-aquarium/
 ├── models/
-│   ├── __init__.py      # モジュール初期化
-│   ├── fish.py          # Fishクラス（拡張版）
-│   ├── tank.py          # Tankクラス（拡張版）
-│   ├── aquarium.py      # Aquariumクラス（新規）
-│   ├── equipment.py     # Equipmentクラス（新規）
-│   └── decoration.py    # Decorationクラス（新規）
-├── tests/
 │   ├── __init__.py
-│   ├── test_fish.py     # Fishのテスト
-│   ├── test_tank.py     # Tankのテスト
-│   └── test_aquarium.py # Aquariumのテスト
-├── main.py              # メインプログラム
-└── requirements.txt     # 依存パッケージ</code></pre>
+│   ├── fish.py              # Phase 1
+│   ├── tank.py              # Phase 1
+│   ├── aquarium.py          # Phase 1
+│   ├── equipment.py         # Phase 1
+│   └── decoration.py        # Phase 1
+├── logic/
+│   ├── __init__.py
+│   └── game_engine.py       # Phase 2
+├── ui/
+│   ├── __init__.py
+│   ├── display.py           # Phase 3
+│   └── cli.py               # Phase 3
+├── data/                    # NEW: Phase 4
+│   ├── fish_species.json    # NEW
+│   ├── equipment.json       # NEW
+│   └── decorations.json     # NEW
+├── utils/                   # NEW: Phase 4
+│   ├── __init__.py          # NEW
+│   └── data_loader.py       # NEW
+├── tests/
+│   ├── test_models.py       # Phase 1
+│   ├── test_logic.py        # Phase 2
+│   ├── test_ui.py           # Phase 3
+│   └── test_data.py         # NEW: Phase 4
+├── main.py                  # Phase 3
+└── requirements.txt         # 更新</code></pre>
+    </div>
+</section>
 
-                    <h4>🖥️ セットアップコマンド：</h4>
-                    <pre><code># モジュールディレクトリを作成
-mkdir -p models tests
+<section class="implementation-section">
+    <h2>🐠 fish_species.json の完全実装</h2>
+    
+    <div class="explanation">
+        <h3>データ構造の設計思想</h3>
+        <p>fish_species.jsonは、ゲーム内の全魚種の<strong>マスターデータ</strong>です。各魚には以下の情報を含めます：</p>
+        <ul>
+            <li><strong>基本情報</strong>: ID、名前、説明、カテゴリ、レアリティ</li>
+            <li><strong>経済情報</strong>: 購入価格、売却価格</li>
+            <li><strong>成長情報</strong>: 初期サイズ、最大サイズ、成長率、寿命</li>
+            <li><strong>飼育条件</strong>: 温度、pH、水槽サイズ、相性</li>
+            <li><strong>ステータス</strong>: 体力、空腹率、ストレス感受性、病気耐性</li>
+            <li><strong>魅力度</strong>: 美しさ、レアリティボーナス、来客への魅力</li>
+        </ul>
+    </div>
 
-# __init__.pyファイルを作成
-touch models/__init__.py tests/__init__.py
-
-# requirements.txtを作成
-cat > requirements.txt << EOF
-pytest>=7.0.0
-EOF
-
-# pytestをインストール
-pip install -r requirements.txt</code></pre>
-                </div>
-
-                <!-- 完全なFishクラス -->
-                <div class="content-card">
-                    <h3><span class="step-number">2</span>完全なFishクラスの実装</h3>
-                    <p>Phase 0の簡易版から、健康状態や成長など、本格的な機能を追加します。</p>
-
-                    <h4>💻 完全なコード（models/fish.py）：</h4>
-                    <pre><code>"""
-魚クラス - Phase 1 完全版
-健康管理、成長、状態変化を含む
-"""
-
-from dataclasses import dataclass, field
-from typing import Dict, Optional
-import uuid
-from datetime import datetime
-
-
-@dataclass
-class Fish:
-    """
-    水族館の魚を表すクラス（完全版）
+    <div class="code-block">
+        <h3>完全なfish_species.json</h3>
+        <pre><code class="language-json">{
+  "version": "1.0",
+  "last_updated": "2025-01-10",
+  "description": "バーチャル水族館ゲーム - 魚種マスターデータ",
+  
+  "species": [
+    {
+      "id": "goldfish",
+      "name": "金魚",
+      "name_en": "Goldfish",
+      "description": "日本の伝統的な観賞魚。初心者に最適で丈夫で飼いやすい。色鮮やかで見た目も美しい。",
+      "category": "freshwater",
+      "rarity": "common",
+      
+      "economy": {
+        "base_price": 100,
+        "sell_price": 50,
+        "maintenance_cost_per_day": 5
+      },
+      
+      "growth": {
+        "base_size": 5.0,
+        "max_size": 20.0,
+        "growth_rate": 0.01,
+        "lifespan_days": 365
+      },
+      
+      "requirements": {
+        "min_temp": 15.0,
+        "max_temp": 28.0,
+        "preferred_ph": 7.0,
+        "ph_tolerance": 1.0,
+        "min_tank_size": 20,
+        "water_type": "freshwater",
+        "compatibility": ["goldfish", "koi", "loach", "guppy"]
+      },
+      
+      "stats": {
+        "base_health": 100,
+        "hunger_rate": 5,
+        "stress_sensitivity": 0.5,
+        "disease_resistance": 0.7,
+        "aggression_level": 0.1
+      },
+      
+      "appeal": {
+        "beauty": 7,
+        "rarity_bonus": 1,
+        "visitor_attraction": 5,
+        "education_value": 3
+      }
+    },
     
-    Phase 1では健康状態、成長、ストレス管理を含む
-    """
-    # 基本情報
-    species: str  # 種類（例: "goldfish", "clownfish"）
-    name: str = ""  # 個体名
-    fish_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
+    {
+      "id": "koi",
+      "name": "鯉",
+      "name_en": "Koi",
+      "description": "日本の高級観賞魚。大きく育ち、美しい模様が特徴。長寿で人によく懐く。縁起物として人気。",
+      "category": "freshwater",
+      "rarity": "uncommon",
+      
+      "economy": {
+        "base_price": 500,
+        "sell_price": 300,
+        "maintenance_cost_per_day": 15
+      },
+      
+      "growth": {
+        "base_size": 10.0,
+        "max_size": 60.0,
+        "growth_rate": 0.02,
+        "lifespan_days": 1825
+      },
+      
+      "requirements": {
+        "min_temp": 10.0,
+        "max_temp": 25.0,
+        "preferred_ph": 7.2,
+        "ph_tolerance": 0.8,
+        "min_tank_size": 100,
+        "water_type": "freshwater",
+        "compatibility": ["koi", "goldfish", "loach"]
+      },
+      
+      "stats": {
+        "base_health": 150,
+        "hunger_rate": 8,
+        "stress_sensitivity": 0.4,
+        "disease_resistance": 0.8,
+        "aggression_level": 0.2
+      },
+      
+      "appeal": {
+        "beauty": 9,
+        "rarity_bonus": 3,
+        "visitor_attraction": 12,
+        "education_value": 5
+      }
+    },
     
-    # 状態パラメータ（0-100）
-    health: int = 100  # 健康度
-    hunger: int = 0  # 空腹度（高いほど空腹）
-    stress_level: int = 0  # ストレスレベル
+    {
+      "id": "clownfish",
+      "name": "クマノミ",
+      "name_en": "Clownfish",
+      "description": "カラフルな海水魚。映画で有名になった人気の魚。イソギンチャクと共生する生態が面白い。",
+      "category": "saltwater",
+      "rarity": "uncommon",
+      
+      "economy": {
+        "base_price": 300,
+        "sell_price": 180,
+        "maintenance_cost_per_day": 12
+      },
+      
+      "growth": {
+        "base_size": 3.0,
+        "max_size": 11.0,
+        "growth_rate": 0.008,
+        "lifespan_days": 730
+      },
+      
+      "requirements": {
+        "min_temp": 24.0,
+        "max_temp": 28.0,
+        "preferred_ph": 8.1,
+        "ph_tolerance": 0.3,
+        "min_tank_size": 30,
+        "water_type": "saltwater",
+        "compatibility": ["clownfish", "tang", "damselfish"]
+      },
+      
+      "stats": {
+        "base_health": 80,
+        "hunger_rate": 6,
+        "stress_sensitivity": 0.6,
+        "disease_resistance": 0.6,
+        "aggression_level": 0.3
+      },
+      
+      "appeal": {
+        "beauty": 8,
+        "rarity_bonus": 3,
+        "visitor_attraction": 10,
+        "education_value": 6
+      }
+    },
     
-    # 成長パラメータ
-    age: int = 0  # 年齢（日数）
-    size: float = 5.0  # サイズ（cm）
-    growth_rate: float = 0.01  # 成長速度
+    {
+      "id": "angelfish",
+      "name": "エンゼルフィッシュ",
+      "name_en": "Angelfish",
+      "description": "優雅な形の淡水魚。ゆったりとした動きが美しく、水草水槽に最適。三角形の体形が特徴的。",
+      "category": "freshwater",
+      "rarity": "uncommon",
+      
+      "economy": {
+        "base_price": 250,
+        "sell_price": 150,
+        "maintenance_cost_per_day": 8
+      },
+      
+      "growth": {
+        "base_size": 4.0,
+        "max_size": 15.0,
+        "growth_rate": 0.012,
+        "lifespan_days": 1095
+      },
+      
+      "requirements": {
+        "min_temp": 24.0,
+        "max_temp": 30.0,
+        "preferred_ph": 6.5,
+        "ph_tolerance": 1.0,
+        "min_tank_size": 40,
+        "water_type": "freshwater",
+        "compatibility": ["angelfish", "tetra", "guppy", "corydoras"]
+      },
+      
+      "stats": {
+        "base_health": 90,
+        "hunger_rate": 5,
+        "stress_sensitivity": 0.7,
+        "disease_resistance": 0.65,
+        "aggression_level": 0.4
+      },
+      
+      "appeal": {
+        "beauty": 8,
+        "rarity_bonus": 2,
+        "visitor_attraction": 8,
+        "education_value": 4
+      }
+    },
     
-    # 飼育要件
-    min_temperature: float = 20.0
-    max_temperature: float = 28.0
-    preferred_ph: float = 7.0
-    ph_tolerance: float = 1.0  # pH許容範囲
+    {
+      "id": "guppy",
+      "name": "グッピー",
+      "name_en": "Guppy",
+      "description": "小型で繁殖力が強い熱帯魚。カラフルな尾ビレが美しく、初心者向け。グッピーに始まりグッピーに終わると言われる奥深さ。",
+      "category": "freshwater",
+      "rarity": "common",
+      
+      "economy": {
+        "base_price": 50,
+        "sell_price": 25,
+        "maintenance_cost_per_day": 3
+      },
+      
+      "growth": {
+        "base_size": 2.0,
+        "max_size": 6.0,
+        "growth_rate": 0.005,
+        "lifespan_days": 180
+      },
+      
+      "requirements": {
+        "min_temp": 22.0,
+        "max_temp": 28.0,
+        "preferred_ph": 7.0,
+        "ph_tolerance": 1.5,
+        "min_tank_size": 10,
+        "water_type": "freshwater",
+        "compatibility": ["guppy", "tetra", "platy", "molly", "shrimp"]
+      },
+      
+      "stats": {
+        "base_health": 70,
+        "hunger_rate": 4,
+        "stress_sensitivity": 0.4,
+        "disease_resistance": 0.75,
+        "aggression_level": 0.1
+      },
+      
+      "appeal": {
+        "beauty": 6,
+        "rarity_bonus": 1,
+        "visitor_attraction": 4,
+        "education_value": 3
+      }
+    },
     
-    # 経済・ゲーム
-    price: int = 100
-    is_sick: bool = False
-    birth_date: datetime = field(default_factory=datetime.now)
+    {
+      "id": "betta",
+      "name": "ベタ",
+      "name_en": "Betta",
+      "description": "美しいヒレを持つ闘魚。単独飼育が基本で、個性的な色彩が魅力。オスは縄張り意識が強い。",
+      "category": "freshwater",
+      "rarity": "common",
+      
+      "economy": {
+        "base_price": 150,
+        "sell_price": 80,
+        "maintenance_cost_per_day": 6
+      },
+      
+      "growth": {
+        "base_size": 3.0,
+        "max_size": 7.0,
+        "growth_rate": 0.006,
+        "lifespan_days": 365
+      },
+      
+      "requirements": {
+        "min_temp": 24.0,
+        "max_temp": 28.0,
+        "preferred_ph": 7.0,
+        "ph_tolerance": 1.0,
+        "min_tank_size": 5,
+        "water_type": "freshwater",
+        "compatibility": ["betta"]
+      },
+      
+      "stats": {
+        "base_health": 85,
+        "hunger_rate": 4,
+        "stress_sensitivity": 0.8,
+        "disease_resistance": 0.6,
+        "aggression_level": 0.9
+      },
+      
+      "appeal": {
+        "beauty": 9,
+        "rarity_bonus": 2,
+        "visitor_attraction": 7,
+        "education_value": 4
+      }
+    },
     
-    def feed(self, amount: int = 20) -> None:
-        """
-        魚に餌を与える
-        
-        Args:
-            amount: 餌の量（デフォルト20）
-        """
-        self.hunger = max(0, self.hunger - amount)
-        
-        # 食べ過ぎはストレス増加
-        if self.hunger < -20:
-            self.stress_level = min(100, self.stress_level + 5)
+    {
+      "id": "neon_tetra",
+      "name": "ネオンテトラ",
+      "name_en": "Neon Tetra",
+      "description": "青と赤の鮮やかな小型魚。群れで泳ぐ姿が美しく、水草水槽の定番。平和的な性格で混泳に最適。",
+      "category": "freshwater",
+      "rarity": "common",
+      
+      "economy": {
+        "base_price": 30,
+        "sell_price": 15,
+        "maintenance_cost_per_day": 2
+      },
+      
+      "growth": {
+        "base_size": 1.5,
+        "max_size": 4.0,
+        "growth_rate": 0.003,
+        "lifespan_days": 730
+      },
+      
+      "requirements": {
+        "min_temp": 20.0,
+        "max_temp": 26.0,
+        "preferred_ph": 6.0,
+        "ph_tolerance": 1.0,
+        "min_tank_size": 20,
+        "water_type": "freshwater",
+        "compatibility": ["tetra", "guppy", "rasbora", "corydoras", "shrimp"]
+      },
+      
+      "stats": {
+        "base_health": 60,
+        "hunger_rate": 3,
+        "stress_sensitivity": 0.5,
+        "disease_resistance": 0.7,
+        "aggression_level": 0.1
+      },
+      
+      "appeal": {
+        "beauty": 7,
+        "rarity_bonus": 1,
+        "visitor_attraction": 5,
+        "education_value": 3
+      }
+    },
     
-    def update_status(self, water_quality: Dict[str, float]) -> None:
-        """
-        環境に応じて魚の状態を更新
-        
-        Args:
-            water_quality: 水質パラメータの辞書
-        """
-        # 空腹度の増加
-        self.hunger = min(100, self.hunger + 5)
-        
-        # 空腹による健康への影響
-        if self.hunger > 80:
-            self.health = max(0, self.health - 5)
-            self.stress_level = min(100, self.stress_level + 3)
-        
-        # 水質による影響
-        temp = water_quality.get('temperature', 25.0)
-        ph = water_quality.get('ph', 7.0)
-        cleanliness = water_quality.get('cleanliness', 100)
-        
-        # 温度チェック
-        if not (self.min_temperature <= temp <= self.max_temperature):
-            self.health = max(0, self.health - 3)
-            self.stress_level = min(100, self.stress_level + 5)
-        
-        # pHチェック
-        ph_diff = abs(ph - self.preferred_ph)
-        if ph_diff > self.ph_tolerance:
-            self.health = max(0, self.health - 2)
-            self.stress_level = min(100, self.stress_level + 3)
-        
-        # 清潔度チェック
-        if cleanliness < 50:
-            self.health = max(0, self.health - 2)
-            self.stress_level = min(100, self.stress_level + 2)
-        
-        # 病気判定
-        if self.health < 30:
-            self.is_sick = True
-        elif self.health > 70:
-            self.is_sick = False
-        
-        # ストレスの自然減少（良好な環境では）
-        if cleanliness > 80 and ph_diff < 0.5:
-            self.stress_level = max(0, self.stress_level - 1)
+    {
+      "id": "discus",
+      "name": "ディスカス",
+      "name_en": "Discus",
+      "description": "熱帯魚の王様と呼ばれる高級魚。円盤型の体と美しい模様が特徴。飼育難易度は高いが、その美しさは格別。",
+      "category": "freshwater",
+      "rarity": "rare",
+      
+      "economy": {
+        "base_price": 1000,
+        "sell_price": 600,
+        "maintenance_cost_per_day": 25
+      },
+      
+      "growth": {
+        "base_size": 8.0,
+        "max_size": 20.0,
+        "growth_rate": 0.015,
+        "lifespan_days": 3650
+      },
+      
+      "requirements": {
+        "min_temp": 28.0,
+        "max_temp": 31.0,
+        "preferred_ph": 6.0,
+        "ph_tolerance": 0.5,
+        "min_tank_size": 80,
+        "water_type": "freshwater",
+        "compatibility": ["discus", "tetra", "corydoras"]
+      },
+      
+      "stats": {
+        "base_health": 120,
+        "hunger_rate": 6,
+        "stress_sensitivity": 0.9,
+        "disease_resistance": 0.5,
+        "aggression_level": 0.2
+      },
+      
+      "appeal": {
+        "beauty": 10,
+        "rarity_bonus": 5,
+        "visitor_attraction": 15,
+        "education_value": 7
+      }
+    },
     
-    def grow(self) -> None:
-        """魚を成長させる"""
-        self.age += 1
-        
-        # サイズの増加（健康度が高いほど成長しやすい）
-        if self.health > 50:
-            growth = self.growth_rate * (self.health / 100)
-            self.size += growth
+    {
+      "id": "pleco",
+      "name": "プレコ",
+      "name_en": "Plecostomus",
+      "description": "底棲のコケ取り魚。水槽の掃除屋として重宝される。大きく育つので大型水槽が必要。夜行性。",
+      "category": "freshwater",
+      "rarity": "common",
+      
+      "economy": {
+        "base_price": 200,
+        "sell_price": 100,
+        "maintenance_cost_per_day": 10
+      },
+      
+      "growth": {
+        "base_size": 5.0,
+        "max_size": 30.0,
+        "growth_rate": 0.018,
+        "lifespan_days": 3650
+      },
+      
+      "requirements": {
+        "min_temp": 22.0,
+        "max_temp": 28.0,
+        "preferred_ph": 7.0,
+        "ph_tolerance": 1.5,
+        "min_tank_size": 50,
+        "water_type": "freshwater",
+        "compatibility": ["pleco", "cichlid", "catfish", "oscar"]
+      },
+      
+      "stats": {
+        "base_health": 130,
+        "hunger_rate": 5,
+        "stress_sensitivity": 0.3,
+        "disease_resistance": 0.85,
+        "aggression_level": 0.2
+      },
+      
+      "appeal": {
+        "beauty": 6,
+        "rarity_bonus": 1,
+        "visitor_attraction": 5,
+        "education_value": 4
+      }
+    },
     
-    def calculate_happiness(self) -> int:
-        """
-        幸福度を計算
-        
-        Returns:
-            int: 幸福度（0-100）
-        """
-        happiness = 100
-        happiness -= self.hunger * 0.5
-        happiness -= self.stress_level * 0.3
-        happiness -= (100 - self.health) * 0.2
-        
-        return int(max(0, min(100, happiness)))
+    {
+      "id": "shrimp",
+      "name": "エビ",
+      "name_en": "Shrimp",
+      "description": "小型の淡水エビ。透明な体と活発な動きが魅力。コケ取りにも役立つ。種類によって様々な色彩がある。",
+      "category": "freshwater",
+      "rarity": "common",
+      
+      "economy": {
+        "base_price": 80,
+        "sell_price": 40,
+        "maintenance_cost_per_day": 2
+      },
+      
+      "growth": {
+        "base_size": 1.0,
+        "max_size": 3.0,
+        "growth_rate": 0.002,
+        "lifespan_days": 365
+      },
+      
+      "requirements": {
+        "min_temp": 18.0,
+        "max_temp": 26.0,
+        "preferred_ph": 7.0,
+        "ph_tolerance": 1.0,
+        "min_tank_size": 10,
+        "water_type": "freshwater",
+        "compatibility": ["shrimp", "tetra", "guppy", "snail"]
+      },
+      
+      "stats": {
+        "base_health": 50,
+        "hunger_rate": 2,
+        "stress_sensitivity": 0.7,
+        "disease_resistance": 0.6,
+        "aggression_level": 0.0
+      },
+      
+      "appeal": {
+        "beauty": 5,
+        "rarity_bonus": 1,
+        "visitor_attraction": 3,
+        "education_value": 4
+      }
+    },
     
-    def get_status_emoji(self) -> str:
-        """状態を絵文字で表現"""
-        if self.health < 30:
-            return "💀"  # 瀕死
-        elif self.health < 60:
-            return "😢"  # 不調
-        elif self.hunger > 70:
-            return "😫"  # 空腹
-        elif self.stress_level > 70:
-            return "😰"  # ストレス
-        elif self.health > 80 and self.hunger < 30:
-            return "😊"  # 元気
-        else:
-            return "🙂"  # 普通
+    {
+      "id": "oscar",
+      "name": "オスカー",
+      "name_en": "Oscar",
+      "description": "大型で知能の高い肉食魚。人に懐き、餌をねだる姿がかわいい。水槽のペットとして人気。大型水槽必須。",
+      "category": "freshwater",
+      "rarity": "uncommon",
+      
+      "economy": {
+        "base_price": 400,
+        "sell_price": 240,
+        "maintenance_cost_per_day": 18
+      },
+      
+      "growth": {
+        "base_size": 10.0,
+        "max_size": 35.0,
+        "growth_rate": 0.025,
+        "lifespan_days": 3650
+      },
+      
+      "requirements": {
+        "min_temp": 23.0,
+        "max_temp": 27.0,
+        "preferred_ph": 7.0,
+        "ph_tolerance": 1.0,
+        "min_tank_size": 150,
+        "water_type": "freshwater",
+        "compatibility": ["oscar", "pleco"]
+      },
+      
+      "stats": {
+        "base_health": 140,
+        "hunger_rate": 10,
+        "stress_sensitivity": 0.5,
+        "disease_resistance": 0.75,
+        "aggression_level": 0.7
+      },
+      
+      "appeal": {
+        "beauty": 7,
+        "rarity_bonus": 3,
+        "visitor_attraction": 9,
+        "education_value": 6
+      }
+    },
     
-    def __str__(self) -> str:
-        """文字列表現"""
-        return f"{self.get_status_emoji()} {self.name or self.fish_id} ({self.species}) - HP:{self.health}"
-
-
-# ===== テストコード =====
-if __name__ == "__main__":
-    print("🐠 魚クラス（完全版）のテスト開始")
-    print("-" * 50)
+    {
+      "id": "cichlid",
+      "name": "シクリッド",
+      "name_en": "African Cichlid",
+      "description": "アフリカ原産の色鮮やかな魚。多様な種類と美しい色彩が魅力。縄張り意識が強く、同種間で階級ができる。",
+      "category": "freshwater",
+      "rarity": "uncommon",
+      
+      "economy": {
+        "base_price": 350,
+        "sell_price": 200,
+        "maintenance_cost_per_day": 14
+      },
+      
+      "growth": {
+        "base_size": 6.0,
+        "max_size": 15.0,
+        "growth_rate": 0.012,
+        "lifespan_days": 2555
+      },
+      
+      "requirements": {
+        "min_temp": 24.0,
+        "max_temp": 28.0,
+        "preferred_ph": 7.8,
+        "ph_tolerance": 0.8,
+        "min_tank_size": 60,
+        "water_type": "freshwater",
+        "compatibility": ["cichlid", "pleco"]
+      },
+      
+      "stats": {
+        "base_health": 110,
+        "hunger_rate": 7,
+        "stress_sensitivity": 0.6,
+        "disease_resistance": 0.75,
+        "aggression_level": 0.8
+      },
+      
+      "appeal": {
+        "beauty": 8,
+        "rarity_bonus": 3,
+        "visitor_attraction": 9,
+        "education_value": 5
+      }
+    },
     
-    # テスト1: 魚の作成
-    fish = Fish(species="goldfish", name="金太郎")
-    print(f"✅ テスト1: {fish}")
+    {
+      "id": "catfish",
+      "name": "ナマズ",
+      "name_en": "Catfish",
+      "description": "底棲の大型魚。ひげが特徴的で、夜行性。水槽の掃除屋として活躍。成長すると迫力のある姿に。",
+      "category": "freshwater",
+      "rarity": "common",
+      
+      "economy": {
+        "base_price": 180,
+        "sell_price": 90,
+        "maintenance_cost_per_day": 9
+      },
+      
+      "growth": {
+        "base_size": 8.0,
+        "max_size": 40.0,
+        "growth_rate": 0.02,
+        "lifespan_days": 3650
+      },
+      
+      "requirements": {
+        "min_temp": 20.0,
+        "max_temp": 26.0,
+        "preferred_ph": 7.0,
+        "ph_tolerance": 1.5,
+        "min_tank_size": 100,
+        "water_type": "freshwater",
+        "compatibility": ["catfish", "pleco", "loach"]
+      },
+      
+      "stats": {
+        "base_health": 135,
+        "hunger_rate": 6,
+        "stress_sensitivity": 0.3,
+        "disease_resistance": 0.85,
+        "aggression_level": 0.3
+      },
+      
+      "appeal": {
+        "beauty": 5,
+        "rarity_bonus": 1,
+        "visitor_attraction": 4,
+        "education_value": 4
+      }
+    },
     
-    # テスト2: 餌やり
-    fish.hunger = 50
-    fish.feed(30)
-    print(f"✅ テスト2: 餌やり後 - 空腹度:{fish.hunger}")
+    {
+      "id": "loach",
+      "name": "ドジョウ",
+      "name_en": "Loach",
+      "description": "日本の淡水魚。底を這う動きがユニーク。丈夫で飼いやすく、日本の風情を感じさせる。コケ取りにも有効。",
+      "category": "freshwater",
+      "rarity": "common",
+      
+      "economy": {
+        "base_price": 120,
+        "sell_price": 60,
+        "maintenance_cost_per_day": 5
+      },
+      
+      "growth": {
+        "base_size": 5.0,
+        "max_size": 15.0,
+        "growth_rate": 0.008,
+        "lifespan_days": 1825
+      },
+      
+      "requirements": {
+        "min_temp": 15.0,
+        "max_temp": 25.0,
+        "preferred_ph": 7.0,
+        "ph_tolerance": 1.5,
+        "min_tank_size": 30,
+        "water_type": "freshwater",
+        "compatibility": ["loach", "goldfish", "koi", "catfish"]
+      },
+      
+      "stats": {
+        "base_health": 100,
+        "hunger_rate": 4,
+        "stress_sensitivity": 0.3,
+        "disease_resistance": 0.85,
+        "aggression_level": 0.1
+      },
+      
+      "appeal": {
+        "beauty": 5,
+        "rarity_bonus": 1,
+        "visitor_attraction": 4,
+        "education_value": 5
+      }
+    },
     
-    # テスト3: 状態更新（良好な環境）
-    good_water = {
-        'temperature': 25.0,
-        'ph': 7.0,
-        'cleanliness': 90
+    {
+      "id": "arowana",
+      "name": "アロワナ",
+      "name_en": "Arowana",
+      "description": "古代魚として知られる高級魚。龍のような姿が美しく、幸運をもたらすとされる。超大型水槽と高い技術が必要。",
+      "category": "freshwater",
+      "rarity": "legendary",
+      
+      "economy": {
+        "base_price": 5000,
+        "sell_price": 3000,
+        "maintenance_cost_per_day": 50
+      },
+      
+      "growth": {
+        "base_size": 20.0,
+        "max_size": 90.0,
+        "growth_rate": 0.03,
+        "lifespan_days": 7300
+      },
+      
+      "requirements": {
+        "min_temp": 24.0,
+        "max_temp": 30.0,
+        "preferred_ph": 6.5,
+        "ph_tolerance": 1.0,
+        "min_tank_size": 300,
+        "water_type": "freshwater",
+        "compatibility": ["arowana"]
+      },
+      
+      "stats": {
+        "base_health": 200,
+        "hunger_rate": 12,
+        "stress_sensitivity": 0.7,
+        "disease_resistance": 0.7,
+        "aggression_level": 0.6
+      },
+      
+      "appeal": {
+        "beauty": 10,
+        "rarity_bonus": 10,
+        "visitor_attraction": 25,
+        "education_value": 8
+      }
     }
-    fish.update_status(good_water)
-    print(f"✅ テスト3: 良好な環境 - {fish}")
+  ],
+  
+  "rarity_levels": {
+    "common": {"color": "gray", "multiplier": 1.0},
+    "uncommon": {"color": "green", "multiplier": 1.5},
+    "rare": {"color": "blue", "multiplier": 2.5},
+    "legendary": {"color": "gold", "multiplier": 5.0}
+  },
+  
+  "categories": {
+    "freshwater": {"description": "淡水魚", "salinity": 0.0},
+    "saltwater": {"description": "海水魚", "salinity": 3.5}
+  }
+}</code></pre>
+    </div>
     
-    # テスト4: 状態更新（悪い環境）
-    bad_water = {
-        'temperature': 15.0,  # 低すぎる
-        'ph': 9.0,  # 高すぎる
-        'cleanliness': 30  # 汚い
-    }
-    fish.update_status(bad_water)
-    print(f"✅ テスト4: 悪い環境 - {fish}")
-    
-    # テスト5: 成長
-    fish.health = 80
-    fish.grow()
-    print(f"✅ テスト5: 成長 - サイズ:{fish.size:.2f}cm, 年齢:{fish.age}日")
-    
-    # テスト6: 幸福度
-    happiness = fish.calculate_happiness()
-    print(f"✅ テスト6: 幸福度 - {happiness}/100")
-    
-    print("-" * 50)
-    print("🎉 すべてのテスト完了！")
-</code></pre>
+    <div class="explanation">
+        <h3>データ設計のポイント</h3>
+        <ul>
+            <li>📊 <strong>階層的なデータ構造</strong>: economy, growth, requirements, stats, appealで情報を分類</li>
+            <li>🔢 <strong>数値バランス</strong>: 価格とメンテナンスコストが比例、レアリティで差をつける</li>
+            <li>🐠 <strong>生物学的リアリティ</strong>: 実際の魚の特性を反映（金魚は丈夫、ディスカスは難しい）</li>
+            <li>🎮 <strong>ゲームプレイバランス</strong>: 初心者向けから上級者向けまで段階的な難易度</li>
+            <li>💰 <strong>経済バランス</strong>: 高級魚は高リターンだが高リスク</li>
+        </ul>
+    </div>
+</section>
 
-                    <h4>🧪 テスト実行：</h4>
-                    <pre><code># Fishクラスのテスト
-python -m models.fish</code></pre>
-                </div>
-
-                <!-- 完全なTankクラス -->
-                <div class="content-card">
-                    <h3><span class="step-number">3</span>完全なTankクラスの実装</h3>
-                    <p>水質管理、容量制限、装備・装飾の管理を含む完全版のTankクラスです。</p>
-
-                    <h4>💻 コードスニペット（models/tank.py）：</h4>
-                    <pre><code>"""
-水槽クラス - Phase 1 完全版
-水質管理、容量制限、装備管理を含む
-"""
-
-from typing import List, Dict, Optional
-from models.fish import Fish
-import uuid
-
-
-class Tank:
-    """水槽クラス（完全版）"""
-    
-    def __init__(self, capacity: int = 100, name: str = ""):
-        self.tank_id: str = str(uuid.uuid4())[:8]
-        self.name: str = name or f"Tank-{self.tank_id}"
-        self.capacity: int = capacity  # リットル
-        
-        # 水質パラメータ
-        self.water_quality: Dict[str, float] = {
-            'ph': 7.0,
-            'temperature': 25.0,
-            'cleanliness': 100.0,
-            'oxygen': 100.0,
-            'ammonia': 0.0,
-        }
-        
-        # 収容物
-        self.fish_list: List[Fish] = []
-        self.equipment: List = []  # Equipment objects
-        self.decorations: List = []  # Decoration objects
-        
-        # 統計
-        self.days_since_cleaning: int = 0
-        self.total_fish_deaths: int = 0
-    
-    def add_fish(self, fish: Fish) -> bool:
-        """
-        魚を追加（容量チェック付き）
-        
-        Returns:
-            bool: 追加成功ならTrue
-        """
-        current_load = sum(f.size for f in self.fish_list)
-        
-        if current_load + fish.size > self.capacity:
-            return False  # 容量オーバー
-        
-        self.fish_list.append(fish)
-        return True
-    
-    def update_water_quality(self, days: int = 1) -> None:
-        """水質を経時変化させる"""
-        fish_count = len(self.fish_list)
-        fish_load = sum(f.size for f in self.fish_list)
-        
-        # 清潔度の低下
-        self.water_quality['cleanliness'] = max(0, 
-            self.water_quality['cleanliness'] - 5 * days - fish_load * 0.1)
-        
-        # アンモニアの増加
-        self.water_quality['ammonia'] = min(100,
-            self.water_quality['ammonia'] + 2 * days + fish_count * 0.5)
-        
-        # 酸素の減少
-        self.water_quality['oxygen'] = max(20,
-            self.water_quality['oxygen'] - 3 * days - fish_count)
-        
-        self.days_since_cleaning += days
-    
-    def clean_tank(self) -> None:
-        """水槽を清掃する"""
-        self.water_quality['cleanliness'] = 100.0
-        self.water_quality['ammonia'] = 0.0
-        self.water_quality['oxygen'] = 100.0
-        self.days_since_cleaning = 0
-    
-    def calculate_beauty_score(self) -> int:
-        """美観スコアを計算"""
-        score = self.water_quality['cleanliness'] * 0.5
-        # 装飾によるボーナス（Phase 4で実装）
-        return int(min(100, score))
-    
-    def get_capacity_ratio(self) -> float:
-        """容量使用率を返す"""
-        current_load = sum(f.size for f in self.fish_list)
-        return current_load / self.capacity if self.capacity > 0 else 0.0
-    
-    def __str__(self) -> str:
-        capacity_pct = int(self.get_capacity_ratio() * 100)
-        return f"🏺 {self.name} (魚:{len(self.fish_list)}匹, 容量:{capacity_pct}%)"
-</code></pre>
-                </div>
-
-                <!-- ユニットテストの作成 -->
-                <div class="content-card">
-                    <h3><span class="step-number">4</span>ユニットテストの作成</h3>
-                    <p>pytestを使用して、各クラスの動作を検証します。</p>
-
-                    <h4>💻 Fishクラスのテスト（tests/test_fish.py）：</h4>
-                    <pre><code>"""
-Fishクラスのユニットテスト
-"""
-
-import pytest
-from models.fish import Fish
-
-
-def test_fish_creation():
-    """魚の作成テスト"""
-    fish = Fish(species="goldfish", name="金太郎")
-    assert fish.species == "goldfish"
-    assert fish.name == "金太郎"
-    assert fish.health == 100
-    assert fish.hunger == 0
-
-
-def test_feed_fish():
-    """餌やりのテスト"""
-    fish = Fish(species="goldfish")
-    fish.hunger = 50
-    fish.feed(30)
-    assert fish.hunger == 20
-
-
-def test_fish_status_update_good_environment():
-    """良好な環境での状態更新テスト"""
-    fish = Fish(species="goldfish")
-    initial_health = fish.health
-    
-    good_water = {
-        'temperature': 25.0,
-        'ph': 7.0,
-        'cleanliness': 90
-    }
-    
-    fish.update_status(good_water)
-    # 空腹度は増えるが、健康は維持される
-    assert fish.hunger > 0
-
-
-def test_fish_status_update_bad_environment():
-    """悪い環境での状態更新テスト"""
-    fish = Fish(species="goldfish")
-    initial_health = fish.health
-    
-    bad_water = {
-        'temperature': 15.0,  # 低すぎる
-        'ph': 9.0,  # 高すぎる
-        'cleanliness': 30
-    }
-    
-    fish.update_status(bad_water)
-    assert fish.health < initial_health
-    assert fish.stress_level > 0
-
-
-def test_fish_growth():
-    """成長のテスト"""
-    fish = Fish(species="goldfish")
-    initial_size = fish.size
-    fish.health = 80
-    fish.grow()
-    assert fish.size > initial_size
-    assert fish.age == 1
-
-
-def test_calculate_happiness():
-    """幸福度計算のテスト"""
-    fish = Fish(species="goldfish")
-    fish.health = 100
-    fish.hunger = 10
-    fish.stress_level = 5
-    happiness = fish.calculate_happiness()
-    assert 0 <= happiness <= 100
-    assert happiness > 80  # 健康で空腹でないので高い
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
-</code></pre>
-
-                    <h4>🧪 テスト実行：</h4>
-                    <pre><code># すべてのテストを実行
-pytest tests/ -v
-
-# 特定のテストファイルのみ実行
-pytest tests/test_fish.py -v
-
-# カバレッジレポート付きで実行
-pytest tests/ --cov=models --cov-report=html</code></pre>
-                </div>
-
-                <!-- 完了チェックリスト -->
-                <div class="content-card">
-                    <h3>✅ Phase 1 完了チェックリスト</h3>
-                    <p>すべてにチェックが入ったら、Phase 2に進む準備ができています！</p>
-
-                    <ul class="checklist">
-                        <li>models/ディレクトリとtests/ディレクトリを作成した</li>
-                        <li>完全なFishクラスを実装した</li>
-                        <li>完全なTankクラスを実装した</li>
-                        <li>Aquariumクラスを実装した</li>
-                        <li>Equipmentクラスを実装した</li>
-                        <li>Decorationクラスを実装した</li>
-                        <li>Fishクラスのテストがすべて通る</li>
-                        <li>Tankクラスのテストがすべて通る</li>
-                        <li>Aquariumクラスのテストがすべて通る</li>
-                        <li>すべてのクラスに型ヒントを追加した</li>
-                        <li>すべてのクラスにdocstringを追加した</li>
-                    </ul>
-                </div>
-
+            
 
                 <!-- 次のステップ -->
                 <div class="content-card next-step-card">
-                    <h3>🎉 Phase 2完了！</h3>
-                    <p>ゲームロジックが実装できました。次はユーザーインターフェースを作成します。</p>
+                    <h3>🎉 Phase 4完了！</h3>
+                    <p>データファイルが完成しました。次は追加機能を実装します。</p>
                     
                     <div class="button-group">
                         <a href="phase3.html" class="btn btn-secondary">
@@ -585,10 +935,9 @@ pytest tests/ --cov=models --cov-report=html</code></pre>
                         </a>
                     </div>
                 </div>
-
-            </div>
+</div>
         </section>
-    </main>
+    </main></main>
 
     <footer class="site-footer">
         <div class="footer-container">
