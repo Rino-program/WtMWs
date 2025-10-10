@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 2: ゲームロジックの実装 - バーチャル水族館ゲーム開発ガイド</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="progress-indicator">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo">
+                <span class="logo-icon">🐠</span>
+                <span class="logo-text">バーチャル水族館ゲーム</span>
+            </div>
+            <h1 class="header-title">Phase 2: ゲームロジックの実装</h1>
+        </div>
+    </header>
+
+    <nav class="phase-navigation">
+        <div class="nav-container">
+            <button class="phase-btn" data-phase="overview">
+                <span class="phase-icon">📖</span>
+                <span class="phase-label">概要</span>
+            </button>
+            <button class="phase-btn" data-phase="phase0">
+                <span class="phase-icon">🎯</span>
+                <span class="phase-label">Phase 0<br>MVP</span>
+            </button>
+            <button class="phase-btn" data-phase="phase1">
+                <span class="phase-icon">🏗️</span>
+                <span class="phase-label">Phase 1<br>基本構造</span>
+            </button>
+            <button class="phase-btn active" data-phase="phase2">
+                <span class="phase-icon">⚙️</span>
+                <span class="phase-label">Phase 2<br>ロジック</span>
+            </button>
+            <button class="phase-btn" data-phase="phase3">
+                <span class="phase-icon">💻</span>
+                <span class="phase-label">Phase 3<br>UI</span>
+            </button>
+            <button class="phase-btn" data-phase="phase4">
+                <span class="phase-icon">📦</span>
+                <span class="phase-label">Phase 4<br>データ</span>
+            </button>
+            <button class="phase-btn" data-phase="phase5">
+                <span class="phase-icon">✨</span>
+                <span class="phase-label">Phase 5<br>追加機能</span>
+            </button>
+            <button class="phase-btn" data-phase="bugfix">
+                <span class="phase-icon">🐛</span>
+                <span class="phase-label">バグ対策</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section class="phase-section active">
+            <div class="section-container">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="title-icon">🏗️</span>
+                        Phase 2: ゲームロジックの実装
+                    </h2>
+                    <p class="section-subtitle">シミュレーションとゲームエンジン - ゲームの核となる処理</p>
+                </div>
+
+
+                <!-- このフェーズの目標 -->
+                <div class="content-card">
+                    <h3>🎯 このフェーズの目標</h3>
+                    <p>Phase 2では、<strong>ゲームロジック</strong>を実装します。時間経過、シミュレーション、イベント処理など、ゲームの核となる機能を作ります。</p>
+                    
+                    <div class="alert alert-info">
+                        <strong>💡 Phase 2のポイント</strong><br>
+                        GameEngineクラスがゲーム全体を制御します。1日の経過処理、魚の状態変化、水質変化、収入・支出など、すべての動的な要素をここで実装します。
+                    </div>
+
+                    <h4>達成すべきこと：</h4>
+                    <ul>
+                        <li>✅ GameEngineクラスの実装</li>
+                        <li>✅ 時間経過シミュレーション（simulate_day）</li>
+                        <li>✅ 魚の自動状態更新</li>
+                        <li>✅ 水質の経時変化</li>
+                        <li>✅ 経済システム（収入・支出）</li>
+                        <li>✅ イベントシステムの基礎</li>
+                        <li>✅ 統合テスト</li>
+                    </ul>
+
+                    <div class="requirements-list">
+                        <div class="requirement-item">
+                            <span class="req-icon">⏰</span>
+                            <div class="req-content">
+                                <h4>所要時間</h4>
+                                <p>約4〜5日（ロジック実装 + テスト + デバッグ）</p>
+                            </div>
+                        </div>
+                        <div class="requirement-item">
+                            <span class="req-icon">📚</span>
+                            <div class="req-content">
+                                <h4>必要な知識</h4>
+                                <p>ゲームループ、状態管理、イベント駆動プログラミング</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- プロジェクト構造 -->
+                <div class="content-card">
+                    <h3><span class="step-number">1</span>プロジェクト構造の更新</h3>
+                    <p>Phase 0の構造を拡張し、新しいクラスを追加します。</p>
+
+                    <h4>📁 新しいディレクトリ構造：</h4>
+                    <pre><code>virtual-aquarium/
+├── models/
+│   ├── __init__.py      # モジュール初期化
+│   ├── fish.py          # Fishクラス（拡張版）
+│   ├── tank.py          # Tankクラス（拡張版）
+│   ├── aquarium.py      # Aquariumクラス（新規）
+│   ├── equipment.py     # Equipmentクラス（新規）
+│   └── decoration.py    # Decorationクラス（新規）
+├── tests/
+│   ├── __init__.py
+│   ├── test_fish.py     # Fishのテスト
+│   ├── test_tank.py     # Tankのテスト
+│   └── test_aquarium.py # Aquariumのテスト
+├── main.py              # メインプログラム
+└── requirements.txt     # 依存パッケージ</code></pre>
+
+                    <h4>🖥️ セットアップコマンド：</h4>
+                    <pre><code># モジュールディレクトリを作成
+mkdir -p models tests
+
+# __init__.pyファイルを作成
+touch models/__init__.py tests/__init__.py
+
+# requirements.txtを作成
+cat > requirements.txt << EOF
+pytest>=7.0.0
+EOF
+
+# pytestをインストール
+pip install -r requirements.txt</code></pre>
+                </div>
+
+                <!-- 完全なFishクラス -->
+                <div class="content-card">
+                    <h3><span class="step-number">2</span>完全なFishクラスの実装</h3>
+                    <p>Phase 0の簡易版から、健康状態や成長など、本格的な機能を追加します。</p>
+
+                    <h4>💻 完全なコード（models/fish.py）：</h4>
+                    <pre><code>"""
+魚クラス - Phase 1 完全版
+健康管理、成長、状態変化を含む
+"""
+
+from dataclasses import dataclass, field
+from typing import Dict, Optional
+import uuid
+from datetime import datetime
+
+
+@dataclass
+class Fish:
+    """
+    水族館の魚を表すクラス（完全版）
+    
+    Phase 1では健康状態、成長、ストレス管理を含む
+    """
+    # 基本情報
+    species: str  # 種類（例: "goldfish", "clownfish"）
+    name: str = ""  # 個体名
+    fish_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
+    
+    # 状態パラメータ（0-100）
+    health: int = 100  # 健康度
+    hunger: int = 0  # 空腹度（高いほど空腹）
+    stress_level: int = 0  # ストレスレベル
+    
+    # 成長パラメータ
+    age: int = 0  # 年齢（日数）
+    size: float = 5.0  # サイズ（cm）
+    growth_rate: float = 0.01  # 成長速度
+    
+    # 飼育要件
+    min_temperature: float = 20.0
+    max_temperature: float = 28.0
+    preferred_ph: float = 7.0
+    ph_tolerance: float = 1.0  # pH許容範囲
+    
+    # 経済・ゲーム
+    price: int = 100
+    is_sick: bool = False
+    birth_date: datetime = field(default_factory=datetime.now)
+    
+    def feed(self, amount: int = 20) -> None:
+        """
+        魚に餌を与える
+        
+        Args:
+            amount: 餌の量（デフォルト20）
+        """
+        self.hunger = max(0, self.hunger - amount)
+        
+        # 食べ過ぎはストレス増加
+        if self.hunger < -20:
+            self.stress_level = min(100, self.stress_level + 5)
+    
+    def update_status(self, water_quality: Dict[str, float]) -> None:
+        """
+        環境に応じて魚の状態を更新
+        
+        Args:
+            water_quality: 水質パラメータの辞書
+        """
+        # 空腹度の増加
+        self.hunger = min(100, self.hunger + 5)
+        
+        # 空腹による健康への影響
+        if self.hunger > 80:
+            self.health = max(0, self.health - 5)
+            self.stress_level = min(100, self.stress_level + 3)
+        
+        # 水質による影響
+        temp = water_quality.get('temperature', 25.0)
+        ph = water_quality.get('ph', 7.0)
+        cleanliness = water_quality.get('cleanliness', 100)
+        
+        # 温度チェック
+        if not (self.min_temperature <= temp <= self.max_temperature):
+            self.health = max(0, self.health - 3)
+            self.stress_level = min(100, self.stress_level + 5)
+        
+        # pHチェック
+        ph_diff = abs(ph - self.preferred_ph)
+        if ph_diff > self.ph_tolerance:
+            self.health = max(0, self.health - 2)
+            self.stress_level = min(100, self.stress_level + 3)
+        
+        # 清潔度チェック
+        if cleanliness < 50:
+            self.health = max(0, self.health - 2)
+            self.stress_level = min(100, self.stress_level + 2)
+        
+        # 病気判定
+        if self.health < 30:
+            self.is_sick = True
+        elif self.health > 70:
+            self.is_sick = False
+        
+        # ストレスの自然減少（良好な環境では）
+        if cleanliness > 80 and ph_diff < 0.5:
+            self.stress_level = max(0, self.stress_level - 1)
+    
+    def grow(self) -> None:
+        """魚を成長させる"""
+        self.age += 1
+        
+        # サイズの増加（健康度が高いほど成長しやすい）
+        if self.health > 50:
+            growth = self.growth_rate * (self.health / 100)
+            self.size += growth
+    
+    def calculate_happiness(self) -> int:
+        """
+        幸福度を計算
+        
+        Returns:
+            int: 幸福度（0-100）
+        """
+        happiness = 100
+        happiness -= self.hunger * 0.5
+        happiness -= self.stress_level * 0.3
+        happiness -= (100 - self.health) * 0.2
+        
+        return int(max(0, min(100, happiness)))
+    
+    def get_status_emoji(self) -> str:
+        """状態を絵文字で表現"""
+        if self.health < 30:
+            return "💀"  # 瀕死
+        elif self.health < 60:
+            return "😢"  # 不調
+        elif self.hunger > 70:
+            return "😫"  # 空腹
+        elif self.stress_level > 70:
+            return "😰"  # ストレス
+        elif self.health > 80 and self.hunger < 30:
+            return "😊"  # 元気
+        else:
+            return "🙂"  # 普通
+    
+    def __str__(self) -> str:
+        """文字列表現"""
+        return f"{self.get_status_emoji()} {self.name or self.fish_id} ({self.species}) - HP:{self.health}"
+
+
+# ===== テストコード =====
+if __name__ == "__main__":
+    print("🐠 魚クラス（完全版）のテスト開始")
+    print("-" * 50)
+    
+    # テスト1: 魚の作成
+    fish = Fish(species="goldfish", name="金太郎")
+    print(f"✅ テスト1: {fish}")
+    
+    # テスト2: 餌やり
+    fish.hunger = 50
+    fish.feed(30)
+    print(f"✅ テスト2: 餌やり後 - 空腹度:{fish.hunger}")
+    
+    # テスト3: 状態更新（良好な環境）
+    good_water = {
+        'temperature': 25.0,
+        'ph': 7.0,
+        'cleanliness': 90
+    }
+    fish.update_status(good_water)
+    print(f"✅ テスト3: 良好な環境 - {fish}")
+    
+    # テスト4: 状態更新（悪い環境）
+    bad_water = {
+        'temperature': 15.0,  # 低すぎる
+        'ph': 9.0,  # 高すぎる
+        'cleanliness': 30  # 汚い
+    }
+    fish.update_status(bad_water)
+    print(f"✅ テスト4: 悪い環境 - {fish}")
+    
+    # テスト5: 成長
+    fish.health = 80
+    fish.grow()
+    print(f"✅ テスト5: 成長 - サイズ:{fish.size:.2f}cm, 年齢:{fish.age}日")
+    
+    # テスト6: 幸福度
+    happiness = fish.calculate_happiness()
+    print(f"✅ テスト6: 幸福度 - {happiness}/100")
+    
+    print("-" * 50)
+    print("🎉 すべてのテスト完了！")
+</code></pre>
+
+                    <h4>🧪 テスト実行：</h4>
+                    <pre><code># Fishクラスのテスト
+python -m models.fish</code></pre>
+                </div>
+
+                <!-- 完全なTankクラス -->
+                <div class="content-card">
+                    <h3><span class="step-number">3</span>完全なTankクラスの実装</h3>
+                    <p>水質管理、容量制限、装備・装飾の管理を含む完全版のTankクラスです。</p>
+
+                    <h4>💻 コードスニペット（models/tank.py）：</h4>
+                    <pre><code>"""
+水槽クラス - Phase 1 完全版
+水質管理、容量制限、装備管理を含む
+"""
+
+from typing import List, Dict, Optional
+from models.fish import Fish
+import uuid
+
+
+class Tank:
+    """水槽クラス（完全版）"""
+    
+    def __init__(self, capacity: int = 100, name: str = ""):
+        self.tank_id: str = str(uuid.uuid4())[:8]
+        self.name: str = name or f"Tank-{self.tank_id}"
+        self.capacity: int = capacity  # リットル
+        
+        # 水質パラメータ
+        self.water_quality: Dict[str, float] = {
+            'ph': 7.0,
+            'temperature': 25.0,
+            'cleanliness': 100.0,
+            'oxygen': 100.0,
+            'ammonia': 0.0,
+        }
+        
+        # 収容物
+        self.fish_list: List[Fish] = []
+        self.equipment: List = []  # Equipment objects
+        self.decorations: List = []  # Decoration objects
+        
+        # 統計
+        self.days_since_cleaning: int = 0
+        self.total_fish_deaths: int = 0
+    
+    def add_fish(self, fish: Fish) -> bool:
+        """
+        魚を追加（容量チェック付き）
+        
+        Returns:
+            bool: 追加成功ならTrue
+        """
+        current_load = sum(f.size for f in self.fish_list)
+        
+        if current_load + fish.size > self.capacity:
+            return False  # 容量オーバー
+        
+        self.fish_list.append(fish)
+        return True
+    
+    def update_water_quality(self, days: int = 1) -> None:
+        """水質を経時変化させる"""
+        fish_count = len(self.fish_list)
+        fish_load = sum(f.size for f in self.fish_list)
+        
+        # 清潔度の低下
+        self.water_quality['cleanliness'] = max(0, 
+            self.water_quality['cleanliness'] - 5 * days - fish_load * 0.1)
+        
+        # アンモニアの増加
+        self.water_quality['ammonia'] = min(100,
+            self.water_quality['ammonia'] + 2 * days + fish_count * 0.5)
+        
+        # 酸素の減少
+        self.water_quality['oxygen'] = max(20,
+            self.water_quality['oxygen'] - 3 * days - fish_count)
+        
+        self.days_since_cleaning += days
+    
+    def clean_tank(self) -> None:
+        """水槽を清掃する"""
+        self.water_quality['cleanliness'] = 100.0
+        self.water_quality['ammonia'] = 0.0
+        self.water_quality['oxygen'] = 100.0
+        self.days_since_cleaning = 0
+    
+    def calculate_beauty_score(self) -> int:
+        """美観スコアを計算"""
+        score = self.water_quality['cleanliness'] * 0.5
+        # 装飾によるボーナス（Phase 4で実装）
+        return int(min(100, score))
+    
+    def get_capacity_ratio(self) -> float:
+        """容量使用率を返す"""
+        current_load = sum(f.size for f in self.fish_list)
+        return current_load / self.capacity if self.capacity > 0 else 0.0
+    
+    def __str__(self) -> str:
+        capacity_pct = int(self.get_capacity_ratio() * 100)
+        return f"🏺 {self.name} (魚:{len(self.fish_list)}匹, 容量:{capacity_pct}%)"
+</code></pre>
+                </div>
+
+                <!-- ユニットテストの作成 -->
+                <div class="content-card">
+                    <h3><span class="step-number">4</span>ユニットテストの作成</h3>
+                    <p>pytestを使用して、各クラスの動作を検証します。</p>
+
+                    <h4>💻 Fishクラスのテスト（tests/test_fish.py）：</h4>
+                    <pre><code>"""
+Fishクラスのユニットテスト
+"""
+
+import pytest
+from models.fish import Fish
+
+
+def test_fish_creation():
+    """魚の作成テスト"""
+    fish = Fish(species="goldfish", name="金太郎")
+    assert fish.species == "goldfish"
+    assert fish.name == "金太郎"
+    assert fish.health == 100
+    assert fish.hunger == 0
+
+
+def test_feed_fish():
+    """餌やりのテスト"""
+    fish = Fish(species="goldfish")
+    fish.hunger = 50
+    fish.feed(30)
+    assert fish.hunger == 20
+
+
+def test_fish_status_update_good_environment():
+    """良好な環境での状態更新テスト"""
+    fish = Fish(species="goldfish")
+    initial_health = fish.health
+    
+    good_water = {
+        'temperature': 25.0,
+        'ph': 7.0,
+        'cleanliness': 90
+    }
+    
+    fish.update_status(good_water)
+    # 空腹度は増えるが、健康は維持される
+    assert fish.hunger > 0
+
+
+def test_fish_status_update_bad_environment():
+    """悪い環境での状態更新テスト"""
+    fish = Fish(species="goldfish")
+    initial_health = fish.health
+    
+    bad_water = {
+        'temperature': 15.0,  # 低すぎる
+        'ph': 9.0,  # 高すぎる
+        'cleanliness': 30
+    }
+    
+    fish.update_status(bad_water)
+    assert fish.health < initial_health
+    assert fish.stress_level > 0
+
+
+def test_fish_growth():
+    """成長のテスト"""
+    fish = Fish(species="goldfish")
+    initial_size = fish.size
+    fish.health = 80
+    fish.grow()
+    assert fish.size > initial_size
+    assert fish.age == 1
+
+
+def test_calculate_happiness():
+    """幸福度計算のテスト"""
+    fish = Fish(species="goldfish")
+    fish.health = 100
+    fish.hunger = 10
+    fish.stress_level = 5
+    happiness = fish.calculate_happiness()
+    assert 0 <= happiness <= 100
+    assert happiness > 80  # 健康で空腹でないので高い
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])
+</code></pre>
+
+                    <h4>🧪 テスト実行：</h4>
+                    <pre><code># すべてのテストを実行
+pytest tests/ -v
+
+# 特定のテストファイルのみ実行
+pytest tests/test_fish.py -v
+
+# カバレッジレポート付きで実行
+pytest tests/ --cov=models --cov-report=html</code></pre>
+                </div>
+
+                <!-- 完了チェックリスト -->
+                <div class="content-card">
+                    <h3>✅ Phase 1 完了チェックリスト</h3>
+                    <p>すべてにチェックが入ったら、Phase 2に進む準備ができています！</p>
+
+                    <ul class="checklist">
+                        <li>models/ディレクトリとtests/ディレクトリを作成した</li>
+                        <li>完全なFishクラスを実装した</li>
+                        <li>完全なTankクラスを実装した</li>
+                        <li>Aquariumクラスを実装した</li>
+                        <li>Equipmentクラスを実装した</li>
+                        <li>Decorationクラスを実装した</li>
+                        <li>Fishクラスのテストがすべて通る</li>
+                        <li>Tankクラスのテストがすべて通る</li>
+                        <li>Aquariumクラスのテストがすべて通る</li>
+                        <li>すべてのクラスに型ヒントを追加した</li>
+                        <li>すべてのクラスにdocstringを追加した</li>
+                    </ul>
+                </div>
+
+
+                <!-- 次のステップ -->
+                <div class="content-card next-step-card">
+                    <h3>🎉 Phase 2完了！</h3>
+                    <p>ゲームロジックが実装できました。次はユーザーインターフェースを作成します。</p>
+                    
+                    <div class="button-group">
+                        <a href="phase1.html" class="btn btn-secondary">
+                            <span class="btn-icon">◀️</span>
+                            前のフェーズに戻る
+                        </a>
+                        <a href="phase3.html" class="btn btn-primary btn-large">
+                            <span class="btn-icon">▶️</span>
+                            次のフェーズへ進む
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <p>© 2025 バーチャル水族館ゲーム開発プロジェクト</p>
+            <p>Phase 1: 基本構造の実装 - しっかりとしたクラス設計と実装 - 全クラスの定義とテスト</p>
+        </div>
+    </footer>
+
+    <script src="navigation.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeChecklist('phase2');
+        });
+    </script>
+</body>
+</html>
