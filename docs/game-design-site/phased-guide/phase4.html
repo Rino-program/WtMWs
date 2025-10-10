@@ -69,6 +69,255 @@
                     <p class="section-subtitle">ゲームコンテンツの追加 - 魚種、装備、装飾のデータ</p>
                 </div>
 
+                <!-- 何を作るか (What to Build) -->
+                <div class="content-card">
+                    <h3>🎯 何を作るか（What to Build）</h3>
+                    <p>Phase 4では、<strong>ゲームのコンテンツデータを外部ファイルとして管理</strong>します。これまではコード内にハードコードしていたデータを、編集しやすいJSON形式で管理できるようにします。</p>
+
+                    <div class="alert alert-info">
+                        <strong>💡 データ駆動設計とは？</strong><br>
+                        ゲームのコンテンツ（魚の種類、装備など）をコードから分離し、データファイルで管理する設計手法です。プログラマーでなくても、データを編集してゲームを拡張できます。
+                    </div>
+
+                    <h4>作成するファイル：</h4>
+                    <ul>
+                        <li>✅ <strong>fish_species.json</strong>: 15種類以上の魚のデータ（名前、適温、価格など）</li>
+                        <li>✅ <strong>equipment.json</strong>: 10種類以上の装備データ（フィルター、ヒーターなど）</li>
+                        <li>✅ <strong>decorations.json</strong>: 15種類以上の装飾データ（岩、水草など）</li>
+                        <li>✅ <strong>DataLoaderクラス</strong>: これらのJSONファイルを読み込むシステム</li>
+                        <li>✅ <strong>バランス調整ガイド</strong>: ゲームバランスの調整方法のドキュメント</li>
+                    </ul>
+
+                    <div class="alert alert-success">
+                        <strong>✨ 完成イメージ</strong><br>
+                        JSONファイルを編集するだけで、新しい魚や装備を追加したり、価格やパラメータを調整できるようになります。
+                    </div>
+                </div>
+
+                <!-- なぜ作るか (Why Build This) -->
+                <div class="content-card">
+                    <h3>🤔 なぜこう作るか（Why Build This）</h3>
+                    
+                    <h4>1. なぜデータをコードから分離するのか？</h4>
+                    <div class="alert alert-info">
+                        <p>データ分離の利点：</p>
+                        <ul>
+                            <li><strong>メンテナンス性</strong>: データの修正にコードの再コンパイル・再起動が不要</li>
+                            <li><strong>拡張性</strong>: 新しいコンテンツを簡単に追加できる</li>
+                            <li><strong>バランス調整</strong>: ゲームバランスを調整しやすい（テストプレイ後の微調整が楽）</li>
+                            <li><strong>チーム作業</strong>: プログラマー以外（企画者など）もデータ作成に参加できる</li>
+                            <li><strong>国際化</strong>: 言語別のデータファイルを作成しやすい</li>
+                        </ul>
+                    </div>
+
+                    <h4>2. なぜJSON形式を使うのか？</h4>
+                    <div class="alert alert-warning">
+                        <p>JSON（JavaScript Object Notation）を選ぶ理由：</p>
+                        <ul>
+                            <li><strong>可読性</strong>: 人間が読み書きしやすい形式</li>
+                            <li><strong>標準ライブラリ</strong>: Pythonの標準jsonモジュールで簡単に扱える</li>
+                            <li><strong>構造化</strong>: ネストしたデータ構造を表現できる</li>
+                            <li><strong>広く使用</strong>: 多くのツールやエディタがサポート</li>
+                            <li><strong>軽量</strong>: XMLより簡潔で、ファイルサイズが小さい</li>
+                        </ul>
+                    </div>
+
+                    <h4>3. なぜDataLoaderクラスが必要なのか？</h4>
+                    <div class="alert alert-danger">
+                        <p>専用のローダークラスを作る理由：</p>
+                        <ul>
+                            <li><strong>一元管理</strong>: データ読み込みのロジックを1か所に集約</li>
+                            <li><strong>エラーハンドリング</strong>: ファイル読み込みエラーを適切に処理</li>
+                            <li><strong>キャッシング</strong>: 一度読み込んだデータを再利用して高速化</li>
+                            <li><strong>バリデーション</strong>: データの整合性をチェック</li>
+                            <li><strong>拡張性</strong>: 将来的に他のデータソース（DB等）にも対応可能</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- どう作るか (How to Build) -->
+                <div class="content-card">
+                    <h3>🛠️ どう作るか（How to Build）- 実装の流れ</h3>
+                    <p>Phase 4の実装は、以下の<strong>5つのステップ</strong>で進めます：</p>
+
+                    <div class="steps-list">
+                        <div class="step-item">
+                            <h4><span class="step-number">1</span>ディレクトリ構造の準備</h4>
+                            <p>データファイル用のディレクトリを作成します。</p>
+                            <pre><code>data/
+├── fish_species.json      # 魚のマスターデータ
+├── equipment.json         # 装備のマスターデータ
+└── decorations.json       # 装飾のマスターデータ
+
+data_loader/
+├── __init__.py
+└── loader.py              # DataLoaderクラス</code></pre>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">2</span>JSONスキーマの設計</h4>
+                            <p>各データファイルの構造を設計します。どのようなフィールドが必要か、型は何かを決めます。</p>
+                            <p><strong>設計のポイント</strong>:</p>
+                            <ul>
+                                <li>必須フィールドと任意フィールドを明確にする</li>
+                                <li>データの一貫性を保つ（同じ意味のフィールドは同じ名前にする）</li>
+                                <li>将来の拡張を考慮する（後から追加しやすい構造にする）</li>
+                            </ul>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">3</span>JSONデータファイルの作成</h4>
+                            <p>設計に基づいて、実際のデータを作成します。</p>
+                            <p><strong>作業の順序</strong>:</p>
+                            <ol>
+                                <li>まず<strong>サンプルデータ</strong>を2-3件作成してテスト</li>
+                                <li>問題がなければ、<strong>すべてのデータ</strong>を作成</li>
+                                <li>データの<strong>バランスチェック</strong>（価格、効果など）</li>
+                            </ol>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">4</span>DataLoaderクラスの実装</h4>
+                            <p>JSONファイルを読み込み、Pythonオブジェクトに変換するクラスを実装します。</p>
+                            <p><strong>実装する機能</strong>:</p>
+                            <ul>
+                                <li>ファイル読み込みとパース</li>
+                                <li>データのバリデーション</li>
+                                <li>キャッシュ機構</li>
+                                <li>エラーハンドリング</li>
+                            </ul>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">5</span>既存コードとの統合</h4>
+                            <p>Phase 1-3で作成したコードを、新しいデータシステムに対応させます。</p>
+                            <p><strong>変更箇所</strong>:</p>
+                            <ul>
+                                <li>魚の追加処理をDataLoaderから取得するように変更</li>
+                                <li>装備・装飾の購入処理を更新</li>
+                                <li>初期化処理でデータをロード</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- コーディングスタイル (Coding Style) -->
+                <div class="content-card">
+                    <h3>✍️ どう書くか（Coding Style & Best Practices）</h3>
+                    
+                    <h4>1. JSONファイルの書き方</h4>
+                    <div class="code-example">
+                        <p>JSONは<strong>可読性</strong>が重要です：</p>
+                        <pre><code>{
+  "fish_species": [
+    {
+      "id": "goldfish",              // ← IDは英語で（プログラムで使用）
+      "name": "金魚",                 // ← 表示名は日本語OK
+      "min_temperature": 18.0,       // ← 小数点を明示
+      "max_temperature": 26.0,
+      "preferred_ph": 7.0,
+      "ph_tolerance": 1.0,
+      "base_price": 500,             // ← 整数は小数点なし
+      "description": "初心者向けの丈夫な魚"  // ← 説明は詳しく
+    }
+  ]
+}</code></pre>
+                        <p><strong>ポイント</strong>:</p>
+                        <ul>
+                            <li>インデントは2スペースまたは4スペース（統一する）</li>
+                            <li>フィールド名はスネークケース（lower_case）</li>
+                            <li>数値型と文字列型を正しく使い分ける</li>
+                        </ul>
+                    </div>
+
+                    <h4>2. DataLoaderクラスの設計パターン</h4>
+                    <div class="alert alert-info">
+                        <p><strong>シングルトンパターン</strong>を使用する理由：</p>
+                        <pre><code>class DataLoader:
+    _instance = None
+    _cache = {}
+    
+    def __new__(cls):
+        """シングルトンパターン: インスタンスを1つだけ作成"""
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance</code></pre>
+                        <p>このパターンにより、データを1回だけ読み込んで再利用できます。</p>
+                    </div>
+
+                    <h4>3. エラーハンドリングの書き方</h4>
+                    <div class="alert alert-warning">
+                        <p>データ読み込みでは、<strong>明確なエラーメッセージ</strong>が重要です：</p>
+                        <pre><code>try:
+    with open(file_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+except FileNotFoundError:
+    raise FileNotFoundError(
+        f"データファイルが見つかりません: {file_path}\n"
+        f"ファイルが存在するか確認してください。"
+    )
+except json.JSONDecodeError as e:
+    raise ValueError(
+        f"JSONの形式が不正です: {file_path}\n"
+        f"エラー箇所: 行{e.lineno}, 列{e.colno}\n"
+        f"メッセージ: {e.msg}"
+    )</code></pre>
+                    </div>
+
+                    <h4>4. データバリデーションの書き方</h4>
+                    <div class="code-example">
+                        <p>データの整合性をチェックする関数を作ります：</p>
+                        <pre><code>def validate_fish_data(self, fish_data: dict) -> bool:
+    """魚データのバリデーション"""
+    required_fields = [
+        'id', 'name', 'min_temperature', 'max_temperature',
+        'preferred_ph', 'ph_tolerance', 'base_price'
+    ]
+    
+    # 必須フィールドのチェック
+    for field in required_fields:
+        if field not in fish_data:
+            raise ValueError(f"必須フィールド '{field}' がありません")
+    
+    # 温度範囲のチェック
+    if fish_data['min_temperature'] >= fish_data['max_temperature']:
+        raise ValueError("min_temperature は max_temperature より小さい必要があります")
+    
+    # 価格のチェック
+    if fish_data['base_price'] <= 0:
+        raise ValueError("base_price は正の数である必要があります")
+    
+    return True</code></pre>
+                    </div>
+                </div>
+
+                <!-- 実装前の準備 -->
+                <div class="content-card">
+                    <h3>📋 実装前の準備</h3>
+                    
+                    <h4>必要なもの：</h4>
+                    <ul>
+                        <li>✅ Phase 1-3の完成したコード</li>
+                        <li>✅ JSON編集用のエディタ（VS Code、Sublime Text等）</li>
+                        <li>✅ JSONバリデータツール（オンラインツールで可）</li>
+                    </ul>
+
+                    <h4>推奨する作業の進め方：</h4>
+                    <ol>
+                        <li>まず<strong>小さなサンプルデータ</strong>を作成（魚2-3種類）</li>
+                        <li><strong>DataLoaderクラス</strong>を実装してサンプルデータを読み込む</li>
+                        <li>動作確認後、<strong>全データ</strong>を作成</li>
+                        <li><strong>既存コード</strong>をDataLoader使用に書き換え</li>
+                        <li><strong>統合テスト</strong>を実行</li>
+                        <li><strong>バランス調整</strong>（価格や効果の微調整）</li>
+                    </ol>
+
+                    <div class="alert alert-success">
+                        <strong>💡 アドバイス</strong><br>
+                        データ作成は時間がかかります。まずは最小限のデータで動作確認し、後から徐々に追加していきましょう。完璧を目指さず、まず動くものを作ることが重要です。
+                    </div>
+                </div>
+
 <!-- Phase 4: データファイルの作成 - Part 1: 概要とfish_species.json -->
 
 <section class="implementation-section">

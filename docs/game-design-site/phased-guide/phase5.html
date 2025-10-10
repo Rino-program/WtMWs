@@ -63,14 +63,315 @@
             <div class="section-container">
                 <div class="section-header">
                     <h2 class="section-title">
-                        <span class="title-icon">🏗️</span>
+                        <span class="title-icon">✨</span>
                         Phase 5: 追加機能の実装
                     </h2>
                     <p class="section-subtitle">ゲームを豊かにする機能 - セーブ/ロード、イベント、実績</p>
                 </div>
 
+                <!-- 何を作るか (What to Build) -->
+                <div class="content-card">
+                    <h3>🎯 何を作るか（What to Build）</h3>
+                    <p>Phase 5では、<strong>ゲームをより楽しく、やりこみ要素を追加する機能</strong>を実装します。基本的なゲームプレイは完成しているので、プレイヤーの体験を豊かにする要素を追加します。</p>
 
-                <!-- このフェーズの目標 -->
+                    <div class="alert alert-info">
+                        <strong>💡 追加機能とは？</strong><br>
+                        ゲームの核となる機能は完成しています。Phase 5では、プレイヤーのモチベーションを高め、長く遊んでもらうための機能を追加します。
+                    </div>
+
+                    <h4>実装する機能：</h4>
+                    <ul>
+                        <li>✅ <strong>セーブ/ロードシステム</strong>: ゲームの進行状況を保存・読み込み</li>
+                        <li>✅ <strong>イベントシステム</strong>: ランダムイベントでゲームに変化を追加</li>
+                        <li>✅ <strong>実績システム</strong>: 達成条件と報酬で目標を提供</li>
+                        <li>✅ <strong>統計レポート</strong>: プレイヤーの進捗を可視化</li>
+                        <li>✅ <strong>設定管理</strong>: ゲーム設定をカスタマイズ可能に</li>
+                        <li>✅ <strong>バックアップ機能</strong>: セーブデータの自動バックアップ</li>
+                    </ul>
+
+                    <div class="alert alert-success">
+                        <strong>✨ 完成イメージ</strong><br>
+                        プレイヤーは好きなタイミングでゲームを中断・再開でき、ランダムイベントで毎回異なる展開を楽しみ、実績を集めるというやりこみ要素を持つ、完成度の高いゲームになります。
+                    </div>
+                </div>
+
+                <!-- なぜ作るか (Why Build This) -->
+                <div class="content-card">
+                    <h3>🤔 なぜこう作るか（Why Build This）</h3>
+                    
+                    <h4>1. なぜセーブ/ロードシステムが必要なのか？</h4>
+                    <div class="alert alert-info">
+                        <p>プレイヤー体験を向上させる理由：</p>
+                        <ul>
+                            <li><strong>継続性</strong>: プレイヤーが進捗を失わず、長期的に楽しめる</li>
+                            <li><strong>安心感</strong>: いつでも中断・再開できる自由度</li>
+                            <li><strong>実験</strong>: 異なる選択を試せる（セーブ＆ロード）</li>
+                            <li><strong>バックアップ</strong>: データ損失に備える</li>
+                        </ul>
+                    </div>
+
+                    <h4>2. なぜイベントシステムが重要なのか？</h4>
+                    <div class="alert alert-warning">
+                        <p>ゲームプレイを豊かにする理由：</p>
+                        <ul>
+                            <li><strong>変化</strong>: 毎回異なる展開で飽きさせない</li>
+                            <li><strong>サプライズ</strong>: 予期しない出来事でワクワク感を演出</li>
+                            <li><strong>リスクとリターン</strong>: 良いイベント・悪いイベントで戦略性を追加</li>
+                            <li><strong>ストーリー性</strong>: イベントがゲームに物語を生む</li>
+                        </ul>
+                    </div>
+
+                    <h4>3. なぜ実績システムが効果的なのか？</h4>
+                    <div class="alert alert-danger">
+                        <p>プレイヤーのモチベーションを高める理由：</p>
+                        <ul>
+                            <li><strong>目標設定</strong>: 明確な達成目標がプレイの指針になる</li>
+                            <li><strong>達成感</strong>: 実績を獲得することで満足感を得られる</li>
+                            <li><strong>やりこみ要素</strong>: すべての実績を集めることが長期目標になる</li>
+                            <li><strong>プログレス可視化</strong>: 自分の進捗が見えるとモチベーションが上がる</li>
+                        </ul>
+                    </div>
+
+                    <h4>4. なぜJSON形式でセーブするのか？</h4>
+                    <div class="alert alert-primary">
+                        <p>JSONを選ぶ技術的な理由：</p>
+                        <ul>
+                            <li><strong>可読性</strong>: テキストエディタで開いて内容を確認・編集できる</li>
+                            <li><strong>デバッグ</strong>: セーブデータの問題を簡単に特定できる</li>
+                            <li><strong>互換性</strong>: バージョンアップ時の移行が容易</li>
+                            <li><strong>標準ライブラリ</strong>: Pythonの標準機能で簡単に扱える</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- どう作るか (How to Build) -->
+                <div class="content-card">
+                    <h3>🛠️ どう作るか（How to Build）- 実装の流れ</h3>
+                    <p>Phase 5の実装は、以下の<strong>6つのステップ</strong>で進めます：</p>
+
+                    <div class="steps-list">
+                        <div class="step-item">
+                            <h4><span class="step-number">1</span>SaveSystemクラスの実装</h4>
+                            <p>ゲームデータをJSON形式でファイルに保存・読み込みする機能を実装します。</p>
+                            <p><strong>実装内容</strong>:</p>
+                            <ul>
+                                <li>オブジェクトをJSON形式にシリアライズ</li>
+                                <li>JSONからオブジェクトを復元（デシリアライズ）</li>
+                                <li>ファイル操作（保存・読み込み）</li>
+                                <li>自動バックアップ機能</li>
+                            </ul>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">2</span>EventSystemクラスの実装</h4>
+                            <p>ランダムイベントを生成し、ゲームに変化を与えるシステムを実装します。</p>
+                            <p><strong>実装内容</strong>:</p>
+                            <ul>
+                                <li>イベント定義（種類、確率、効果）</li>
+                                <li>イベント発生条件のチェック</li>
+                                <li>イベントの実行と効果適用</li>
+                                <li>イベント履歴の記録</li>
+                            </ul>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">3</span>AchievementSystemクラスの実装</h4>
+                            <p>プレイヤーの行動や達成を記録し、実績を解除するシステムを実装します。</p>
+                            <p><strong>実装内容</strong>:</p>
+                            <ul>
+                                <li>実績の定義（条件、報酬、説明）</li>
+                                <li>達成条件の判定</li>
+                                <li>実績解除とお知らせ</li>
+                                <li>進捗の保存と表示</li>
+                            </ul>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">4</span>統計レポート機能の実装</h4>
+                            <p>プレイヤーの統計情報を収集・表示する機能を追加します。</p>
+                            <p><strong>実装内容</strong>:</p>
+                            <ul>
+                                <li>統計データの収集（魚の数、総資産、プレイ日数など）</li>
+                                <li>レポートの生成と表示</li>
+                                <li>グラフやチャート（テキストベース）</li>
+                            </ul>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">5</span>設定管理システムの実装</h4>
+                            <p>ゲームの設定をカスタマイズできる機能を追加します。</p>
+                            <p><strong>実装内容</strong>:</p>
+                            <ul>
+                                <li>設定ファイルの読み書き</li>
+                                <li>デフォルト設定の管理</li>
+                                <li>設定の変更UI</li>
+                            </ul>
+                        </div>
+
+                        <div class="step-item">
+                            <h4><span class="step-number">6</span>統合とテスト</h4>
+                            <p>すべての新機能を既存システムに統合し、テストします。</p>
+                            <p><strong>確認項目</strong>:</p>
+                            <ul>
+                                <li>セーブ/ロードが正常に動作するか</li>
+                                <li>イベントが適切に発生するか</li>
+                                <li>実績が正しく解除されるか</li>
+                                <li>統計情報が正確か</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- コーディングスタイル (Coding Style) -->
+                <div class="content-card">
+                    <h3>✍️ どう書くか（Coding Style & Best Practices）</h3>
+                    
+                    <h4>1. シリアライゼーションの書き方</h4>
+                    <div class="code-example">
+                        <p>オブジェクトをJSON形式に変換する方法：</p>
+                        <pre><code>def to_dict(self) -> dict:
+    """オブジェクトを辞書に変換（シリアライズ）"""
+    return {
+        'name': self.name,
+        'money': self.money,
+        'current_day': self.current_day,
+        'tanks': [tank.to_dict() for tank in self.tanks],
+        # ネストしたオブジェクトも再帰的に変換
+    }
+
+@classmethod
+def from_dict(cls, data: dict):
+    """辞書からオブジェクトを復元（デシリアライズ）"""
+    aquarium = cls(data['name'])
+    aquarium.money = data['money']
+    aquarium.current_day = data['current_day']
+    aquarium.tanks = [Tank.from_dict(t) for t in data['tanks']]
+    return aquarium</code></pre>
+                        <p><strong>ポイント</strong>: すべてのクラスに<code>to_dict</code>と<code>from_dict</code>メソッドを実装します。</p>
+                    </div>
+
+                    <h4>2. イベントシステムの設計パターン</h4>
+                    <div class="alert alert-info">
+                        <p><strong>コマンドパターン</strong>でイベントを管理：</p>
+                        <pre><code>class Event:
+    """イベントの基底クラス"""
+    def __init__(self, name: str, description: str, probability: float):
+        self.name = name
+        self.description = description
+        self.probability = probability  # 発生確率（0.0～1.0）
+    
+    def can_trigger(self, aquarium: Aquarium) -> bool:
+        """イベントが発生可能かチェック"""
+        raise NotImplementedError
+    
+    def execute(self, aquarium: Aquarium) -> str:
+        """イベントを実行して結果メッセージを返す"""
+        raise NotImplementedError</code></pre>
+                        <p>各具体的なイベントは、このEventクラスを継承して実装します。</p>
+                    </div>
+
+                    <h4>3. 実績の定義方法</h4>
+                    <div class="code-example">
+                        <p>実績をデータとして定義：</p>
+                        <pre><code>ACHIEVEMENTS = [
+    {
+        'id': 'first_fish',
+        'name': '最初の魚',
+        'description': '初めて魚を追加した',
+        'check': lambda aquarium: any(len(tank.fish_list) > 0 
+                                      for tank in aquarium.tanks),
+        'reward': 1000
+    },
+    {
+        'id': 'rich_owner',
+        'name': '裕福な飼い主',
+        'description': '資金が50000円を超えた',
+        'check': lambda aquarium: aquarium.money >= 50000,
+        'reward': 5000
+    }
+]</code></pre>
+                        <p><strong>ポイント</strong>: <code>check</code>関数で条件を柔軟に定義できます。</p>
+                    </div>
+
+                    <h4>4. エラーハンドリング（ファイル操作）</h4>
+                    <div class="alert alert-warning">
+                        <p>ファイル操作では、複数のエラーケースに対応：</p>
+                        <pre><code>def save_game(self, aquarium: Aquarium, filename: str):
+    """ゲームデータを保存"""
+    try:
+        # バックアップを作成
+        if os.path.exists(filename):
+            backup_name = f"{filename}.backup"
+            shutil.copy2(filename, backup_name)
+        
+        # データを保存
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(aquarium.to_dict(), f, indent=2, ensure_ascii=False)
+        
+        return True, "セーブに成功しました"
+    
+    except PermissionError:
+        return False, "ファイルへの書き込み権限がありません"
+    except OSError as e:
+        return False, f"ファイル保存エラー: {e}"
+    except Exception as e:
+        return False, f"予期しないエラー: {e}"</code></pre>
+                    </div>
+
+                    <h4>5. バージョン管理の実装</h4>
+                    <div class="code-example">
+                        <p>セーブデータにバージョン情報を含める：</p>
+                        <pre><code>SAVE_VERSION = "1.0.0"
+
+def to_dict(self) -> dict:
+    return {
+        'version': SAVE_VERSION,  # ← バージョン情報を追加
+        'aquarium_data': {
+            'name': self.name,
+            # ... 他のデータ
+        }
+    }
+
+def from_dict(cls, data: dict):
+    # バージョンチェック
+    version = data.get('version', '0.0.0')
+    if version != SAVE_VERSION:
+        # バージョン変換処理
+        data = cls._migrate_version(data, version)
+    # ... データ復元処理</code></pre>
+                        <p>これにより、将来のバージョンアップでもセーブデータの互換性を保てます。</p>
+                    </div>
+                </div>
+
+                <!-- 実装前の準備 -->
+                <div class="content-card">
+                    <h3>📋 実装前の準備</h3>
+                    
+                    <h4>必要なもの：</h4>
+                    <ul>
+                        <li>✅ Phase 1-4の完成したコード</li>
+                        <li>✅ すべてのクラスに<code>to_dict</code>メソッドが実装されていること</li>
+                        <li>✅ saves/ディレクトリ（セーブデータ保存用）</li>
+                    </ul>
+
+                    <h4>推奨する作業の進め方：</h4>
+                    <ol>
+                        <li>まず<strong>SaveSystem</strong>を実装（他の機能の基盤）</li>
+                        <li>既存クラスに<strong>to_dict/from_dict</strong>を追加</li>
+                        <li><strong>セーブ/ロード</strong>が動作することを確認</li>
+                        <li><strong>EventSystem</strong>を実装（簡単なイベントから）</li>
+                        <li><strong>AchievementSystem</strong>を実装</li>
+                        <li><strong>統合テスト</strong>と<strong>バランス調整</strong></li>
+                    </ol>
+
+                    <div class="alert alert-success">
+                        <strong>💡 アドバイス</strong><br>
+                        Phase 5は「おまけ」的な機能なので、焦らず実装しましょう。特にセーブ/ロード機能は慎重にテストすることが重要です。データ損失はプレイヤー体験を大きく損ねます。
+                    </div>
+                </div>
+
+
+                <!-- このフェーズの目標（古い内容を削除してここから始める） -->
                 <div class="content-card">
                     <h3>🎯 このフェーズの目標</h3>
                     <p>Phase 2では、<strong>ゲームロジック</strong>を実装します。時間経過、シミュレーション、イベント処理など、ゲームの核となる機能を作ります。</p>
