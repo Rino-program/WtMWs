@@ -1,0 +1,103 @@
+<!-- Phase 5 Part 2: EventSystem -->
+<section>
+<h2>🎲 EventSystemクラスの実装（700行、20種類のイベント）</h2>
+<div class="code-block"><pre><code class="language-python">
+import random
+from enum import Enum
+from typing import Dict, List, Optional
+
+class EventType(Enum):
+    POSITIVE = "positive"
+    NEGATIVE = "negative"
+    NEUTRAL = "neutral"
+
+class Event:
+    """ランダムイベントの基底クラス"""
+    
+    def __init__(self, event_id: str, name: str, description: str, 
+                 event_type: EventType, probability: float):
+        self.event_id = event_id
+        self.name = name
+        self.description = description
+        self.event_type = event_type
+        self.probability = probability
+    
+    def can_trigger(self, aquarium) -> bool:
+        """イベントが発生可能か判定"""
+        return True
+    
+    def execute(self, aquarium) -> Dict:
+        """イベントを実行"""
+        pass
+
+class GreatSaleEvent(Event):
+    """大セール - 魚が50%オフ"""
+    
+    def __init__(self):
+        super().__init__(
+            event_id="great_sale",
+            name="🎉 大セール開催！",
+            description="今日は特別セール！魚が全品50%オフです！",
+            event_type=EventType.POSITIVE,
+            probability=0.1
+        )
+    
+    def execute(self, aquarium) -> Dict:
+        return {
+            "message": self.description,
+            "effect": "魚の価格が50%オフ（今日のみ）",
+            "fish_discount": 0.5
+        }
+
+class WaterQualityCrisisEvent(Event):
+    """水質悪化事件"""
+    
+    def __init__(self):
+        super().__init__(
+            event_id="water_crisis",
+            name="⚠️ 水質悪化",
+            description="水道水に問題が発生！全水槽の水質が低下しました。",
+            event_type=EventType.NEGATIVE,
+            probability=0.08
+        )
+    
+    def execute(self, aquarium) -> Dict:
+        for tank in aquarium.tanks:
+            tank.water_quality = max(0, tank.water_quality - 30)
+        
+        return {
+            "message": self.description,
+            "effect": "全水槽の水質-30"
+        }
+
+# 20種類のイベント実装...
+# (省略: GroupVisitorsEvent, MediaCoverageEvent, PowerOutageEvent, 
+#  DiseaseOutbreakEvent, RareFishDeliveryEvent, EquipmentFailureEvent,
+#  DonationEvent, CompetitionEvent, WeatherBonusEvent, etc.)
+
+class EventSystem:
+    """イベント管理システム"""
+    
+    def __init__(self):
+        self.events: List[Event] = [
+            GreatSaleEvent(),
+            WaterQualityCrisisEvent(),
+            # ... 他18種類のイベント
+        ]
+        self.event_history: List[Dict] = []
+    
+    def check_and_trigger_events(self, aquarium) -> Optional[Dict]:
+        """イベントをチェックして発生させる"""
+        possible_events = [e for e in self.events if e.can_trigger(aquarium)]
+        
+        for event in possible_events:
+            if random.random() < event.probability:
+                result = event.execute(aquarium)
+                result['event_id'] = event.event_id
+                result['event_name'] = event.name
+                self.event_history.append(result)
+                return result
+        
+        return None
+</code></pre></div>
+</section>

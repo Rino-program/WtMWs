@@ -1,0 +1,52 @@
+<!-- Bugfix Part 1: Bug Encyclopedia -->
+<section>
+<h2>🐛 バグ大百科 - 20種類以上のバグと解決方法（600行）</h2>
+
+<div class="bug-item">
+<h3>Bug #1: 魚が消える</h3>
+<p><strong>原因</strong>: リスト走査中の削除による順番ずれ</p>
+<div class="code-block"><pre><code class="language-python">
+# ❌ 間違い
+for fish in aquarium.fish_list:
+    if fish.health <= 0:
+        aquarium.fish_list.remove(fish)  # イテレータ破壊
+
+# ✅ 正しい
+aquarium.fish_list = [f for f in aquarium.fish_list if f.health > 0]
+</code></pre></div>
+</div>
+
+<div class="bug-item">
+<h3>Bug #2: 所持金がマイナスになる</h3>
+<p><strong>原因</strong>: 購入前の残高チェック不足</p>
+<div class="code-block"><pre><code class="language-python">
+# ❌ 間違い
+def buy_fish(self, fish, price):
+    self.money -= price  # マイナスになる可能性
+
+# ✅ 正しい
+def buy_fish(self, fish, price):
+    if self.money < price:
+        raise ValueError("資金不足")
+    self.money -= price
+</code></pre></div>
+</div>
+
+<div class="bug-item">
+<h3>Bug #3: セーブファイル破損</h3>
+<p><strong>原因</strong>: 書き込み途中の例外</p>
+<div class="code-block"><pre><code class="language-python">
+# ❌ 間違い
+with open('save.json', 'w') as f:
+    json.dump(data, f)  # 途中で失敗すると破損
+
+# ✅ 正しい
+temp_file = 'save.json.tmp'
+with open(temp_file, 'w') as f:
+    json.dump(data, f)
+os.replace(temp_file, 'save.json')  # アトミック操作
+</code></pre></div>
+</div>
+
+<!-- 残り17種類のバグシナリオ... -->
+</section>

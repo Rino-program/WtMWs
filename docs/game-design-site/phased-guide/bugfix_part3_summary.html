@@ -1,0 +1,52 @@
+<!-- Bugfix Part 3: Optimization -->
+<section>
+<h2>⚡ パフォーマンス最適化とリファクタリング（450行）</h2>
+
+<h3>最適化テクニック</h3>
+
+<div class="optimization">
+<h4>1. リスト内包表記の使用</h4>
+<div class="code-block"><pre><code class="language-python">
+# ❌ 遅い
+result = []
+for i in range(1000):
+    if i % 2 == 0:
+        result.append(i * 2)
+
+# ✅ 速い
+result = [i * 2 for i in range(1000) if i % 2 == 0]
+</code></pre></div>
+</div>
+
+<div class="optimization">
+<h4>2. ジェネレータの活用</h4>
+<div class="code-block"><pre><code class="language-python">
+# ❌ メモリ大量消費
+def get_all_fish_at_once():
+    return [create_fish() for _ in range(1000000)]
+
+# ✅ メモリ効率的
+def get_fish_generator():
+    for _ in range(1000000):
+        yield create_fish()
+</code></pre></div>
+</div>
+
+<h3>リファクタリングパターン</h3>
+
+<div class="refactoring">
+<h4>1. 長いメソッドの分割</h4>
+<div class="code-block"><pre><code class="language-python">
+# ❌ 長すぎるメソッド
+def simulate_day(self):
+    # 100行のコード...
+
+# ✅ 分割
+def simulate_day(self):
+    self._feed_fish()
+    self._update_water_quality()
+    self._calculate_income()
+    self._check_events()
+</code></pre></div>
+</div>
+</section>

@@ -1,0 +1,170 @@
+<!-- Phase 5 Part 1: SaveSystem -->
+<section>
+<h2>💾 SaveSystemクラスの完全実装（500行）</h2>
+<div class="code-block"><pre><code class="language-python">
+import json
+import os
+from datetime import datetime
+from pathlib import Path
+import shutil
+from typing import Optional, Dict, List
+
+class SaveSystem:
+    """
+    ゲームの保存/読み込みシステム
+    JSONフォーマットでゲーム状態を永続化
+    """
+    
+    SAVE_VERSION = "1.0"
+    SAVE_DIR = Path("saves")
+    BACKUP_DIR = Path("saves/backups")
+    
+    def __init__(self):
+        self.SAVE_DIR.mkdir(exist_ok=True)
+        self.BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    
+    def save_game(self, aquarium, filename: str = "savegame.json") -> bool:
+        """
+        ゲーム状態を保存
+        
+        Args:
+            aquarium: Aquariumオブジェクト
+            filename: 保存ファイル名
+        
+        Returns:
+            bool: 保存成功時True
+        """
+        try:
+            save_data = {
+                "version": self.SAVE_VERSION,
+                "timestamp": datetime.now().isoformat(),
+                "aquarium": self._serialize_aquarium(aquarium),
+                "statistics": self._get_statistics(aquarium)
+            }
+            
+            filepath = self.SAVE_DIR / filename
+            temp_filepath = filepath.with_suffix('.tmp')
+            
+            # 一時ファイルに書き込み
+            with open(temp_filepath, 'w', encoding='utf-8') as f:
+                json.dump(save_data, f, indent=2, ensure_ascii=False)
+            
+            # 既存ファイルがあればバックアップ
+            if filepath.exists():
+                self._create_backup(filepath)
+            
+            # 一時ファイルを本番ファイルにリネーム
+            temp_filepath.replace(filepath)
+            
+            return True
+        
+        except Exception as e:
+            print(f"Save error: {e}")
+            return False
+    
+    def load_game(self, filename: str = "savegame.json") -> Optional[Dict]:
+        """
+        ゲーム状態を読み込み
+        
+        Args:
+            filename: 読み込むファイル名
+        
+        Returns:
+            Dict: ゲームデータ、失敗時None
+        """
+        filepath = self.SAVE_DIR / filename
+        
+        if not filepath.exists():
+            print(f"Save file not found: {filename}")
+            return None
+        
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                save_data = json.load(f)
+            
+            # バージョンチェック
+            if save_data.get('version') != self.SAVE_VERSION:
+                print(f"Warning: Save version mismatch")
+            
+            return save_data
+        
+        except Exception as e:
+            print(f"Load error: {e}")
+            return None
+    
+    def list_saves(self) -> List[Dict]:
+        """保存ファイル一覧を取得"""
+        saves = []
+        for filepath in self.SAVE_DIR.glob("*.json"):
+            try:
+                with open(filepath, 'r') as f:
+                    data = json.load(f)
+                
+                saves.append({
+                    "filename": filepath.name,
+                    "timestamp": data.get('timestamp'),
+                    "size": filepath.stat().st_size
+                })
+            except:
+                continue
+        
+        return sorted(saves, key=lambda x: x['timestamp'], reverse=True)
+    
+    def delete_save(self, filename: str) -> bool:
+        """セーブファイルを削除"""
+        filepath = self.SAVE_DIR / filename
+        if filepath.exists():
+            filepath.unlink()
+            return True
+        return False
+    
+    def _create_backup(self, filepath: Path):
+        """バックアップを作成"""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_name = f"{filepath.stem}_{timestamp}{filepath.suffix}"
+        backup_path = self.BACKUP_DIR / backup_name
+        shutil.copy2(filepath, backup_path)
+    
+    def _serialize_aquarium(self, aquarium) -> Dict:
+        """Aquariumオブジェクトをシリアライズ"""
+        return {
+            "money": aquarium.money,
+            "reputation": aquarium.reputation,
+            "day": aquarium.day,
+            "tanks": [self._serialize_tank(t) for t in aquarium.tanks],
+            "fish": [self._serialize_fish(f) for f in aquarium.get_all_fish()],
+            "events_history": aquarium.events_history
+        }
+    
+    def _serialize_tank(self, tank) -> Dict:
+        """Tankオブジェクトをシリアライズ"""
+        return {
+            "capacity": tank.capacity,
+            "water_quality": tank.water_quality,
+            "temperature": tank.temperature,
+            "ph": tank.ph
+        }
+    
+    def _serialize_fish(self, fish) -> Dict:
+        """Fishオブジェクトをシリアライズ"""
+        return {
+            "name": fish.name,
+            "species": fish.species,
+            "size": fish.size,
+            "health": fish.health,
+            "hunger": fish.hunger,
+            "age": fish.age,
+            "stress": fish.stress
+        }
+    
+    def _get_statistics(self, aquarium) -> Dict:
+        """統計情報を取得"""
+        return {
+            "total_fish": len(aquarium.get_all_fish()),
+            "total_tanks": len(aquarium.tanks),
+            "total_money_earned": aquarium.total_income,
+            "total_money_spent": aquarium.total_expenses,
+            "days_played": aquarium.day
+        }
+</code></pre></div>
+</section>

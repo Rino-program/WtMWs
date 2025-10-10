@@ -1,0 +1,116 @@
+<!-- Phase 4 Part 3: DataLoader Class -->
+<section>
+<h2>🔧 DataLoaderクラスの完全実装（400行）</h2>
+<div class="code-block"><pre><code class="language-python">
+import json
+import os
+from pathlib import Path
+from typing import Dict, List, Optional
+import logging
+
+class DataLoader:
+    """
+    ゲームデータの読み込みと管理を担当するクラス
+    JSONファイルからデータを読み込み、オブジェクトを生成する
+    """
+    
+    def __init__(self, data_dir: str = "data"):
+        self.data_dir = Path(data_dir)
+        self._fish_species_cache = None
+        self._equipment_cache = None
+        self._decorations_cache = None
+        self.logger = logging.getLogger(__name__)
+        
+    def load_fish_species(self) -> Dict:
+        """魚種データを読み込む"""
+        if self._fish_species_cache is None:
+            filepath = self.data_dir / "fish_species.json"
+            self._fish_species_cache = self._load_json(filepath)
+        return self._fish_species_cache
+    
+    def load_equipment(self) -> Dict:
+        """装備データを読み込む"""
+        if self._equipment_cache is None:
+            filepath = self.data_dir / "equipment.json"
+            self._equipment_cache = self._load_json(filepath)
+        return self._equipment_cache
+    
+    def load_decorations(self) -> Dict:
+        """装飾データを読み込む"""
+        if self._decorations_cache is None:
+            filepath = self.data_dir / "decorations.json"
+            self._decorations_cache = self._load_json(filepath)
+        return self._decorations_cache
+    
+    def _load_json(self, filepath: Path) -> Dict:
+        """JSONファイルを読み込む（エラーハンドリング付き）"""
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            self.logger.error(f"Data file not found: {filepath}")
+            raise
+        except json.JSONDecodeError as e:
+            self.logger.error(f"Invalid JSON in {filepath}: {e}")
+            raise
+    
+    def get_fish_by_id(self, fish_id: str) -> Optional[Dict]:
+        """IDで魚種を検索"""
+        data = self.load_fish_species()
+        for species in data.get('species', []):
+            if species['id'] == fish_id:
+                return species
+        return None
+    
+    def get_fish_by_category(self, category: str) -> List[Dict]:
+        """カテゴリで魚種を検索"""
+        data = self.load_fish_species()
+        return [s for s in data.get('species', []) 
+                if s.get('category') == category]
+    
+    def get_fish_by_rarity(self, rarity: str) -> List[Dict]:
+        """レアリティで魚種を検索"""
+        data = self.load_fish_species()
+        return [s for s in data.get('species', []) 
+                if s.get('rarity') == rarity]
+    
+    def create_fish_from_species(self, species_id: str, name: str) -> 'Fish':
+        """魚種データから魚オブジェクトを生成"""
+        from models.fish import Fish
+        
+        species_data = self.get_fish_by_id(species_id)
+        if not species_data:
+            raise ValueError(f"Unknown fish species: {species_id}")
+        
+        return Fish(
+            name=name,
+            species=species_data['name'],
+            size=species_data['growth']['base_size'],
+            health=species_data['stats']['base_health'],
+            hunger=0,
+            age=0
+        )
+    
+    def reload_all(self):
+        """すべてのキャッシュをクリアして再読み込み"""
+        self._fish_species_cache = None
+        self._equipment_cache = None
+        self._decorations_cache = None
+        self.logger.info("All data caches cleared")
+</code></pre></div>
+
+<h3>使用例</h3>
+<div class="code-block"><pre><code class="language-python">
+# DataLoaderの使用例
+loader = DataLoader()
+
+# 魚データの読み込み
+all_fish = loader.load_fish_species()
+goldfish_data = loader.get_fish_by_id("goldfish")
+freshwater_fish = loader.get_fish_by_category("freshwater")
+rare_fish = loader.get_fish_by_rarity("rare")
+
+# 魚オブジェクトの生成
+my_fish = loader.create_fish_from_species("goldfish", "きんちゃん")
+</code></pre></div>
+</section>

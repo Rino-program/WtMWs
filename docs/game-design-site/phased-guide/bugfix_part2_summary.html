@@ -1,0 +1,59 @@
+<!-- Bugfix Part 2: Debugging Tools -->
+<section>
+<h2>🔧 デバッグツールガイド（450行）</h2>
+
+<h3>1. Pythonロギング</h3>
+<div class="code-block"><pre><code class="language-python">
+import logging
+
+# ロガーの設定
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('game.log'),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
+# 使用例
+logger.debug("デバッグ情報")
+logger.info("一般情報")
+logger.warning("警告")
+logger.error("エラー")
+</code></pre></div>
+
+<h3>2. pdbデバッガ</h3>
+<div class="code-block"><pre><code class="language-python">
+import pdb
+
+def problematic_function():
+    x = 10
+    pdb.set_trace()  # ブレークポイント
+    y = x * 2
+    return y
+
+# pdbコマンド:
+# n - next (次の行)
+# s - step (関数内に入る)
+# c - continue (次のブレークポイントまで)
+# p variable - 変数を表示
+# l - コード表示
+</code></pre></div>
+
+<h3>3. プロファイリング</h3>
+<div class="code-block"><pre><code class="language-python">
+import cProfile
+import pstats
+
+# プロファイル実行
+cProfile.run('main()', 'profile_stats')
+
+# 結果分析
+p = pstats.Stats('profile_stats')
+p.sort_stats('cumulative')
+p.print_stats(20)  # Top 20表示
+</code></pre></div>
+</section>

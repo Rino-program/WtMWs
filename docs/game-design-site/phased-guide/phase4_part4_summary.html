@@ -1,0 +1,50 @@
+<!-- Phase 4 Part 4: Balance & Testing -->
+<section>
+<h2>⚖️ ゲームバランス調整ガイド（200行）</h2>
+<h3>バランス調整の基本原則</h3>
+<ul>
+<li>初心者向け魚（common）は安価で丈夫</li>
+<li>レア度が上がるほど価格と難易度が上昇</li>
+<li>メンテナンスコストは価格に比例</li>
+<li>魅力度（appeal）はレアリティと相関</li>
+</ul>
+
+<h2>✅ データテスト（100行）</h2>
+<div class="code-block"><pre><code class="language-python">
+import pytest
+import json
+from pathlib import Path
+from utils.data_loader import DataLoader
+
+def test_fish_species_json_valid():
+    """fish_species.jsonが正しいJSON形式か"""
+    with open('data/fish_species.json') as f:
+        data = json.load(f)
+    assert 'species' in data
+    assert len(data['species']) == 15
+
+def test_all_fish_have_required_fields():
+    """すべての魚が必須フィールドを持つか"""
+    loader = DataLoader()
+    data = loader.load_fish_species()
+    
+    required_fields = ['id', 'name', 'category', 'rarity']
+    for species in data['species']:
+        for field in required_fields:
+            assert field in species
+
+def test_dataloader_caching():
+    """DataLoaderのキャッシング動作"""
+    loader = DataLoader()
+    data1 = loader.load_fish_species()
+    data2 = loader.load_fish_species()
+    assert data1 is data2  # 同じオブジェクト
+
+def test_create_fish_from_species():
+    """魚オブジェクトの生成"""
+    loader = DataLoader()
+    fish = loader.create_fish_from_species("goldfish", "Test")
+    assert fish.name == "Test"
+    assert fish.species == "金魚"
+</code></pre></div>
+</section>
