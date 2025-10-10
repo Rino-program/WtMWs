@@ -105,16 +105,15 @@ function initializePhaseButtons() {
  */
 function navigateToPhase(phase) {
     const pageMap = {
-        'overview': 'index.html',
-        'phase0': 'phase0.html',
-        'phase1': 'phase1.html',
-        'phase2': 'phase2.html',
-        'phase3': 'phase3.html',
-        'phase4': 'phase4.html',
-        'phase5': 'phase5.html',
-        'bugfix': 'bugfix.html'
+        'overview': './index.html',
+        'phase0': './phase0.html',
+        'phase1': './phase1.html',
+        'phase2': './phase2.html',
+        'phase3': './phase3.html',
+        'phase4': './phase4.html',
+        'phase5': './phase5.html',
+        'bugfix': './bugfix.html'
     };
-    
     const targetPage = pageMap[phase];
     if (targetPage) {
         window.location.href = targetPage;
