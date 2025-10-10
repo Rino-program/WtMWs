@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>バグ対策と改善 - バーチャル水族館ゲーム開発ガイド</title>
+    <title>Phase 4: データファイルの作成 - バーチャル水族館ゲーム開発ガイド</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -17,7 +17,7 @@
                 <span class="logo-icon">🐠</span>
                 <span class="logo-text">バーチャル水族館ゲーム</span>
             </div>
-            <h1 class="header-title">バグ対策と改善</h1>
+            <h1 class="header-title">Phase 4: データファイルの作成</h1>
         </div>
     </header>
 
@@ -31,27 +31,27 @@
                 <span class="phase-icon">🎯</span>
                 <span class="phase-label">Phase 0<br>MVP</span>
             </button>
-            <button class="phase-btn" data-phase="phase1">
+            <button class="phase-btn" data-phase="phase3">
                 <span class="phase-icon">🏗️</span>
                 <span class="phase-label">Phase 1<br>基本構造</span>
             </button>
-            <button class="phase-btn active" data-phase="index">
+            <button class="phase-btn active" data-phase="phase4">
                 <span class="phase-icon">⚙️</span>
                 <span class="phase-label">Phase 2<br>ロジック</span>
             </button>
-            <button class="phase-btn" data-phase="phase3">
+            <button class="phase-btn" data-phase="phase5">
                 <span class="phase-icon">💻</span>
                 <span class="phase-label">Phase 3<br>UI</span>
             </button>
-            <button class="phase-btn" data-phase="phase5">
+            <button class="phase-btn" data-phase="phase4">
                 <span class="phase-icon">📦</span>
                 <span class="phase-label">Phase 4<br>データ</span>
             </button>
-            <button class="phase-btn" data-phase="index">
+            <button class="phase-btn" data-phase="phase5">
                 <span class="phase-icon">✨</span>
                 <span class="phase-label">Phase 5<br>追加機能</span>
             </button>
-            <button class="phase-btn" data-phase="index">
+            <button class="phase-btn" data-phase="bugfix">
                 <span class="phase-icon">🐛</span>
                 <span class="phase-label">バグ対策</span>
             </button>
@@ -64,9 +64,9 @@
                 <div class="section-header">
                     <h2 class="section-title">
                         <span class="title-icon">🏗️</span>
-                        バグ対策と改善
+                        Phase 4: データファイルの作成
                     </h2>
-                    <p class="section-subtitle">品質向上とメンテナンス - デバッグ、最適化、ドキュメント</p>
+                    <p class="section-subtitle">ゲームコンテンツの追加 - 魚種、装備、装飾のデータ</p>
                 </div>
 
 
@@ -575,13 +575,13 @@ pytest tests/ --cov=models --cov-report=html</code></pre>
                     <p>ゲームロジックが実装できました。次はユーザーインターフェースを作成します。</p>
                     
                     <div class="button-group">
-                        <a href="phase5.html" class="btn btn-secondary">
+                        <a href="phase3.html" class="btn btn-secondary">
                             <span class="btn-icon">◀️</span>
                             前のフェーズに戻る
                         </a>
-                        <a href="index.html" class="btn btn-primary btn-large">
-                            <span class="btn-icon">🏠</span>
-                            概要ページに戻る
+                        <a href="phase5.html" class="btn btn-primary btn-large">
+                            <span class="btn-icon">▶️</span>
+                            次のフェーズへ進む
                         </a>
                     </div>
                 </div>
@@ -600,7 +600,7 @@ pytest tests/ --cov=models --cov-report=html</code></pre>
     <script src="navigation.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            initializeChecklist('index');
+            initializeChecklist('phase4');
         });
     </script>
 </body>

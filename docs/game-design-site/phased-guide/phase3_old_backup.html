@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>バグ対策と改善 - バーチャル水族館ゲーム開発ガイド</title>
+    <title>Phase 3: UIの実装 - バーチャル水族館ゲーム開発ガイド</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -17,7 +17,7 @@
                 <span class="logo-icon">🐠</span>
                 <span class="logo-text">バーチャル水族館ゲーム</span>
             </div>
-            <h1 class="header-title">バグ対策と改善</h1>
+            <h1 class="header-title">Phase 3: UIの実装</h1>
         </div>
     </header>
 
@@ -35,23 +35,23 @@
                 <span class="phase-icon">🏗️</span>
                 <span class="phase-label">Phase 1<br>基本構造</span>
             </button>
-            <button class="phase-btn active" data-phase="index">
+            <button class="phase-btn" data-phase="phase2">
                 <span class="phase-icon">⚙️</span>
                 <span class="phase-label">Phase 2<br>ロジック</span>
             </button>
-            <button class="phase-btn" data-phase="phase3">
+            <button class="phase-btn active" data-phase="phase3">
                 <span class="phase-icon">💻</span>
                 <span class="phase-label">Phase 3<br>UI</span>
             </button>
-            <button class="phase-btn" data-phase="phase5">
+            <button class="phase-btn" data-phase="phase4">
                 <span class="phase-icon">📦</span>
                 <span class="phase-label">Phase 4<br>データ</span>
             </button>
-            <button class="phase-btn" data-phase="index">
+            <button class="phase-btn" data-phase="phase5">
                 <span class="phase-icon">✨</span>
                 <span class="phase-label">Phase 5<br>追加機能</span>
             </button>
-            <button class="phase-btn" data-phase="index">
+            <button class="phase-btn" data-phase="bugfix">
                 <span class="phase-icon">🐛</span>
                 <span class="phase-label">バグ対策</span>
             </button>
@@ -64,31 +64,30 @@
                 <div class="section-header">
                     <h2 class="section-title">
                         <span class="title-icon">🏗️</span>
-                        バグ対策と改善
+                        Phase 3: UIの実装
                     </h2>
-                    <p class="section-subtitle">品質向上とメンテナンス - デバッグ、最適化、ドキュメント</p>
+                    <p class="section-subtitle">使いやすいコマンドラインインターフェース - プレイヤー体験の向上</p>
                 </div>
 
 
                 <!-- このフェーズの目標 -->
                 <div class="content-card">
                     <h3>🎯 このフェーズの目標</h3>
-                    <p>Phase 2では、<strong>ゲームロジック</strong>を実装します。時間経過、シミュレーション、イベント処理など、ゲームの核となる機能を作ります。</p>
+                    <p>Phase 3では、<strong>ユーザーインターフェース</strong>を実装します。プレイヤーが快適にゲームを操作できるコマンドシステムを作ります。</p>
                     
                     <div class="alert alert-info">
-                        <strong>💡 Phase 2のポイント</strong><br>
-                        GameEngineクラスがゲーム全体を制御します。1日の経過処理、魚の状態変化、水質変化、収入・支出など、すべての動的な要素をここで実装します。
+                        <strong>💡 Phase 3のポイント</strong><br>
+                        cmdモジュールを使用して、インタラクティブなコマンドラインインターフェースを作成します。使いやすく、直感的な操作を目指しましょう。
                     </div>
 
                     <h4>達成すべきこと：</h4>
                     <ul>
-                        <li>✅ GameEngineクラスの実装</li>
-                        <li>✅ 時間経過シミュレーション（simulate_day）</li>
-                        <li>✅ 魚の自動状態更新</li>
-                        <li>✅ 水質の経時変化</li>
-                        <li>✅ 経済システム（収入・支出）</li>
-                        <li>✅ イベントシステムの基礎</li>
-                        <li>✅ 統合テスト</li>
+                        <li>✅ CUIフレームワークの実装（cmdモジュール使用）</li>
+                        <li>✅ すべての基本コマンドの実装</li>
+                        <li>✅ ヘルプシステム</li>
+                        <li>✅ 表示フォーマットの整備</li>
+                        <li>✅ エラーハンドリング</li>
+                        <li>✅ コマンド補完機能</li>
                     </ul>
 
                     <div class="requirements-list">
@@ -96,14 +95,14 @@
                             <span class="req-icon">⏰</span>
                             <div class="req-content">
                                 <h4>所要時間</h4>
-                                <p>約4〜5日（ロジック実装 + テスト + デバッグ）</p>
+                                <p>約2〜3日（UI実装 + コマンド追加 + テスト）</p>
                             </div>
                         </div>
                         <div class="requirement-item">
                             <span class="req-icon">📚</span>
                             <div class="req-content">
                                 <h4>必要な知識</h4>
-                                <p>ゲームループ、状態管理、イベント駆動プログラミング</p>
+                                <p>cmdモジュール、文字列フォーマット、ユーザー入力処理</p>
                             </div>
                         </div>
                     </div>
@@ -571,17 +570,17 @@ pytest tests/ --cov=models --cov-report=html</code></pre>
 
                 <!-- 次のステップ -->
                 <div class="content-card next-step-card">
-                    <h3>🎉 Phase 2完了！</h3>
-                    <p>ゲームロジックが実装できました。次はユーザーインターフェースを作成します。</p>
+                    <h3>🎉 Phase 3完了！</h3>
+                    <p>UIが完成しました。次はゲームコンテンツを充実させるデータファイルを作成します。</p>
                     
                     <div class="button-group">
-                        <a href="phase5.html" class="btn btn-secondary">
+                        <a href="phase2.html" class="btn btn-secondary">
                             <span class="btn-icon">◀️</span>
                             前のフェーズに戻る
                         </a>
-                        <a href="index.html" class="btn btn-primary btn-large">
-                            <span class="btn-icon">🏠</span>
-                            概要ページに戻る
+                        <a href="phase4.html" class="btn btn-primary btn-large">
+                            <span class="btn-icon">▶️</span>
+                            次のフェーズへ進む
                         </a>
                     </div>
                 </div>
@@ -600,7 +599,7 @@ pytest tests/ --cov=models --cov-report=html</code></pre>
     <script src="navigation.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            initializeChecklist('index');
+            initializeChecklist('phase3');
         });
     </script>
 </body>
