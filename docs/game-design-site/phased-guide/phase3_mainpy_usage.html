@@ -1,0 +1,480 @@
+<!-- Main.py Integration and Usage Guide -->
+                <div class="content-card">
+                    <h3><span class="step-number">ステップ 6</span>main.pyの更新とゲームの起動</h3>
+                    <p>すべての機能を統合した<strong>main.py</strong>を作成します。これがゲームのエントリーポイントになります。</p>
+
+                    <h4>💻 完全なコード（main.py）：</h4>
+                    <div class="code-block">
+                        <pre><code>#!/usr/bin/env python3
+"""
+バーチャル水族館ゲーム - メインエントリーポイント
+Phase 3: UI統合版
+
+ゲームの起動と初期化を行います
+"""
+
+import sys
+import argparse
+from pathlib import Path
+
+# プロジェクトルートをパスに追加
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
+
+from ui.cli import AquariumCLI
+from ui.display import Display, Colors
+
+
+def print_welcome():
+    """ウェルカムメッセージを表示"""
+    welcome_art = f"""
+{Colors.BRIGHT}{Colors.CYAN}
+    ╔═══════════════════════════════════════════════════════╗
+    ║                                                       ║
+    ║       🌊 バーチャル水族館ゲーム 🌊                       ║
+    ║                                                       ║
+    ║       あなただけの水族館を経営しよう！                    ║
+    ║                                                       ║
+    ║       Version 1.0 (Phase 3)                          ║
+    ║                                                       ║
+    ╚═══════════════════════════════════════════════════════╝
+{Colors.RESET}
+"""
+    print(welcome_art)
+    print(f"{Colors.GREEN}ゲームを起動しています...{Colors.RESET}\n")
+
+
+def check_dependencies():
+    """
+    必要な依存パッケージをチェック
+    
+    Returns:
+        bool: すべての依存関係が満たされていればTrue
+    """
+    required_packages = {
+        'colorama': 'colorama',
+        'tabulate': 'tabulate',
+    }
+    
+    missing_packages = []
+    
+    for package_name, import_name in required_packages.items():
+        try:
+            __import__(import_name)
+        except ImportError:
+            missing_packages.append(package_name)
+    
+    if missing_packages:
+        Display.print_error("必要なパッケージがインストールされていません：")
+        for package in missing_packages:
+            print(f"  - {package}")
+        print(f"\n{Colors.YELLOW}以下のコマンドでインストールしてください：{Colors.RESET}")
+        print(f"  pip install {' '.join(missing_packages)}")
+        return False
+    
+    return True
+
+
+def parse_arguments():
+    """
+    コマンドライン引数を解析
+    
+    Returns:
+        argparse.Namespace: 解析された引数
+    """
+    parser = argparse.ArgumentParser(
+        description='バーチャル水族館ゲーム',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+使用例:
+  python main.py              # 通常起動
+  python main.py --debug      # デバッグモードで起動
+  python main.py --help       # ヘルプ表示
+        """
+    )
+    
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        help='デバッグモードで起動'
+    )
+    
+    parser.add_argument(
+        '--no-color',
+        action='store_true',
+        help='カラー出力を無効化'
+    )
+    
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='バーチャル水族館ゲーム v1.0 (Phase 3)'
+    )
+    
+    return parser.parse_args()
+
+
+def setup_logging(debug_mode=False):
+    """
+    ロギングを設定
+    
+    Args:
+        debug_mode: デバッグモードの有効/無効
+    """
+    import logging
+    
+    level = logging.DEBUG if debug_mode else logging.INFO
+    format_str = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    
+    logging.basicConfig(
+        level=level,
+        format=format_str,
+        handlers=[
+            logging.FileHandler('aquarium_game.log'),
+            logging.StreamHandler()
+        ]
+    )
+    
+    if debug_mode:
+        Display.print_info("デバッグモードが有効です")
+        Display.print_info(f"ログファイル: aquarium_game.log")
+
+
+def main():
+    """メイン関数"""
+    try:
+        # コマンドライン引数を解析
+        args = parse_arguments()
+        
+        # ウェルカムメッセージ
+        if not args.no_color:
+            print_welcome()
+        
+        # 依存関係チェック
+        if not check_dependencies():
+            sys.exit(1)
+        
+        # ロギング設定
+        setup_logging(args.debug)
+        
+        # CLIを起動
+        Display.print_success("ゲームを開始します！")
+        print()
+        
+        cli = AquariumCLI()
+        
+        # カラー出力の設定
+        if args.no_color:
+            # カラーを無効化（実装例）
+            pass
+        
+        # メインループ
+        cli.cmdloop()
+        
+    except KeyboardInterrupt:
+        print(f"\n\n{Colors.YELLOW}ゲームを中断しました{Colors.RESET}")
+        Display.print_info("またのご来館をお待ちしています！")
+        sys.exit(0)
+        
+    except Exception as e:
+        Display.print_error(f"予期しないエラーが発生しました: {e}")
+        
+        if args.debug:
+            import traceback
+            traceback.print_exc()
+        
+        sys.exit(1)
+    
+    finally:
+        # クリーンアップ処理
+        print(f"\n{Colors.GREEN}ゲームを終了しました{Colors.RESET}")
+
+
+if __name__ == "__main__":
+    main()
+</code></pre>
+                    </div>
+
+                    <div class="alert alert-success">
+                        <strong>✅ main.pyの特徴</strong><br>
+                        • コマンドライン引数のサポート<br>
+                        • 依存パッケージの自動チェック<br>
+                        • デバッグモードの実装<br>
+                        • ログ機能の統合<br>
+                        • エラーハンドリングとクリーンアップ<br>
+                    </div>
+                </div>
+
+                <!-- 起動方法と使い方 -->
+                <div class="content-card">
+                    <h3>🚀 ゲームの起動と使い方</h3>
+                    <p>実装したゲームを起動して、実際にプレイしてみましょう！</p>
+
+                    <h4>1️⃣ 基本的な起動方法：</h4>
+                    <div class="code-block">
+                        <pre><code># プロジェクトルートに移動
+cd virtual-aquarium
+
+# ゲームを起動
+python main.py
+
+# 期待される出力:
+# ┌───────────────────────────────────────────┐
+# │   🌊 バーチャル水族館ゲーム 🌊             │
+# │   あなただけの水族館を経営しよう！          │
+# │   Version 1.0 (Phase 3)                  │
+# └───────────────────────────────────────────┘
+# 
+# ✅ ゲームを開始します！
+# 
+# 水族館> 
+</code></pre>
+                    </div>
+
+                    <h4>2️⃣ デバッグモードで起動：</h4>
+                    <div class="code-block">
+                        <pre><code># デバッグ情報を表示しながら起動
+python main.py --debug
+
+# ログファイルが生成され、詳細な情報が記録される
+</code></pre>
+                    </div>
+
+                    <h4>3️⃣ カラー出力なしで起動：</h4>
+                    <div class="code-block">
+                        <pre><code># カラーコードが表示されない環境用
+python main.py --no-color
+</code></pre>
+                    </div>
+
+                    <h4>4️⃣ 基本的なゲームの流れ：</h4>
+                    <div class="code-block">
+                        <pre><code># 1. ステータスを確認
+水族館> status
+
+# 2. 魚のリストを表示
+水族館> list fish
+
+# 3. 魚に餌をやる
+水族館> feed
+
+# 4. 水槽を掃除
+水族館> clean 1
+
+# 5. 新しい魚を追加
+水族館> add_fish goldfish ピカちゃん
+
+# 6. 1日進める
+水族館> next_day
+
+# 7. レポートを確認
+水族館> report
+
+# 8. 実績を確認
+水族館> achievements
+
+# 9. ヘルプを見る
+水族館> help
+
+# 10. 終了
+水族館> quit
+</code></pre>
+                    </div>
+
+                    <h4>5️⃣ 便利なコマンド組み合わせ：</h4>
+                    <div class="code-block">
+                        <pre><code># 毎日のルーティン
+水族館> feed          # 餌やり
+水族館> clean 1       # 掃除
+水族館> next_day      # 時間進行
+水族館> status        # 状態確認
+
+# 週単位でのプレイ
+水族館> feed
+水族館> clean 1
+水族館> skip 7        # 7日スキップ
+水族館> report        # レポート確認
+
+# 拡張プレイ
+水族館> add_tank 150     # 水槽追加
+水族館> add_fish clownfish カクレちゃん  # 魚追加
+水族館> buy equipment filter_001  # 装備購入
+水族館> list all         # 全情報表示
+</code></pre>
+                    </div>
+                </div>
+
+                <!-- ゲームプレイのヒント -->
+                <div class="content-card">
+                    <h3>💡 ゲームプレイのヒント</h3>
+                    <p>効率的にゲームを進めるためのヒントとコツです。</p>
+
+                    <div class="hint-item">
+                        <h4>💰 資金管理のコツ</h4>
+                        <ul>
+                            <li>初期は無理に魚や水槽を増やさない</li>
+                            <li>毎日の支出（餌代、維持費）を把握する</li>
+                            <li><code>report</code>コマンドで収支予測を確認</li>
+                            <li>評判が高まると収入が増える</li>
+                            <li>資金が10,000円を下回ったら注意</li>
+                        </ul>
+                    </div>
+
+                    <div class="hint-item">
+                        <h4>🐠 魚の管理のコツ</h4>
+                        <ul>
+                            <li>毎日必ず餌をやる（<code>feed</code>コマンド）</li>
+                            <li>清潔度が70%を下回ったら掃除（<code>clean</code>）</li>
+                            <li><code>list fish</code>で健康状態を定期的にチェック</li>
+                            <li>病気の魚は早めに対処（健康度30%以下は要注意）</li>
+                            <li>水槽の容量に注意（過密は避ける）</li>
+                        </ul>
+                    </div>
+
+                    <div class="hint-item">
+                        <h4>🏆 実績解除のコツ</h4>
+                        <ul>
+                            <li>"First Steps" - 初期状態で解除済み</li>
+                            <li>"Week Survivor" - 7日間生き残る</li>
+                            <li>"Collector" - 色々な種類の魚を集める</li>
+                            <li>"Wealthy" - 資金を10,000円以上にする</li>
+                            <li><code>achievements</code>で進捗確認</li>
+                        </ul>
+                    </div>
+
+                    <div class="hint-item">
+                        <h4>⚙️ 効率的なプレイ</h4>
+                        <ul>
+                            <li><code>skip</code>コマンドで時間を効率的に進める</li>
+                            <li>装備を購入して水質管理を自動化</li>
+                            <li>複数の水槽で種類を分けて管理</li>
+                            <li>定期的に<code>report</code>で分析</li>
+                            <li>イベントが発生したら内容を確認</li>
+                        </ul>
+                    </div>
+
+                    <div class="hint-item">
+                        <h4>🎯 目標設定の例</h4>
+                        <ul>
+                            <li><strong>初心者目標：</strong> 30日間生存</li>
+                            <li><strong>中級者目標：</strong> 5種類の魚を集める</li>
+                            <li><strong>上級者目標：</strong> 3つの水槽で20匹を管理</li>
+                            <li><strong>マスター目標：</strong> 評判80以上、資金50,000円以上</li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-success">
+                        <strong>🎮 楽しみ方</strong><br>
+                        自分なりのプレイスタイルを見つけましょう！<br>
+                        • のんびり1日ずつ進める<br>
+                        • skipで一気に進めて結果を見る<br>
+                        • コレクションを目指す<br>
+                        • 経営シミュレーションとして楽しむ<br>
+                    </div>
+                </div>
+
+                <!-- 次の開発ステップ -->
+                <div class="content-card">
+                    <h3>🔜 今後の開発予定（Phase 4以降）</h3>
+                    <p>Phase 3で基本的なUIは完成しました。今後追加される機能のプレビューです。</p>
+
+                    <div class="future-feature">
+                        <h4>📦 Phase 4: データファイル</h4>
+                        <ul>
+                            <li>15種類以上の魚種データ（JSON形式）</li>
+                            <li>各魚の詳細なパラメータ（価格、レア度、特性）</li>
+                            <li>10種類以上の装備アイテム</li>
+                            <li>15種類以上の装飾アイテム</li>
+                            <li>DataLoaderクラスでデータ読み込み</li>
+                            <li>ゲームバランスの調整</li>
+                        </ul>
+                    </div>
+
+                    <div class="future-feature">
+                        <h4>✨ Phase 5: 追加機能</h4>
+                        <ul>
+                            <li>セーブ/ロード機能（JSON形式）</li>
+                            <li>20種類以上のランダムイベント</li>
+                            <li>30種類以上の実績システム</li>
+                            <li>詳細な統計とグラフ（テキストベース）</li>
+                            <li>難易度設定（イージー/ノーマル/ハード）</li>
+                        </ul>
+                    </div>
+
+                    <div class="future-feature">
+                        <h4>🐛 Bugfix & Improvements</h4>
+                        <ul>
+                            <li>パフォーマンス最適化</li>
+                            <li>エラーハンドリングの強化</li>
+                            <li>ユーザビリティの改善</li>
+                            <li>コードリファクタリング</li>
+                            <li>テストカバレッジの向上</li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <strong>📅 開発スケジュール予定</strong><br>
+                        • Phase 4: データファイル - 2〜3日<br>
+                        • Phase 5: 追加機能 - 3〜5日<br>
+                        • Bugfix & Polish - 2〜3日<br>
+                        <br>
+                        <strong>合計: 約2週間でゲーム完成！</strong>
+                    </div>
+                </div>
+
+                <!-- プロジェクト構造の完成形 -->
+                <div class="content-card">
+                    <h3>📁 プロジェクト構造の完成形（Phase 3時点）</h3>
+                    <p>現時点でのプロジェクト全体の構造です。</p>
+
+                    <div class="code-block">
+                        <pre><code>virtual-aquarium/
+├── models/                      # Phase 1 - データモデル
+│   ├── __init__.py
+│   ├── fish.py                 # Fishクラス（健康、成長管理）
+│   ├── tank.py                 # Tankクラス（水質管理）
+│   ├── aquarium.py             # Aquariumクラス（全体管理）
+│   ├── equipment.py            # Equipment, Decorationクラス
+│   └── items.py                # その他アイテム
+│
+├── logic/                       # Phase 2 - ゲームロジック
+│   ├── __init__.py
+│   └── game_engine.py          # GameEngineクラス（シミュレーション）
+│
+├── ui/                          # Phase 3 - ユーザーインターフェース ⭐NEW
+│   ├── __init__.py
+│   ├── display.py              # 表示ユーティリティ（カラー、テーブル）
+│   └── cli.py                  # コマンドラインインターフェース（15コマンド）
+│
+├── data/                        # Phase 4で使用（準備済み）
+│   └── .gitkeep
+│
+├── tests/                       # テストコード
+│   ├── __init__.py
+│   ├── test_models.py          # Phase 1のテスト
+│   ├── test_logic.py           # Phase 2のテスト
+│   └── test_ui.py              # Phase 3のテスト ⭐NEW
+│
+├── docs/                        # ドキュメント
+│   └── game-design-site/       # 開発ガイド
+│       └── phased-guide/       # フェーズ別ガイド
+│
+├── main.py                      # メインエントリーポイント ⭐UPDATED
+├── requirements.txt             # 依存パッケージ ⭐UPDATED
+├── README.md                    # プロジェクト説明
+├── aquarium_game.log            # ログファイル（実行時に生成）
+└── .gitignore                   # Git除外設定
+
+⭐NEW = Phase 3で新規追加
+⭐UPDATED = Phase 3で更新
+</code></pre>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <strong>💡 ファイル数の統計</strong><br>
+                        • Pythonファイル: 11個（+3個）<br>
+                        • テストファイル: 3個（+1個）<br>
+                        • 総コード行数: 約2,500行（+800行）<br>
+                        • 実装コマンド数: 15個<br>
+                    </div>
+                </div>

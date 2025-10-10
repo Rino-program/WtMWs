@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>バーチャル水族館ゲーム - 段階的開発ガイド</title>
+    <meta name="description" content="段階的に実装できるバーチャル水族館ゲームの完全開発ガイド">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="progress-indicator">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo">
+                <span class="logo-icon">🐠</span>
+                <span class="logo-text">バーチャル水族館ゲーム</span>
+            </div>
+            <h1 class="header-title">段階的開発ガイド</h1>
+        </div>
+    </header>
+
+    <nav class="phase-navigation">
+        <div class="nav-container">
+            <button class="phase-btn active" data-phase="overview">
+                <span class="phase-icon">📖</span>
+                <span class="phase-label">概要</span>
+            </button>
+            <button class="phase-btn" data-phase="phase0">
+                <span class="phase-icon">🎯</span>
+                <span class="phase-label">Phase 0<br>MVP</span>
+            </button>
+            <button class="phase-btn" data-phase="phase1">
+                <span class="phase-icon">🏗️</span>
+                <span class="phase-label">Phase 1<br>基本構造</span>
+            </button>
+            <button class="phase-btn" data-phase="phase2">
+                <span class="phase-icon">⚙️</span>
+                <span class="phase-label">Phase 2<br>ロジック</span>
+            </button>
+            <button class="phase-btn" data-phase="phase3">
+                <span class="phase-icon">💻</span>
+                <span class="phase-label">Phase 3<br>UI</span>
+            </button>
+            <button class="phase-btn" data-phase="phase4">
+                <span class="phase-icon">📦</span>
+                <span class="phase-label">Phase 4<br>データ</span>
+            </button>
+            <button class="phase-btn" data-phase="phase5">
+                <span class="phase-icon">✨</span>
+                <span class="phase-label">Phase 5<br>追加機能</span>
+            </button>
+            <button class="phase-btn" data-phase="bugfix">
+                <span class="phase-icon">🐛</span>
+                <span class="phase-label">バグ対策</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- 概要セクション -->
+        <section id="overview" class="phase-section active">
+            <div class="section-container">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="title-icon">📖</span>
+                        開発ガイドの使い方
+                    </h2>
+                    <p class="section-subtitle">このガイドで効率的にゲーム開発を進めましょう</p>
+                </div>
+
+                <div class="content-card">
+                    <h3>🎯 このガイドの目的</h3>
+                    <p>このガイドは、バーチャル水族館ゲームを<strong>段階的に</strong>実装するための完全な手引きです。各フェーズは独立しており、前のフェーズが完成してから次に進むことができます。</p>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <span class="feature-icon">📋</span>
+                            <h4>詳細な手順</h4>
+                            <p>各ステップを細かく解説</p>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">💻</span>
+                            <h4>完全なコード例</h4>
+                            <p>そのまま使えるサンプルコード</p>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✅</span>
+                            <h4>チェックリスト</h4>
+                            <p>進捗を管理しやすい</p>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">🐛</span>
+                            <h4>トラブルシューティング</h4>
+                            <p>よくある問題と解決策</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <h3>🗺️ 開発の流れ</h3>
+                    <div class="phase-overview">
+                        <div class="phase-card" onclick="window.location.href='phase0.html'">
+                            <div class="phase-card-header phase0">
+                                <span class="phase-number">Phase 0</span>
+                                <h4>MVP（最小限の機能）</h4>
+                            </div>
+                            <div class="phase-card-content">
+                                <p>まず動くものを作る - 最小限の機能で完成させる</p>
+                                <ul class="phase-highlights">
+                                    <li>基本的な水槽管理</li>
+                                    <li>魚の追加・表示</li>
+                                    <li>簡単なコマンド操作</li>
+                                </ul>
+                                <span class="phase-duration">⏱️ 目安: 2-3日</span>
+                            </div>
+                        </div>
+
+                        <div class="phase-card" onclick="window.location.href='phase1.html'">
+                            <div class="phase-card-header phase1">
+                                <span class="phase-number">Phase 1</span>
+                                <h4>基本構造の実装</h4>
+                            </div>
+                            <div class="phase-card-content">
+                                <p>しっかりとしたクラス設計と実装</p>
+                                <ul class="phase-highlights">
+                                    <li>全クラスの定義</li>
+                                    <li>データ構造の整備</li>
+                                    <li>ユニットテスト</li>
+                                </ul>
+                                <span class="phase-duration">⏱️ 目安: 3-4日</span>
+                            </div>
+                        </div>
+
+                        <div class="phase-card" onclick="window.location.href='phase2.html'">
+                            <div class="phase-card-header phase2">
+                                <span class="phase-number">Phase 2</span>
+                                <h4>ゲームロジックの実装</h4>
+                            </div>
+                            <div class="phase-card-content">
+                                <p>シミュレーションとゲームエンジン</p>
+                                <ul class="phase-highlights">
+                                    <li>時間経過処理</li>
+                                    <li>魚の状態変化</li>
+                                    <li>水質変化システム</li>
+                                </ul>
+                                <span class="phase-duration">⏱️ 目安: 4-5日</span>
+                            </div>
+                        </div>
+
+                        <div class="phase-card" onclick="window.location.href='phase3.html'">
+                            <div class="phase-card-header phase3">
+                                <span class="phase-number">Phase 3</span>
+                                <h4>UIの実装</h4>
+                            </div>
+                            <div class="phase-card-content">
+                                <p>使いやすいコマンドラインインターフェース</p>
+                                <ul class="phase-highlights">
+                                    <li>コマンド処理</li>
+                                    <li>表示フォーマット</li>
+                                    <li>ヘルプシステム</li>
+                                </ul>
+                                <span class="phase-duration">⏱️ 目安: 2-3日</span>
+                            </div>
+                        </div>
+
+                        <div class="phase-card" onclick="window.location.href='phase4.html'">
+                            <div class="phase-card-header phase4">
+                                <span class="phase-number">Phase 4</span>
+                                <h4>データファイルの作成</h4>
+                            </div>
+                            <div class="phase-card-content">
+                                <p>ゲームコンテンツの追加</p>
+                                <ul class="phase-highlights">
+                                    <li>魚種データ</li>
+                                    <li>装備・装飾データ</li>
+                                    <li>バランス調整</li>
+                                </ul>
+                                <span class="phase-duration">⏱️ 目安: 2-3日</span>
+                            </div>
+                        </div>
+
+                        <div class="phase-card" onclick="window.location.href='phase5.html'">
+                            <div class="phase-card-header phase5">
+                                <span class="phase-number">Phase 5</span>
+                                <h4>追加機能の実装</h4>
+                            </div>
+                            <div class="phase-card-content">
+                                <p>ゲームを豊かにする機能</p>
+                                <ul class="phase-highlights">
+                                    <li>セーブ/ロード</li>
+                                    <li>イベントシステム</li>
+                                    <li>実績システム</li>
+                                </ul>
+                                <span class="phase-duration">⏱️ 目安: 3-4日</span>
+                            </div>
+                        </div>
+
+                        <div class="phase-card" onclick="window.location.href='bugfix.html'">
+                            <div class="phase-card-header bugfix">
+                                <span class="phase-number">継続</span>
+                                <h4>バグ対策と改善</h4>
+                            </div>
+                            <div class="phase-card-content">
+                                <p>品質向上とメンテナンス</p>
+                                <ul class="phase-highlights">
+                                    <li>デバッグ手法</li>
+                                    <li>パフォーマンス改善</li>
+                                    <li>コードリファクタリング</li>
+                                </ul>
+                                <span class="phase-duration">⏱️ 目安: 継続的</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <h3>💡 開発のコツ</h3>
+                    <div class="tips-grid">
+                        <div class="tip-card">
+                            <h4>🎯 小さく始める</h4>
+                            <p>Phase 0のMVPから始めて、動くものを早く作りましょう。完璧を目指さず、まず動作することを優先します。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4>✅ こまめにテスト</h4>
+                            <p>各機能を実装したら、すぐにテストを書いて動作確認。バグを早期に発見できます。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4>📝 ドキュメントを読む</h4>
+                            <p>各フェーズのページには詳細な説明があります。わからないことがあったら何度も読み返しましょう。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4>🔄 反復する</h4>
+                            <p>一度で完璧にする必要はありません。後から改善できます。まずは要件を満たすことに集中しましょう。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <h3>📚 準備するもの</h3>
+                    <div class="requirements-list">
+                        <div class="requirement-item">
+                            <span class="req-icon">🐍</span>
+                            <div class="req-content">
+                                <h4>Python 3.9以上</h4>
+                                <p>型ヒントなどの新機能を使用します</p>
+                                <code>python --version</code>
+                            </div>
+                        </div>
+                        <div class="requirement-item">
+                            <span class="req-icon">📦</span>
+                            <div class="req-content">
+                                <h4>pip（パッケージマネージャー）</h4>
+                                <p>必要なライブラリをインストールします</p>
+                                <code>pip install pytest</code>
+                            </div>
+                        </div>
+                        <div class="requirement-item">
+                            <span class="req-icon">💻</span>
+                            <div class="req-content">
+                                <h4>テキストエディタ/IDE</h4>
+                                <p>VS Code、PyCharm、またはお好みのエディタ</p>
+                            </div>
+                        </div>
+                        <div class="requirement-item">
+                            <span class="req-icon">📁</span>
+                            <div class="req-content">
+                                <h4>プロジェクトフォルダ</h4>
+                                <p>作業用のディレクトリを準備します</p>
+                                <code>mkdir virtual-aquarium && cd virtual-aquarium</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card next-step-card">
+                    <h3>🚀 さあ、始めましょう！</h3>
+                    <p>準備ができたら、Phase 0のMVPから始めましょう。最小限の機能で動くゲームを作ることで、開発の流れを掴めます。</p>
+                    <div class="button-group">
+                        <a href="phase0.html" class="btn btn-primary btn-large">
+                            <span class="btn-icon">🎯</span>
+                            Phase 0: MVPを始める
+                        </a>
+                        <a href="../index.html" class="btn btn-secondary">
+                            <span class="btn-icon">📖</span>
+                            元の設計ドキュメントを見る
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <p>© 2025 バーチャル水族館ゲーム開発プロジェクト</p>
+            <p>段階的開発ガイド - あなたの開発を最大限サポートします</p>
+        </div>
+    </footer>
+
+    <script src="navigation.js"></script>
+</body>
+</html>

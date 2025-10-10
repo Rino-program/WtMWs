@@ -1,0 +1,576 @@
+<!-- UI Testing Section -->
+                <div class="content-card">
+                    <h3><span class="step-number">ステップ 5</span>UIテストの実装</h3>
+                    <p>UIの動作を確認するための<strong>テストコード</strong>を作成します。<code>io.StringIO</code>を使って入出力をテストします。</p>
+
+                    <h4>💻 完全なコード（tests/test_ui.py）：</h4>
+                    <div class="code-block">
+                        <pre><code>"""
+UIのテスト
+io.StringIOを使った入出力のテスト
+"""
+
+import pytest
+import sys
+from io import StringIO
+from unittest.mock import patch, MagicMock
+
+# パスを追加
+sys.path.insert(0, '..')
+
+from ui.cli import AquariumCLI
+from ui.display import Display, Colors
+
+
+class TestDisplay:
+    """Displayクラスのテスト"""
+    
+    def test_print_success(self, capsys):
+        """成功メッセージのテスト"""
+        Display.print_success("テスト成功")
+        captured = capsys.readouterr()
+        assert "テスト成功" in captured.out
+        assert "✅" in captured.out
+    
+    def test_print_error(self, capsys):
+        """エラーメッセージのテスト"""
+        Display.print_error("エラーテスト")
+        captured = capsys.readouterr()
+        assert "エラーテスト" in captured.out
+        assert "❌" in captured.out
+    
+    def test_print_warning(self, capsys):
+        """警告メッセージのテスト"""
+        Display.print_warning("警告テスト")
+        captured = capsys.readouterr()
+        assert "警告テスト" in captured.out
+        assert "⚠️" in captured.out
+    
+    def test_print_status_bar(self, capsys):
+        """ステータスバーのテスト"""
+        Display.print_status_bar("テスト", 75, 100)
+        captured = capsys.readouterr()
+        assert "テスト" in captured.out
+        assert "75/100" in captured.out
+        assert "75.0%" in captured.out
+    
+    def test_print_table(self, capsys):
+        """テーブル表示のテスト"""
+        headers = ["列1", "列2"]
+        rows = [["値1", "値2"], ["値3", "値4"]]
+        Display.print_table(headers, rows)
+        captured = capsys.readouterr()
+        assert "列1" in captured.out
+        assert "値1" in captured.out
+    
+    def test_confirm_yes(self, monkeypatch):
+        """確認プロンプト（Yes）のテスト"""
+        monkeypatch.setattr('builtins.input', lambda _: 'y')
+        result = Display.confirm("テストですか？")
+        assert result == True
+    
+    def test_confirm_no(self, monkeypatch):
+        """確認プロンプト（No）のテスト"""
+        monkeypatch.setattr('builtins.input', lambda _: 'n')
+        result = Display.confirm("テストですか？")
+        assert result == False
+
+
+class TestAquariumCLI:
+    """AquariumCLIクラスのテスト"""
+    
+    @pytest.fixture
+    def cli(self):
+        """CLIインスタンスのフィクスチャ"""
+        return AquariumCLI()
+    
+    def test_initialization(self, cli):
+        """初期化のテスト"""
+        assert cli.aquarium is not None
+        assert cli.game_engine is not None
+        assert len(cli.aquarium.tanks) > 0
+        assert cli.aquarium.money > 0
+    
+    def test_do_status(self, cli, capsys):
+        """statusコマンドのテスト"""
+        cli.do_status("")
+        captured = capsys.readouterr()
+        assert "水族館ステータス" in captured.out
+        assert "資金" in captured.out
+        assert "評判" in captured.out
+    
+    def test_do_list_fish(self, cli, capsys):
+        """list fishコマンドのテスト"""
+        cli.do_list("fish")
+        captured = capsys.readouterr()
+        assert "魚のリスト" in captured.out
+    
+    def test_do_list_tanks(self, cli, capsys):
+        """list tanksコマンドのテスト"""
+        cli.do_list("tanks")
+        captured = capsys.readouterr()
+        assert "水槽のリスト" in captured.out
+    
+    def test_do_feed_all(self, cli):
+        """feedコマンド（全体）のテスト"""
+        initial_money = cli.aquarium.money
+        initial_hunger = cli.aquarium.tanks[0].fish_list[0].hunger
+        
+        cli.do_feed("")
+        
+        # 資金が減っているか
+        assert cli.aquarium.money < initial_money
+        
+        # 空腹度が減っているか
+        assert cli.aquarium.tanks[0].fish_list[0].hunger < initial_hunger
+    
+    def test_do_feed_specific_tank(self, cli):
+        """feedコマンド（特定水槽）のテスト"""
+        initial_money = cli.aquarium.money
+        cli.do_feed("1")
+        assert cli.aquarium.money < initial_money
+    
+    def test_do_clean(self, cli):
+        """cleanコマンドのテスト"""
+        # 水槽を汚す
+        cli.aquarium.tanks[0].water_quality['cleanliness'] = 50.0
+        initial_money = cli.aquarium.money
+        
+        cli.do_clean("1")
+        
+        # 資金が減り、清潔度が上がる
+        assert cli.aquarium.money < initial_money
+        assert cli.aquarium.tanks[0].water_quality['cleanliness'] > 50.0
+    
+    def test_do_add_fish(self, cli):
+        """add_fishコマンドのテスト"""
+        initial_money = cli.aquarium.money
+        initial_fish_count = len(cli.aquarium.tanks[0].fish_list)
+        
+        cli.do_add_fish("goldfish テスト魚")
+        
+        # 資金が減り、魚が増える
+        assert cli.aquarium.money < initial_money
+        assert len(cli.aquarium.tanks[0].fish_list) > initial_fish_count
+    
+    def test_do_add_tank(self, cli):
+        """add_tankコマンドのテスト"""
+        initial_money = cli.aquarium.money
+        initial_tank_count = len(cli.aquarium.tanks)
+        
+        cli.do_add_tank("100")
+        
+        # 資金が減り、水槽が増える
+        assert cli.aquarium.money < initial_money
+        assert len(cli.aquarium.tanks) > initial_tank_count
+    
+    def test_do_next_day(self, cli):
+        """next_dayコマンドのテスト"""
+        initial_day = cli.aquarium.current_day
+        
+        cli.do_next_day("")
+        
+        # 日数が進む
+        assert cli.aquarium.current_day > initial_day
+    
+    def test_do_skip(self, cli, monkeypatch):
+        """skipコマンドのテスト"""
+        # 確認プロンプトでYesを返す
+        monkeypatch.setattr('builtins.input', lambda _: 'y')
+        
+        initial_day = cli.aquarium.current_day
+        cli.do_skip("7")
+        
+        # 7日進む
+        assert cli.aquarium.current_day == initial_day + 7
+    
+    def test_do_report(self, cli, capsys):
+        """reportコマンドのテスト"""
+        cli.do_report("")
+        captured = capsys.readouterr()
+        assert "水族館レポート" in captured.out
+        assert "統計情報" in captured.out
+    
+    def test_do_achievements(self, cli, capsys):
+        """achievementsコマンドのテスト"""
+        cli.do_achievements("")
+        captured = capsys.readouterr()
+        assert "実績" in captured.out
+    
+    def test_invalid_command(self, cli, capsys):
+        """不明なコマンドのテスト"""
+        cli.default("invalid_command")
+        captured = capsys.readouterr()
+        assert "不明なコマンド" in captured.out
+    
+    def test_emptyline(self, cli):
+        """空行入力のテスト"""
+        result = cli.emptyline()
+        assert result is None
+    
+    def test_do_quit_yes(self, cli, monkeypatch):
+        """quitコマンド（Yes）のテスト"""
+        monkeypatch.setattr('builtins.input', lambda _: 'y')
+        result = cli.do_quit("")
+        assert result == True
+    
+    def test_do_quit_no(self, cli, monkeypatch):
+        """quitコマンド（No）のテスト"""
+        monkeypatch.setattr('builtins.input', lambda _: 'n')
+        result = cli.do_quit("")
+        assert result == False
+
+
+class TestIntegration:
+    """統合テスト"""
+    
+    def test_full_game_flow(self):
+        """完全なゲームフローのテスト"""
+        cli = AquariumCLI()
+        
+        # 初期状態確認
+        assert cli.aquarium.money > 0
+        assert len(cli.aquarium.tanks) > 0
+        
+        # 魚に餌をやる
+        cli.do_feed("")
+        
+        # 水槽を掃除
+        cli.do_clean("1")
+        
+        # 魚を追加
+        cli.do_add_fish("goldfish テスト")
+        
+        # 1日進める
+        cli.do_next_day("")
+        
+        # レポート確認
+        cli.do_report("")
+        
+        # ゲームが正常に動作していることを確認
+        assert cli.aquarium.current_day > 0
+    
+    def test_multiple_days_simulation(self):
+        """複数日シミュレーションのテスト"""
+        cli = AquariumCLI()
+        initial_day = cli.aquarium.current_day
+        
+        # 10日進める
+        for _ in range(10):
+            cli.do_next_day("")
+        
+        assert cli.aquarium.current_day == initial_day + 10
+    
+    def test_money_management(self):
+        """資金管理のテスト"""
+        cli = AquariumCLI()
+        
+        # 初期資金を記録
+        initial_money = cli.aquarium.money
+        
+        # いくつか操作を実行
+        cli.do_feed("")  # 支出
+        cli.do_clean("1")  # 支出
+        cli.do_next_day("")  # 収入・支出
+        
+        # 資金が変動していることを確認
+        assert cli.aquarium.money != initial_money
+
+
+# テスト実行用のメイン関数
+def main():
+    """テストを実行"""
+    pytest.main([__file__, '-v'])
+
+
+if __name__ == "__main__":
+    main()
+</code></pre>
+                    </div>
+
+                    <div class="alert alert-success">
+                        <strong>✅ テストの特徴</strong><br>
+                        • 各コマンドの動作確認<br>
+                        • 入出力のテスト（capsys使用）<br>
+                        • モック入力（monkeypatch使用）<br>
+                        • 統合テストで実際のゲームフロー確認<br>
+                    </div>
+
+                    <h4>🧪 テスト実行：</h4>
+                    <div class="code-block">
+                        <pre><code># すべてのUIテストを実行
+pytest tests/test_ui.py -v
+
+# 期待される出力:
+# test_ui.py::TestDisplay::test_print_success PASSED
+# test_ui.py::TestDisplay::test_print_error PASSED
+# ... (すべてのテストがPASSED)
+#
+# ========== X passed in Y.YYs ==========
+
+# 特定のテストだけ実行
+pytest tests/test_ui.py::TestAquariumCLI::test_do_status -v
+
+# カバレッジ付きで実行
+pytest tests/test_ui.py --cov=ui --cov-report=html
+</code></pre>
+                    </div>
+                </div>
+
+                <!-- トラブルシューティング Section -->
+                <div class="content-card">
+                    <h3>🔧 トラブルシューティング</h3>
+                    <p>Phase 3の実装でよくある問題と解決方法を紹介します。</p>
+
+                    <div class="troubleshooting-item">
+                        <h4>❌ 問題 1: coloramaの色が表示されない</h4>
+                        <p><strong>症状：</strong> カラーコードがそのまま表示される</p>
+                        <p><strong>原因：</strong> Windowsターミナルでcoloramaが初期化されていない</p>
+                        <p><strong>解決方法：</strong></p>
+                        <div class="code-block">
+                            <pre><code># display.pyの先頭で必ず初期化
+from colorama import init
+init(autoreset=True)  # 自動リセットを有効化
+
+# または、Windowsの場合は環境変数を設定
+set PYTHONIOENCODING=utf-8
+</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="troubleshooting-item">
+                        <h4>❌ 問題 2: コマンドが認識されない</h4>
+                        <p><strong>症状：</strong> コマンドを入力しても「不明なコマンド」と表示される</p>
+                        <p><strong>原因：</strong> メソッド名が<code>do_コマンド名</code>の形式になっていない</p>
+                        <p><strong>解決方法：</strong></p>
+                        <div class="code-block">
+                            <pre><code># ❌ 間違い
+def command_status(self, arg):
+    pass
+
+# ✅ 正しい
+def do_status(self, arg):
+    pass
+</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="troubleshooting-item">
+                        <h4>❌ 問題 3: テーブルが崩れる</h4>
+                        <p><strong>症状：</strong> tabulateのテーブル表示が崩れる</p>
+                        <p><strong>原因：</strong> 日本語の文字幅の問題</p>
+                        <p><strong>解決方法：</strong></p>
+                        <div class="code-block">
+                            <pre><code># テーブルフォーマットを変更
+Display.print_table(headers, rows, tablefmt="simple")
+
+# または、文字幅を揃える
+headers = ["ID      ", "名前    ", "状態    "]
+</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="troubleshooting-item">
+                        <h4>❌ 問題 4: 入力でエラーが発生する</h4>
+                        <p><strong>症状：</strong> 特定の入力でプログラムがクラッシュする</p>
+                        <p><strong>原因：</strong> 入力検証が不十分</p>
+                        <p><strong>解決方法：</strong></p>
+                        <div class="code-block">
+                            <pre><code># 必ず入力検証を行う
+def do_add_fish(self, arg):
+    # 引数チェック
+    if not arg:
+        Display.print_error("引数が必要です")
+        return
+    
+    # 数値変換のエラーハンドリング
+    try:
+        value = int(arg)
+    except ValueError:
+        Display.print_error("無効な数値です")
+        return
+    
+    # 範囲チェック
+    if value < 0:
+        Display.print_error("正の数を指定してください")
+        return
+</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="troubleshooting-item">
+                        <h4>❌ 問題 5: モジュールが見つからない</h4>
+                        <p><strong>症状：</strong> <code>ModuleNotFoundError: No module named 'models'</code></p>
+                        <p><strong>原因：</strong> Pythonのパスが正しく設定されていない</p>
+                        <p><strong>解決方法：</strong></p>
+                        <div class="code-block">
+                            <pre><code># cli.pyの先頭で親ディレクトリをパスに追加
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# または、プロジェクトルートから実行
+cd /path/to/virtual-aquarium
+python -m ui.cli
+</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="troubleshooting-item">
+                        <h4>❌ 問題 6: Ctrl+Cで停止できない</h4>
+                        <p><strong>症状：</strong> KeyboardInterruptが処理されない</p>
+                        <p><strong>原因：</strong> 例外処理が不適切</p>
+                        <p><strong>解決方法：</strong></p>
+                        <div class="code-block">
+                            <pre><code># main関数で適切にキャッチ
+def main():
+    try:
+        cli = AquariumCLI()
+        cli.cmdloop()
+    except KeyboardInterrupt:
+        print("\n\nゲームを中断しました")
+        sys.exit(0)
+</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="troubleshooting-item">
+                        <h4>❌ 問題 7: タブ補完が動作しない</h4>
+                        <p><strong>症状：</strong> Tabキーを押してもコマンド補完されない</p>
+                        <p><strong>原因：</strong> readlineモジュールがインストールされていない（特にWindows）</p>
+                        <p><strong>解決方法：</strong></p>
+                        <div class="code-block">
+                            <pre><code># Windowsの場合、pyreadlineをインストール
+pip install pyreadline3
+
+# または、Linuxの場合
+pip install gnureadline
+</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="troubleshooting-item">
+                        <h4>❌ 問題 8: ヘルプが表示されない</h4>
+                        <p><strong>症状：</strong> <code>help コマンド名</code>で何も表示されない</p>
+                        <p><strong>原因：</strong> docstringが設定されていない</p>
+                        <p><strong>解決方法：</strong></p>
+                        <div class="code-block">
+                            <pre><code># 必ずdocstringを追加
+def do_status(self, arg):
+    """
+    水族館の全体ステータスを表示
+    使用法: status
+    """
+    # 実装
+</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="troubleshooting-item">
+                        <h4>❌ 問題 9: メモリ使用量が増え続ける</h4>
+                        <p><strong>症状：</strong> 長時間プレイするとメモリ使用量が増加</p>
+                        <p><strong>原因：</strong> イベント履歴やログが蓄積</p>
+                        <p><strong>解決方法：</strong></p>
+                        <div class="code-block">
+                            <pre><code># 履歴の最大数を制限
+class GameEngine:
+    def __init__(self, aquarium):
+        self.event_history = []
+        self.max_history = 100  # 最大100件
+    
+    def add_event(self, event):
+        self.event_history.append(event)
+        # 古いイベントを削除
+        if len(self.event_history) > self.max_history:
+            self.event_history = self.event_history[-self.max_history:]
+</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="troubleshooting-item">
+                        <h4>❌ 問題 10: Unicode文字が表示されない</h4>
+                        <p><strong>症状：</strong> 絵文字や特殊文字が<code>?</code>になる</p>
+                        <p><strong>原因：</strong> ターミナルのエンコーディング設定</p>
+                        <p><strong>解決方法：</strong></p>
+                        <div class="code-block">
+                            <pre><code># Windowsの場合、コンソールをUTF-8に設定
+chcp 65001
+
+# Pythonスクリプトの先頭に追加
+# -*- coding: utf-8 -*-
+import sys
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <strong>💡 デバッグのヒント</strong><br>
+                        • <code>print()</code>でデバッグ出力を追加<br>
+                        • <code>import pdb; pdb.set_trace()</code>でブレークポイント設定<br>
+                        • <code>pytest -v</code>で詳細なテスト結果を確認<br>
+                        • ログファイルに出力して問題を追跡<br>
+                    </div>
+                </div>
+
+                <!-- 完了チェックリスト -->
+                <div class="content-card">
+                    <h3>✅ Phase 3 完了チェックリスト</h3>
+                    <p>すべてにチェックが入ったら、Phase 4に進む準備ができています！</p>
+
+                    <ul class="checklist">
+                        <li>ui/ディレクトリを作成し、__init__.pyを配置した</li>
+                        <li>display.pyを実装し、カラー出力が動作する</li>
+                        <li>display.pyを実装し、テーブル表示が動作する</li>
+                        <li>cli.pyにAquariumCLIクラスを実装した</li>
+                        <li>statusコマンドが動作する</li>
+                        <li>listコマンド（fish/tanks）が動作する</li>
+                        <li>feedコマンドが動作する</li>
+                        <li>cleanコマンドが動作する</li>
+                        <li>add_fishコマンドが動作する</li>
+                        <li>add_tankコマンドが動作する</li>
+                        <li>buyコマンドが動作する</li>
+                        <li>next_dayコマンドが動作する</li>
+                        <li>skipコマンドが動作する</li>
+                        <li>reportコマンドが動作する</li>
+                        <li>achievementsコマンドが動作する</li>
+                        <li>helpコマンドですべてのヘルプが表示される</li>
+                        <li>quitコマンドで正常に終了できる</li>
+                        <li>エラーハンドリングが適切に動作する</li>
+                        <li>test_ui.pyのすべてのテストがPASSする</li>
+                        <li>実際にゲームをプレイして動作確認した</li>
+                    </ul>
+
+                    <div class="alert alert-success">
+                        <strong>🎉 おめでとうございます！</strong><br>
+                        Phase 3のUI実装が完了しました。プレイヤーが快適に操作できるインターフェースができあがりました。
+                    </div>
+                </div>
+
+                <!-- 次のステップ -->
+                <div class="content-card next-step-card">
+                    <h3>🎉 Phase 3完了！</h3>
+                    <p>UIが完成しました。次はゲームコンテンツを充実させる<strong>データファイル</strong>を作成します。</p>
+                    
+                    <div class="alert alert-info">
+                        <strong>📋 Phase 4のプレビュー</strong><br>
+                        次のフェーズでは、以下を実装します：<br>
+                        • 15種類以上の魚種データ（JSON）<br>
+                        • 10種類以上の装備データ（JSON）<br>
+                        • 15種類以上の装飾データ（JSON）<br>
+                        • DataLoaderクラスでデータ読み込み<br>
+                        • ゲームバランスの調整<br>
+                    </div>
+                    
+                    <div class="button-group">
+                        <a href="phase2.html" class="btn btn-secondary">
+                            <span class="btn-icon">◀️</span>
+                            前のフェーズに戻る
+                        </a>
+                        <a href="phase4.html" class="btn btn-primary btn-large">
+                            <span class="btn-icon">▶️</span>
+                            Phase 4: データファイルへ進む
+                        </a>
+                    </div>
+                </div>

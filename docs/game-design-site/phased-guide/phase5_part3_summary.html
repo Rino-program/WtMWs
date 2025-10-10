@@ -1,0 +1,99 @@
+<!-- Phase 5 Part 3: AchievementSystem -->
+<section>
+<h2>🏆 AchievementSystemクラスの実装（600行、30種類の実績）</h2>
+<div class="code-block"><pre><code class="language-python">
+from typing import Dict, List, Callable
+from datetime import datetime
+
+class Achievement:
+    """実績の基底クラス"""
+    
+    def __init__(self, achievement_id: str, name: str, description: str,
+                 icon: str, reward_money: int = 0):
+        self.achievement_id = achievement_id
+        self.name = name
+        self.description = description
+        self.icon = icon
+        self.reward_money = reward_money
+        self.unlocked = False
+        self.unlock_date = None
+    
+    def check_unlock(self, aquarium) -> bool:
+        """実績解除条件をチェック"""
+        pass
+
+class FirstFishAchievement(Achievement):
+    """最初の一歩 - 最初の魚を飼う"""
+    
+    def __init__(self):
+        super().__init__(
+            achievement_id="first_fish",
+            name="🐠 最初の一歩",
+            description="初めての魚を飼いました！",
+            icon="🐠",
+            reward_money=100
+        )
+    
+    def check_unlock(self, aquarium) -> bool:
+        return len(aquarium.get_all_fish()) >= 1
+
+class WeekSurvivorAchievement(Achievement):
+    """一週間生存 - 7日間プレイ"""
+    
+    def __init__(self):
+        super().__init__(
+            achievement_id="week_survivor",
+            name="📅 一週間達成",
+            description="7日間水族館を運営しました！",
+            icon="📅",
+            reward_money=500
+        )
+    
+    def check_unlock(self, aquarium) -> bool:
+        return aquarium.day >= 7
+
+# 30種類の実績実装...
+# (省略: MonthMasterAchievement, CollectorAchievement, WealthyAchievement,
+#  PopularAchievement, FullHouseAchievement, PerfectWaterAchievement, etc.)
+
+class AchievementSystem:
+    """実績管理システム"""
+    
+    def __init__(self):
+        self.achievements: List[Achievement] = [
+            FirstFishAchievement(),
+            WeekSurvivorAchievement(),
+            # ... 他28種類の実績
+        ]
+        self.newly_unlocked: List[Achievement] = []
+    
+    def check_achievements(self, aquarium) -> List[Achievement]:
+        """実績をチェックして新規解除を検出"""
+        self.newly_unlocked = []
+        
+        for achievement in self.achievements:
+            if not achievement.unlocked:
+                if achievement.check_unlock(aquarium):
+                    achievement.unlocked = True
+                    achievement.unlock_date = datetime.now()
+                    self.newly_unlocked.append(achievement)
+                    aquarium.money += achievement.reward_money
+        
+        return self.newly_unlocked
+    
+    def get_unlocked_achievements(self) -> List[Achievement]:
+        """解除済み実績を取得"""
+        return [a for a in self.achievements if a.unlocked]
+    
+    def get_progress(self) -> Dict:
+        """実績の進捗を取得"""
+        unlocked = len(self.get_unlocked_achievements())
+        total = len(self.achievements)
+        
+        return {
+            "unlocked": unlocked,
+            "total": total,
+            "percentage": (unlocked / total) * 100
+        }
+</code></pre></div>
+</section>
