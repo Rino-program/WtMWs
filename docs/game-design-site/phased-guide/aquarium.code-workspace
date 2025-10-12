@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../../../../aquarium"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "phased-guide"
+	}
+}
