@@ -92,7 +92,23 @@ self.addEventListener('activate', (event) => {
             })
             .then(() => {
                 console.log('[SW] Service Worker activated');
-                return self.clients.claim(); // すぐに制御を開始
+                // 古い/不要なキャッシュエントリのクリーンナップ（chart.min.css 等）
+                return caches.keys().then(async (allNames) => {
+                    for (const name of allNames) {
+                        try {
+                            const cache = await caches.open(name);
+                            const requests = await cache.keys();
+                            for (const req of requests) {
+                                if (req.url && req.url.includes('chart.min.css')) {
+                                    console.log('[SW] Removing stale cached entry:', req.url);
+                                    await cache.delete(req);
+                                }
+                            }
+                        } catch (e) {
+                            console.warn('[SW] Error while cleaning caches:', e);
+                        }
+                    }
+                }).then(() => self.clients.claim()); // すぐに制御を開始
             })
     );
 });

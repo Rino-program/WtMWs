@@ -121,35 +121,26 @@ class EarthquakeApp {
         try {
             // ステップ1: モジュールの初期化
             await this.initializeModules();
-            
             // ステップ2: サービスの初期化
             await this.initializeServices();
-            
             // ステップ3: UIの初期化
             await this.initializeUI();
-            
             // ステップ4: データの読み込み
             await this.loadInitialData();
-            
             // ステップ5: リアルタイム更新の開始
             this.startRealtimeUpdates();
-            
             // ステップ6: 追加機能の初期化
             await this.initializeAdditionalFeatures();
-            
             // 初期化完了
             this.initialized = true;
             this.performanceMetrics.initTime = performance.now() - initStart;
-            
             Utils.setLoading(false);
             Utils.showToast(`システムの初期化が完了しました (${Math.round(this.performanceMetrics.initTime)}ms)`, 'success');
-            
             console.log(`✅ 初期化完了 - ${Math.round(this.performanceMetrics.initTime)}ms`);
-            
             // 初期化後の処理
             this.onInitComplete();
-            
         } catch (error) {
+            Utils.setLoading(false);
             console.error('❌ 初期化エラー:', error);
             this.handleInitError(error);
         }
