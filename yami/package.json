@@ -1,0 +1,10 @@
+{
+	"name": "yami",
+	"version": "0.1.0",
+	"description": "暗めの短文を投稿する静的サイト。posts/ に md/txt ファイルを追加すると index.html に反映されます。",
+	"scripts": {
+		"build": "node ./scripts/generateIndex.js"
+	},
+	"author": "",
+	"license": "MIT"
+}

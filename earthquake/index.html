@@ -785,5 +785,21 @@
             });
         }
     </script>
+    <!-- 開発用: ローカル環境ではService Workerを自動でunregisterしてネットワークを直接使う -->
+    <script>
+        (function(){
+            try {
+                const isLocal = location.hostname === '127.0.0.1' || location.hostname === 'localhost';
+                if (isLocal && 'serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(regs => {
+                        regs.forEach(r => {
+                            console.log('[DEV] Unregistering Service Worker:', r);
+                            r.unregister();
+                        });
+                    }).catch(e => console.warn('[DEV] SW unregister error', e));
+                }
+            } catch (e) { console.warn('[DEV] SW dev guard', e); }
+        })();
+    </script>
 </body>
 </html>
