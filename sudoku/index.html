@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数独ゲーム</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>数独ゲーム</h1>
+        </header>
+
+        <main>
+            <!-- 難易度選択 -->
+            <div class="difficulty-selector">
+                <h2>難易度を選択</h2>
+                <div class="difficulty-buttons">
+                    <button class="difficulty-btn" data-difficulty="easy">簡単</button>
+                    <button class="difficulty-btn" data-difficulty="medium">普通</button>
+                    <button class="difficulty-btn" data-difficulty="hard">難しい</button>
+                    <button class="difficulty-btn" data-difficulty="expert">超難</button>
+                </div>
+            </div>
+
+            <!-- ゲームボード -->
+            <div class="game-area">
+                <div class="sudoku-board" id="sudoku-board">
+                    <!-- 9x9のグリッドがJavaScriptで生成されます -->
+                </div>
+
+                <!-- 候補数字表示エリア（外部表示用） -->
+                <div class="candidates-panel" id="candidates-panel">
+                    <h3>候補数字</h3>
+                    <div id="candidates-display"></div>
+                </div>
+            </div>
+
+            <!-- コントロールパネル -->
+            <div class="controls">
+                <div class="number-buttons">
+                    <button class="number-btn" data-number="1">1</button>
+                    <button class="number-btn" data-number="2">2</button>
+                    <button class="number-btn" data-number="3">3</button>
+                    <button class="number-btn" data-number="4">4</button>
+                    <button class="number-btn" data-number="5">5</button>
+                    <button class="number-btn" data-number="6">6</button>
+                    <button class="number-btn" data-number="7">7</button>
+                    <button class="number-btn" data-number="8">8</button>
+                    <button class="number-btn" data-number="9">9</button>
+                    <button class="number-btn erase-btn" data-number="0">消去</button>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="new-game-btn">新しいゲーム</button>
+                    <button id="save-btn">保存</button>
+                    <button id="load-btn">読込</button>
+                    <button id="hint-btn">ヒント</button>
+                    <button id="check-btn">チェック</button>
+                </div>
+            </div>
+
+            <!-- オプション設定 -->
+            <div class="options">
+                <h3>オプション</h3>
+                <div class="option-item">
+                    <label>
+                        <input type="checkbox" id="highlight-toggle" checked>
+                        同じ数字をハイライト
+                    </label>
+                </div>
+                <div class="option-item">
+                    <label>
+                        <input type="checkbox" id="error-check-toggle" checked>
+                        間違い警告
+                    </label>
+                </div>
+                <div class="option-item">
+                    <label>候補数字表示：</label>
+                    <select id="candidates-mode">
+                        <option value="off">なし</option>
+                        <option value="internal">内部表示</option>
+                        <option value="external">外部表示</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- メモエリア -->
+            <div class="memo-section">
+                <h3>メモ</h3>
+                <textarea id="memo-area" placeholder="ここにメモを書いてください..."></textarea>
+                <button id="save-memo-btn">メモを保存</button>
+            </div>
+
+            <!-- ステータス表示 -->
+            <div class="status-bar">
+                <div id="status-message"></div>
+                <div id="timer">時間: 00:00</div>
+            </div>
+        </main>
+    </div>
+
+    <script src="sudoku.js"></script>
+</body>
+</html>
