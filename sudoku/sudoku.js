@@ -671,7 +671,6 @@ class SudokuGame {
                 this.showSuccessAnimation();
             } else {
                 this.updateStatus(`❌ ${errors}個の間違いがあります`);
-                this.isLocked = true;
                 this.showFailureAnimation();
             }
         } else {
