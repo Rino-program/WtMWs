@@ -4,11 +4,13 @@ class SudokuGame {
         this.board = Array(9).fill(null).map(() => Array(9).fill(0));
         this.solution = Array(9).fill(null).map(() => Array(9).fill(0));
         this.fixedCells = new Set();
+        this.userEnteredCells = new Set(); // Track user-entered numbers
         this.selectedCell = null;
         this.difficulty = 'medium';
         this.timer = 0;
         this.timerInterval = null;
         this.candidates = {};
+        this.memo = ''; // Memo attached to game state
         
         // オプション設定
         this.options = {
@@ -24,7 +26,7 @@ class SudokuGame {
         this.createBoard();
         this.setupEventListeners();
         this.loadOptions();
-        this.loadMemo();
+        this.loadMemoFromGame(); // Load memo attached to game
     }
     
     // ボードのHTML生成
@@ -63,10 +65,13 @@ class SudokuGame {
         
         // アクションボタン
         document.getElementById('new-game-btn').addEventListener('click', () => this.startNewGame());
-        document.getElementById('save-btn').addEventListener('click', () => this.saveGame());
-        document.getElementById('load-btn').addEventListener('click', () => this.loadGame());
+        document.getElementById('save-btn').addEventListener('click', () => this.showSaveModal());
+        document.getElementById('load-btn').addEventListener('click', () => this.showLoadModal());
         document.getElementById('hint-btn').addEventListener('click', () => this.showHint());
         document.getElementById('check-btn').addEventListener('click', () => this.checkSolution());
+        
+        // Modal
+        document.getElementById('close-modal-btn').addEventListener('click', () => this.closeModal());
         
         // オプション
         document.getElementById('highlight-toggle').addEventListener('change', (e) => {
@@ -87,7 +92,10 @@ class SudokuGame {
         });
         
         // メモ保存
-        document.getElementById('save-memo-btn').addEventListener('click', () => this.saveMemo());
+        document.getElementById('save-memo-btn').addEventListener('click', () => {
+            this.memo = document.getElementById('memo-area').value;
+            this.updateStatus('✓ メモを保存しました（ゲームと一緒に保存されます）');
+        });
         
         // キーボード入力
         document.addEventListener('keydown', (e) => {
@@ -104,7 +112,10 @@ class SudokuGame {
         this.stopTimer();
         this.generatePuzzle();
         this.selectedCell = null;
+        this.userEnteredCells.clear(); // Clear user-entered tracking
         this.timer = 0;
+        this.memo = ''; // Reset memo for new game
+        document.getElementById('memo-area').value = '';
         this.updateBoard();
         this.startTimer();
         this.updateStatus('新しいゲームを開始しました！');
@@ -239,11 +250,34 @@ class SudokuGame {
         return levels[this.difficulty] || 40;
     }
     
-    // 一意解を持つか確認（簡易版）
+    // 一意解を持つか確認（改良版）
     hasUniqueSolution() {
-        // 実際には完全な一意性チェックは複雑なため、簡易版を実装
         const testBoard = this.board.map(row => [...row]);
-        return this.solveSudoku(testBoard);
+        let solutionCount = 0;
+        
+        const countSolutions = (board, maxCount = 2) => {
+            if (solutionCount >= maxCount) return;
+            
+            const empty = this.findEmpty(board);
+            if (!empty) {
+                solutionCount++;
+                return;
+            }
+            
+            const [row, col] = empty;
+            for (let num = 1; num <= 9; num++) {
+                if (this.isValid(board, row, col, num)) {
+                    board[row][col] = num;
+                    countSolutions(board, maxCount);
+                    board[row][col] = 0;
+                    
+                    if (solutionCount >= maxCount) return;
+                }
+            }
+        };
+        
+        countSolutions(testBoard);
+        return solutionCount === 1;
     }
     
     // セルを選択
@@ -265,6 +299,13 @@ class SudokuGame {
         const col = this.selectedCell % 9;
         
         this.board[row][col] = number;
+        
+        // Track user-entered cells
+        if (number !== 0) {
+            this.userEnteredCells.add(this.selectedCell);
+        } else {
+            this.userEnteredCells.delete(this.selectedCell);
+        }
         
         // エラーチェック
         if (this.options.errorCheckEnabled && number !== 0) {
@@ -298,6 +339,11 @@ class SudokuGame {
             // 固定セル
             if (this.fixedCells.has(index)) {
                 cell.classList.add('fixed');
+            }
+            
+            // User-entered cells (different color)
+            if (this.userEnteredCells.has(index)) {
+                cell.classList.add('user-entered');
             }
             
             // 選択セル
@@ -520,42 +566,162 @@ class SudokuGame {
         }, 3000);
     }
     
-    // ゲーム保存
-    saveGame() {
-        const gameState = {
+    // モーダル表示（保存）
+    showSaveModal() {
+        this.memo = document.getElementById('memo-area').value; // Save current memo
+        const modal = document.getElementById('save-load-modal');
+        document.getElementById('modal-title').textContent = 'セーブスロット選択';
+        
+        const slotsContainer = document.getElementById('save-slots');
+        slotsContainer.innerHTML = '';
+        
+        const saves = this.getAllSaves();
+        
+        for (let i = 1; i <= 5; i++) {
+            const slotData = saves[`slot${i}`];
+            const slotDiv = document.createElement('div');
+            slotDiv.className = 'save-slot' + (slotData ? '' : ' empty');
+            
+            if (slotData) {
+                slotDiv.innerHTML = `
+                    <div class="save-slot-header">
+                        <span class="save-slot-title">スロット ${i}</span>
+                        <button class="save-slot-delete" onclick="game.deleteSave(${i}); event.stopPropagation();">削除</button>
+                    </div>
+                    <div class="save-slot-info">
+                        難易度: ${this.getDifficultyName(slotData.difficulty)}<br>
+                        日時: ${new Date(slotData.timestamp).toLocaleString('ja-JP')}<br>
+                        タイマー: ${this.formatTime(slotData.timer)}
+                    </div>
+                `;
+            } else {
+                slotDiv.innerHTML = `
+                    <div class="save-slot-title">スロット ${i}</div>
+                    <div class="save-slot-info">空き</div>
+                `;
+            }
+            
+            slotDiv.addEventListener('click', () => {
+                this.saveToSlot(i);
+                this.closeModal();
+            });
+            
+            slotsContainer.appendChild(slotDiv);
+        }
+        
+        modal.classList.remove('hidden');
+    }
+    
+    // モーダル表示（読込）
+    showLoadModal() {
+        const modal = document.getElementById('save-load-modal');
+        document.getElementById('modal-title').textContent = 'ロードスロット選択';
+        
+        const slotsContainer = document.getElementById('save-slots');
+        slotsContainer.innerHTML = '';
+        
+        const saves = this.getAllSaves();
+        let hasData = false;
+        
+        for (let i = 1; i <= 5; i++) {
+            const slotData = saves[`slot${i}`];
+            if (slotData) hasData = true;
+            
+            const slotDiv = document.createElement('div');
+            slotDiv.className = 'save-slot' + (slotData ? '' : ' empty');
+            
+            if (slotData) {
+                slotDiv.innerHTML = `
+                    <div class="save-slot-header">
+                        <span class="save-slot-title">スロット ${i}</span>
+                        <button class="save-slot-delete" onclick="game.deleteSave(${i}); event.stopPropagation();">削除</button>
+                    </div>
+                    <div class="save-slot-info">
+                        難易度: ${this.getDifficultyName(slotData.difficulty)}<br>
+                        日時: ${new Date(slotData.timestamp).toLocaleString('ja-JP')}<br>
+                        タイマー: ${this.formatTime(slotData.timer)}
+                    </div>
+                `;
+                
+                slotDiv.addEventListener('click', () => {
+                    this.loadFromSlot(i);
+                    this.closeModal();
+                });
+            } else {
+                slotDiv.innerHTML = `
+                    <div class="save-slot-title">スロット ${i}</div>
+                    <div class="save-slot-info">データなし</div>
+                `;
+                slotDiv.style.cursor = 'not-allowed';
+            }
+            
+            slotsContainer.appendChild(slotDiv);
+        }
+        
+        if (!hasData) {
+            slotsContainer.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">保存されたデータがありません</div>';
+        }
+        
+        modal.classList.remove('hidden');
+    }
+    
+    // モーダルを閉じる
+    closeModal() {
+        document.getElementById('save-load-modal').classList.add('hidden');
+    }
+    
+    // 全てのセーブデータを取得
+    getAllSaves() {
+        const saves = localStorage.getItem('sudoku_saves');
+        return saves ? JSON.parse(saves) : {};
+    }
+    
+    // スロットに保存
+    saveToSlot(slotNumber) {
+        const saves = this.getAllSaves();
+        
+        saves[`slot${slotNumber}`] = {
             board: this.board,
             solution: this.solution,
             fixedCells: Array.from(this.fixedCells),
+            userEnteredCells: Array.from(this.userEnteredCells),
             difficulty: this.difficulty,
             timer: this.timer,
+            memo: this.memo,
             timestamp: new Date().toISOString()
         };
         
-        localStorage.setItem('sudoku_save', JSON.stringify(gameState));
-        this.updateStatus('✓ ゲームを保存しました');
+        localStorage.setItem('sudoku_saves', JSON.stringify(saves));
+        this.updateStatus(`✓ スロット${slotNumber}に保存しました`);
     }
     
-    // ゲーム読込
-    loadGame() {
-        const saved = localStorage.getItem('sudoku_save');
-        if (!saved) {
-            this.updateStatus('保存されたゲームがありません');
+    // スロットから読込
+    loadFromSlot(slotNumber) {
+        const saves = this.getAllSaves();
+        const slotData = saves[`slot${slotNumber}`];
+        
+        if (!slotData) {
+            this.updateStatus('❌ データがありません');
             return;
         }
         
         try {
-            const gameState = JSON.parse(saved);
-            this.board = gameState.board;
-            this.solution = gameState.solution;
-            this.fixedCells = new Set(gameState.fixedCells);
-            this.difficulty = gameState.difficulty;
-            this.timer = gameState.timer || 0;
+            this.board = slotData.board;
+            this.solution = slotData.solution;
+            this.fixedCells = new Set(slotData.fixedCells);
+            this.userEnteredCells = new Set(slotData.userEnteredCells || []);
+            this.difficulty = slotData.difficulty;
+            this.timer = slotData.timer || 0;
+            this.memo = slotData.memo || '';
+            
+            // Load memo into textarea
+            document.getElementById('memo-area').value = this.memo;
             
             this.stopTimer();
             this.startTimer();
             this.updateCandidates();
             this.updateBoard();
-            this.updateStatus('✓ ゲームを読み込みました');
+            this.updateStatus(`✓ スロット${slotNumber}から読み込みました`);
             
             // 難易度ボタンの状態更新
             document.querySelectorAll('.difficulty-btn').forEach(btn => {
@@ -567,6 +733,44 @@ class SudokuGame {
         } catch (e) {
             this.updateStatus('❌ 読み込みに失敗しました');
         }
+    }
+    
+    // セーブデータ削除
+    deleteSave(slotNumber) {
+        const saves = this.getAllSaves();
+        delete saves[`slot${slotNumber}`];
+        localStorage.setItem('sudoku_saves', JSON.stringify(saves));
+        
+        // モーダルを再表示
+        this.closeModal();
+        setTimeout(() => {
+            const modalTitle = document.getElementById('modal-title').textContent;
+            if (modalTitle.includes('セーブ')) {
+                this.showSaveModal();
+            } else {
+                this.showLoadModal();
+            }
+        }, 100);
+        
+        this.updateStatus(`✓ スロット${slotNumber}を削除しました`);
+    }
+    
+    // 難易度名取得
+    getDifficultyName(difficulty) {
+        const names = {
+            easy: '簡単',
+            medium: '普通',
+            hard: '難しい',
+            expert: '超難'
+        };
+        return names[difficulty] || difficulty;
+    }
+    
+    // 時間フォーマット
+    formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     }
     
     // オプション保存
@@ -591,19 +795,9 @@ class SudokuGame {
         }
     }
     
-    // メモ保存
-    saveMemo() {
-        const memo = document.getElementById('memo-area').value;
-        localStorage.setItem('sudoku_memo', memo);
-        this.updateStatus('✓ メモを保存しました');
-    }
-    
-    // メモ読込
-    loadMemo() {
-        const memo = localStorage.getItem('sudoku_memo');
-        if (memo) {
-            document.getElementById('memo-area').value = memo;
-        }
+    // メモを現在のゲームから読込
+    loadMemoFromGame() {
+        document.getElementById('memo-area').value = this.memo;
     }
 }
 

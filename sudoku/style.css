@@ -120,6 +120,10 @@ h1 {
     font-weight: 700;
 }
 
+.cell.user-entered {
+    color: #0066cc;
+}
+
 .cell.selected {
     background: #ffd700 !important;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
@@ -129,8 +133,17 @@ h1 {
     background: #ffe4b5 !important;
 }
 
+/* Mixed color for fixed cells when highlighted */
+.cell.fixed.highlighted {
+    background: #e0d4a8 !important; /* Mix of #e8e8e8 and #ffe4b5 */
+}
+
 .cell.same-number {
     background: #add8e6 !important;
+}
+
+.cell.fixed.same-number {
+    background: #c8dce8 !important; /* Mix of #e8e8e8 and #add8e6 */
 }
 
 .cell.error {
@@ -393,6 +406,116 @@ h1 {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
     75% { transform: translateX(5px); }
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-content h3 {
+    color: #667eea;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.save-slots {
+    display: grid;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.save-slot {
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #f9f9f9;
+}
+
+.save-slot:hover {
+    border-color: #667eea;
+    background: #f0f0ff;
+    transform: translateY(-2px);
+}
+
+.save-slot.empty {
+    border-style: dashed;
+    color: #999;
+}
+
+.save-slot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.save-slot-title {
+    font-weight: 600;
+    font-size: 1.1em;
+    color: #667eea;
+}
+
+.save-slot-delete {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.save-slot-delete:hover {
+    background: #ff5252;
+}
+
+.save-slot-info {
+    font-size: 0.9em;
+    color: #666;
+    line-height: 1.6;
+}
+
+.close-modal-btn {
+    width: 100%;
+    padding: 12px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.close-modal-btn:hover {
+    background: #5568d3;
 }
 
 /* レスポンシブ */
