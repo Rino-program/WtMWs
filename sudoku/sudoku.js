@@ -522,6 +522,17 @@ class SudokuGame {
         
         return counts;
     }
+
+    // Get the number of empty cells on the board
+    getEmptyCellCount() {
+        let count = 0;
+        for (let i = 0; i < 9; i++) {
+            for (let j = 0; j < 9; j++) {
+                if (this.board[i][j] === 0) count++;
+            }
+        }
+        return count;
+    }
     
     // Update number button states based on usage
     updateNumberButtons() {
@@ -570,7 +581,20 @@ class SudokuGame {
     
     // Auto-solve with visualization
     async autoSolveWithVisualization() {
-        const delay = 100; // milliseconds between steps
+        // Calculate dynamic delay based on initial empty cells: more empties -> faster
+        const emptyCount = this.getEmptyCellCount();
+        const computeDelay = (count) => {
+            // If many empty cells, use shorter delay. If few, slower for clearer visualization.
+            // Map count in [1..81] to delay in [1..100] ms (clamped).
+            const minDelay = 0;
+            const maxDelay = 50;
+            const clamped = Math.max(1, Math.min(81, count));
+            // inverse relation: more empties -> smaller delay
+            const t = (clamped - 1) / (81 - 1); // 0..1
+            return Math.round(maxDelay - t * (maxDelay - minDelay));
+        };
+
+        const delay = computeDelay(emptyCount);
         const boardCopy = this.board.map(row => [...row]);
         
         const solveStep = async (row, col) => {
