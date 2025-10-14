@@ -256,6 +256,12 @@ h1 {
     transform: scale(0.95);
 }
 
+.number-btn.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .erase-btn {
     background: #ff6b6b;
     color: white;
@@ -293,6 +299,16 @@ h1 {
     border-color: #5568d3;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.action-buttons button.active {
+    background: #ff6b6b;
+    border-color: #ff6b6b;
+}
+
+.action-buttons button.active:hover {
+    background: #ff5252;
+    border-color: #ff5252;
 }
 
 /* オプション */
@@ -406,6 +422,33 @@ h1 {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
     75% { transform: translateX(5px); }
+}
+
+@keyframes successPulse {
+    0%, 100% { 
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 8px 40px rgba(76, 175, 80, 0.6);
+        transform: scale(1.02);
+    }
+}
+
+@keyframes failureShake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+.sudoku-board.success-animation {
+    animation: successPulse 0.5s ease-in-out 4;
+    box-shadow: 0 8px 40px rgba(76, 175, 80, 0.8) !important;
+}
+
+.sudoku-board.failure-animation {
+    animation: failureShake 0.5s ease-in-out 2;
+    box-shadow: 0 8px 40px rgba(244, 67, 54, 0.6) !important;
 }
 
 /* Modal */

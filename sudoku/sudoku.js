@@ -11,6 +11,9 @@ class SudokuGame {
         this.timerInterval = null;
         this.candidates = {};
         this.memo = ''; // Memo attached to game state
+        this.isLocked = false; // Board lock state after check
+        this.isAutoSolving = false; // Auto-solve state
+        this.autoSolvePaused = false; // Auto-solve pause state
         
         // オプション設定
         this.options = {
@@ -69,6 +72,7 @@ class SudokuGame {
         document.getElementById('load-btn').addEventListener('click', () => this.showLoadModal());
         document.getElementById('hint-btn').addEventListener('click', () => this.showHint());
         document.getElementById('check-btn').addEventListener('click', () => this.checkSolution());
+        document.getElementById('auto-solve-btn').addEventListener('click', () => this.toggleAutoSolve());
         
         // Modal
         document.getElementById('close-modal-btn').addEventListener('click', () => this.closeModal());
@@ -110,6 +114,9 @@ class SudokuGame {
     // 新しいゲーム開始
     startNewGame() {
         this.stopTimer();
+        this.isLocked = false;
+        this.isAutoSolving = false;
+        this.autoSolvePaused = false;
         this.generatePuzzle();
         this.selectedCell = null;
         this.userEnteredCells.clear(); // Clear user-entered tracking
@@ -117,6 +124,7 @@ class SudokuGame {
         this.memo = ''; // Reset memo for new game
         document.getElementById('memo-area').value = '';
         this.updateBoard();
+        this.updateNumberButtons();
         this.startTimer();
         this.updateStatus('新しいゲームを開始しました！');
     }
@@ -161,6 +169,7 @@ class SudokuGame {
         }
         
         this.updateCandidates();
+        this.updateNumberButtons();
     }
     
     // 完全な解答の生成
@@ -288,6 +297,11 @@ class SudokuGame {
     
     // 数字を配置
     placeNumber(number) {
+        if (this.isLocked) {
+            this.updateStatus('⚠️ ボードがロックされています。新しいゲームを開始してください。');
+            return;
+        }
+        
         if (this.selectedCell === null || this.fixedCells.has(this.selectedCell)) {
             this.updateStatus('セルを選択してください');
             return;
@@ -318,6 +332,7 @@ class SudokuGame {
         
         this.updateCandidates();
         this.updateBoard();
+        this.updateNumberButtons();
         this.checkCompletion();
     }
     
@@ -458,6 +473,11 @@ class SudokuGame {
     
     // ヒント表示
     showHint() {
+        if (this.isLocked) {
+            this.updateStatus('⚠️ ボードがロックされています。新しいゲームを開始してください。');
+            return;
+        }
+        
         if (this.selectedCell === null) {
             this.updateStatus('ヒントを表示するセルを選択してください');
             return;
@@ -479,8 +499,153 @@ class SudokuGame {
         this.board[row][col] = this.solution[row][col];
         this.updateCandidates();
         this.updateBoard();
+        this.updateNumberButtons();
         this.updateStatus(`ヒント: ${this.solution[row][col]}`);
         this.checkCompletion();
+    }
+    
+    // Count occurrences of each number on the board
+    countNumbers() {
+        const counts = {};
+        for (let i = 1; i <= 9; i++) {
+            counts[i] = 0;
+        }
+        
+        for (let i = 0; i < 9; i++) {
+            for (let j = 0; j < 9; j++) {
+                const num = this.board[i][j];
+                if (num >= 1 && num <= 9) {
+                    counts[num]++;
+                }
+            }
+        }
+        
+        return counts;
+    }
+    
+    // Update number button states based on usage
+    updateNumberButtons() {
+        const counts = this.countNumbers();
+        
+        document.querySelectorAll('.number-btn').forEach(btn => {
+            const number = parseInt(btn.dataset.number);
+            
+            if (number >= 1 && number <= 9) {
+                if (counts[number] >= 9) {
+                    btn.classList.add('disabled');
+                    btn.disabled = true;
+                } else {
+                    btn.classList.remove('disabled');
+                    btn.disabled = false;
+                }
+            }
+        });
+    }
+    
+    // Toggle auto-solve mode
+    toggleAutoSolve() {
+        const btn = document.getElementById('auto-solve-btn');
+        
+        if (this.isAutoSolving) {
+            // Stop auto-solve
+            this.isAutoSolving = false;
+            this.autoSolvePaused = false;
+            btn.textContent = '自動解答';
+            btn.classList.remove('active');
+            this.updateStatus('自動解答を停止しました');
+        } else {
+            // Start auto-solve
+            if (this.isLocked) {
+                this.updateStatus('⚠️ ボードがロックされています。新しいゲームを開始してください。');
+                return;
+            }
+            
+            this.isAutoSolving = true;
+            btn.textContent = '停止';
+            btn.classList.add('active');
+            this.updateStatus('自動解答を開始します...');
+            this.autoSolveWithVisualization();
+        }
+    }
+    
+    // Auto-solve with visualization
+    async autoSolveWithVisualization() {
+        const delay = 100; // milliseconds between steps
+        const boardCopy = this.board.map(row => [...row]);
+        
+        const solveStep = async (row, col) => {
+            if (!this.isAutoSolving) return false;
+            
+            // Find next empty cell
+            while (row < 9) {
+                while (col < 9) {
+                    if (boardCopy[row][col] === 0) {
+                        // Try numbers 1-9
+                        for (let num = 1; num <= 9; num++) {
+                            if (!this.isAutoSolving) return false;
+                            
+                            if (this.isValid(boardCopy, row, col, num)) {
+                                boardCopy[row][col] = num;
+                                this.board = boardCopy.map(r => [...r]);
+                                this.selectedCell = row * 9 + col;
+                                this.updateBoard();
+                                this.updateNumberButtons();
+                                
+                                await this.sleep(delay);
+                                
+                                // Try to solve rest
+                                let nextCol = col + 1;
+                                let nextRow = row;
+                                if (nextCol >= 9) {
+                                    nextCol = 0;
+                                    nextRow++;
+                                }
+                                
+                                if (await solveStep(nextRow, nextCol)) {
+                                    return true;
+                                }
+                                
+                                if (!this.isAutoSolving) return false;
+                                
+                                // Backtrack
+                                boardCopy[row][col] = 0;
+                                this.board = boardCopy.map(r => [...r]);
+                                this.updateBoard();
+                                this.updateNumberButtons();
+                                await this.sleep(delay);
+                            }
+                        }
+                        return false;
+                    }
+                    col++;
+                }
+                col = 0;
+                row++;
+            }
+            return true; // Solved
+        };
+        
+        const result = await solveStep(0, 0);
+        
+        if (result && this.isAutoSolving) {
+            this.updateStatus('✓ 自動解答が完了しました！');
+            this.isAutoSolving = false;
+            document.getElementById('auto-solve-btn').textContent = '自動解答';
+            document.getElementById('auto-solve-btn').classList.remove('active');
+            this.checkSolution();
+        } else if (!this.isAutoSolving) {
+            // Stopped by user
+        } else {
+            this.updateStatus('❌ 解答できませんでした');
+            this.isAutoSolving = false;
+            document.getElementById('auto-solve-btn').textContent = '自動解答';
+            document.getElementById('auto-solve-btn').classList.remove('active');
+        }
+    }
+    
+    // Sleep utility
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
     
     // 解答チェック
@@ -502,8 +667,12 @@ class SudokuGame {
             if (errors === 0) {
                 this.updateStatus('🎉 おめでとうございます！完璧です！');
                 this.stopTimer();
+                this.isLocked = true;
+                this.showSuccessAnimation();
             } else {
                 this.updateStatus(`❌ ${errors}個の間違いがあります`);
+                this.isLocked = true;
+                this.showFailureAnimation();
             }
         } else {
             if (errors === 0) {
@@ -512,6 +681,26 @@ class SudokuGame {
                 this.updateStatus(`❌ ${errors}個の間違いがあります`);
             }
         }
+    }
+    
+    // Success animation
+    showSuccessAnimation() {
+        const boardElement = document.getElementById('sudoku-board');
+        boardElement.classList.add('success-animation');
+        
+        setTimeout(() => {
+            boardElement.classList.remove('success-animation');
+        }, 2000);
+    }
+    
+    // Failure animation
+    showFailureAnimation() {
+        const boardElement = document.getElementById('sudoku-board');
+        boardElement.classList.add('failure-animation');
+        
+        setTimeout(() => {
+            boardElement.classList.remove('failure-animation');
+        }, 1000);
     }
     
     // 完成チェック
@@ -686,6 +875,7 @@ class SudokuGame {
             difficulty: this.difficulty,
             timer: this.timer,
             memo: this.memo,
+            isLocked: this.isLocked,
             timestamp: new Date().toISOString()
         };
         
@@ -711,6 +901,7 @@ class SudokuGame {
             this.difficulty = slotData.difficulty;
             this.timer = slotData.timer || 0;
             this.memo = slotData.memo || '';
+            this.isLocked = slotData.isLocked || false;
             
             // Load memo into textarea
             document.getElementById('memo-area').value = this.memo;
@@ -719,6 +910,7 @@ class SudokuGame {
             this.startTimer();
             this.updateCandidates();
             this.updateBoard();
+            this.updateNumberButtons();
             this.updateStatus(`✓ スロット${slotNumber}から読み込みました`);
             
             // 難易度ボタンの状態更新
