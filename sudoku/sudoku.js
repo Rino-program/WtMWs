@@ -282,8 +282,6 @@ class SudokuGame {
     
     // セルを選択
     selectCell(index) {
-        if (this.fixedCells.has(index)) return;
-        
         this.selectedCell = index;
         this.updateBoard();
     }
