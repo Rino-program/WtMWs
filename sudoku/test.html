@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Click</title>
+    <script>
+        function testClick() {
+            const cells = document.querySelectorAll('.cell');
+            console.log('Total cells:', cells.length);
+            // Find first empty cell
+            cells.forEach((cell, idx) => {
+                if (cell.textContent.trim() === '') {
+                    console.log('Empty cell at index:', idx);
+                    return;
+                }
+            });
+        }
+    </script>
+</head>
+<body onload="setTimeout(testClick, 1000)">
+    <iframe src="index.html" width="100%" height="800"></iframe>
+</body>
+</html>
