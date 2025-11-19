@@ -10,7 +10,7 @@
 
 「Welcome to My Website」は、私が一から手作りで構築した個人Webサイトのソースコードリポジトリです。ブログ記事の投稿、リンク集、そして私自身の情報発信の場として運営しています。
 
-基本的にノーコードツールを使わず、**HTML/CSS/JavaScriptを使ってコーディング**しています。コードの一部はGitHub Copilotの力を借りていますが、基本的な構造やデザインはすべて手作りです。
+基本的にはノーコードツールを使わず、**HTML/CSS/JavaScriptを使ってコーディング**しています。コードの一部はGitHub Copilotの力を借りていますが、基本的な構造やデザインは手作りです。
 
 🔗 **Live Site**: [http://ringonote-ms.f5.si](http://ringonote-ms.f5.si)
 
