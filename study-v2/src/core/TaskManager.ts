@@ -18,10 +18,15 @@ export class TaskManager extends EventEmitter {
   async init(): Promise<void> {
     await this.loadTasks();
     
-    // 'none' タスクが存在しない場合は作成
+    // 'none' タスクが存在しない場合のみ作成
     const noneTask = this.tasks.find((t) => t.id === 'none');
     if (!noneTask) {
-      await this.createTask(NONE_TASK);
+      // DBにも存在しないか確認
+      const dbNoneTask = await db.get<Task>('tasks', 'none');
+      if (!dbNoneTask) {
+        await db.put('tasks', { ...NONE_TASK, id: 'none' });
+        this.tasks.push({ ...NONE_TASK, id: 'none' });
+      }
     }
   }
 
@@ -110,15 +115,22 @@ export class TaskManager extends EventEmitter {
       throw new Error(`バリデーションエラー: ${validation.errors.join(', ')}`);
     }
 
+    // IDを生成（taskDataにidがある場合はそれを使用）
+    const taskId = (taskData as any).id || this.generateId();
+    
     const task: Task = {
       ...taskData,
-      id: this.generateId(),
+      id: taskId,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     await db.put('tasks', task);
-    this.tasks.push(task);
+    
+    // 重複チェック
+    if (!this.tasks.find((t) => t.id === taskId)) {
+      this.tasks.push(task);
+    }
 
     this.emit(EVENT_NAMES.TASK_CREATE, { task });
 
