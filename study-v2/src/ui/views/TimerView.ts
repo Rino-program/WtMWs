@@ -25,9 +25,8 @@ export class TimerView {
     this.container.innerHTML = `
       <div class="timer-container">
         <div class="timer-header">
-          <h2>ポモドーロタイマー</h2>
-          <div class="timer-mode">${this.getModeLabel(state.currentMode)}</div>
-          <div class="timer-round">Round ${state.currentRound}</div>
+          <div class="timer-mode-badge ${state.currentMode}">${this.getModeLabel(state.currentMode)}</div>
+          <div class="timer-round-badge">🔄 ラウンド ${state.currentRound}</div>
         </div>
         
         <div class="timer-display">

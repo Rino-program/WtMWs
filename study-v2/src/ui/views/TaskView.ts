@@ -28,8 +28,8 @@ export class TaskView {
     this.container.innerHTML = `
       <div class="task-container">
         <div class="task-header">
-          <h2>タスク管理</h2>
-          <button id="btn-add-task" class="btn btn-sm btn-primary">+ タスク追加</button>
+          <h2>📝 タスク管理</h2>
+          <button id="btn-add-task" class="btn btn-add">➕ 新しいタスクを追加</button>
         </div>
 
         ${

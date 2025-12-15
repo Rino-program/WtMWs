@@ -10,19 +10,41 @@
 
 .timer-header {
   text-align: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-.timer-mode {
-  font-size: 1.25rem;
+.timer-mode-badge {
+  font-size: 1.5rem;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border-radius: 2rem;
+  background: var(--primary);
+  color: white;
+}
+
+.timer-mode-badge.work {
+  background: #22c55e;
+}
+
+.timer-mode-badge.shortBreak {
+  background: #3b82f6;
+}
+
+.timer-mode-badge.longBreak {
+  background: #8b5cf6;
+}
+
+.timer-round-badge {
+  font-size: 1.125rem;
   font-weight: 600;
-  color: var(--primary);
-  margin-top: 0.5rem;
-}
-
-.timer-round {
-  font-size: 0.875rem;
   color: var(--text-muted);
-  margin-top: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg-2);
+  border-radius: 1rem;
 }
 
 .timer-display {
@@ -33,8 +55,8 @@
 
 .time-circle {
   position: relative;
-  width: 300px;
-  height: 300px;
+  width: 320px;
+  height: 320px;
 }
 
 .progress-ring {
@@ -64,9 +86,10 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 3rem;
-  font-weight: 700;
+  font-size: 4rem;
+  font-weight: 800;
   color: var(--text);
+  letter-spacing: 0.1em;
 }
 
 .timer-controls {
