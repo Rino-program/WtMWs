@@ -12,44 +12,12 @@
     {
       "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>📚</text></svg>",
       "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%236c5ce7' width='100' height='100' rx='20'/><text y='70' x='50' text-anchor='middle' font-size='50' fill='white'>📚</text></svg>",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
+      "type": "image/svg+xml"
     }
   ],
   "categories": ["productivity", "education"],
   "lang": "ja",
   "dir": "ltr",
   "prefer_related_applications": false,
-  "shortcuts": [
-    {
-      "name": "タイマー開始",
-      "short_name": "タイマー",
-      "description": "ポモドーロタイマーを開始",
-      "url": "./index.html#timer",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>⏱️</text></svg>",
-          "sizes": "any"
-        }
-      ]
-    },
-    {
-      "name": "タスク一覧",
-      "short_name": "タスク",
-      "description": "タスク管理画面を開く",
-      "url": "./index.html#tasks",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>📋</text></svg>",
-          "sizes": "any"
-        }
-      ]
-    }
-  ]
+  "shortcuts": []
 }

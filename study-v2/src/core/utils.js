@@ -78,6 +78,34 @@ export function isToday(date) {
 }
 
 /**
+ * Format duration in minutes to readable string
+ */
+export function formatDuration(minutes) {
+  if (minutes === 0) return '0分';
+  
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  
+  if (hours === 0) {
+    return `${mins}分`;
+  } else if (mins === 0) {
+    return `${hours}時間`;
+  } else {
+    return `${hours}時間${mins}分`;
+  }
+}
+
+/**
+ * Get day of year (1-365/366)
+ */
+export function getDayOfYear(date = new Date()) {
+  const start = new Date(date.getFullYear(), 0, 0);
+  const diff = date - start;
+  const oneDay = 1000 * 60 * 60 * 24;
+  return Math.floor(diff / oneDay);
+}
+
+/**
  * Get days ago date
  */
 export function getDaysAgo(days) {
