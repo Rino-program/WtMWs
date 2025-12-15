@@ -1,0 +1,123 @@
+/**
+ * タスクのスタイル
+ */
+
+.task-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.current-task {
+  padding: 1rem;
+  background: var(--bg-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--primary);
+}
+
+.current-task h3 {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.task-card {
+  padding: 1rem;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.task-card.active {
+  border-color: var(--primary);
+  background: var(--bg-3);
+}
+
+.task-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.task-subject {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.task-progress {
+  margin-top: 1rem;
+}
+
+.task-progress span {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.progress-bar {
+  height: 8px;
+  background: var(--bg-2);
+  border-radius: var(--radius-full);
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  transition: width var(--transition-base);
+}
+
+.task-list {
+  margin-top: 1rem;
+}
+
+.task-list h3 {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.task-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: all var(--transition-base);
+}
+
+.task-item:hover {
+  background: var(--card-hover);
+  transform: translateX(4px);
+}
+
+.task-item.selected {
+  border-color: var(--primary);
+  background: var(--bg-3);
+}
+
+.task-content {
+  flex: 1;
+}
+
+.empty-message {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 2rem;
+}
