@@ -111,8 +111,8 @@ export type EventListener<T = unknown> = (data: T) => void;
 
 // イベントエミッターのインターフェース
 export interface IEventEmitter {
-  on<K extends EventName>(event: K, listener: EventListener<EventDataMap[K]>): void;
-  off<K extends EventName>(event: K, listener: EventListener<EventDataMap[K]>): void;
-  emit<K extends EventName>(event: K, data: EventDataMap[K]): void;
-  once<K extends EventName>(event: K, listener: EventListener<EventDataMap[K]>): void;
+  on<K extends EventName>(event: K, listener: EventListener<any>): void;
+  off<K extends EventName>(event: K, listener: EventListener<any>): void;
+  emit<K extends EventName>(event: K, data: any): void;
+  once<K extends EventName>(event: K, listener: EventListener<any>): void;
 }

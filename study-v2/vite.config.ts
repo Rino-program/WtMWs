@@ -18,13 +18,6 @@ export default defineConfig({
     target: 'es2020',
     outDir: 'dist',
     sourcemap: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['@/utils/performance'],
-        },
-      },
-    },
   },
   server: {
     port: 3000,

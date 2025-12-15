@@ -10,7 +10,7 @@ export class EventEmitter implements IEventEmitter {
   /**
    * イベントリスナーを登録
    */
-  on<K extends EventName>(event: K, listener: EventListener<EventDataMap[K]>): void {
+  on<K extends EventName>(event: K, listener: EventListener<any>): void {
     if (!this.events.has(event)) {
       this.events.set(event, new Set());
     }
@@ -20,7 +20,7 @@ export class EventEmitter implements IEventEmitter {
   /**
    * イベントリスナーを解除
    */
-  off<K extends EventName>(event: K, listener: EventListener<EventDataMap[K]>): void {
+  off<K extends EventName>(event: K, listener: EventListener<any>): void {
     const listeners = this.events.get(event);
     if (listeners) {
       listeners.delete(listener as EventListener);
@@ -33,7 +33,7 @@ export class EventEmitter implements IEventEmitter {
   /**
    * イベントを発火
    */
-  emit<K extends EventName>(event: K, data: EventDataMap[K]): void {
+  emit<K extends EventName>(event: K, data: any): void {
     const listeners = this.events.get(event);
     if (listeners) {
       listeners.forEach((listener) => {
@@ -49,8 +49,8 @@ export class EventEmitter implements IEventEmitter {
   /**
    * 一度だけ実行されるイベントリスナーを登録
    */
-  once<K extends EventName>(event: K, listener: EventListener<EventDataMap[K]>): void {
-    const onceWrapper: EventListener<EventDataMap[K]> = (data) => {
+  once<K extends EventName>(event: K, listener: EventListener<any>): void {
+    const onceWrapper: EventListener<any> = (data) => {
       this.off(event, onceWrapper);
       listener(data);
     };
