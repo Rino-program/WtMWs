@@ -37,12 +37,17 @@ class App {
       await db.init();
       console.log('✅ データベース初期化完了');
       
+      // Initialize store with default values
+      console.log('📊 ストア初期化中...');
+      this.initializeStore();
+      console.log('✅ ストア初期化完了');
+      
       // Load user data
       console.log('👤 ユーザーデータ読み込み中...');
       await this.loadUserData();
       console.log('✅ ユーザーデータ読み込み完了');
       
-      // Initialize modules
+      // Initialize modules IN ORDER
       console.log('⚙️ モジュール初期化中...');
       await this.initModules();
       console.log('✅ モジュール初期化完了');
@@ -84,6 +89,63 @@ class App {
         alert(`Study Support NG の初期化に失敗しました:\n${error.message}\n\nブラウザのコンソールを確認してください。`);
       }
     }
+  }
+
+  initializeStore() {
+    // Set default values for all store paths
+    store.set('user', {
+      createdAt: Date.now(),
+      xp: 0,
+      level: 1,
+      totalMinutes: 0,
+      totalPomodoros: 0,
+      totalTasksCompleted: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      lastStudyDate: null,
+      achievements: []
+    });
+
+    store.set('today', {
+      date: new Date().toISOString().split('T')[0],
+      pomodoros: 0,
+      minutes: 0,
+      tasksCompleted: 0
+    });
+
+    store.set('settings', {
+      focusMinutes: 25,
+      shortBreakMinutes: 5,
+      longBreakMinutes: 15,
+      pomodorosUntilLongBreak: 4,
+      autoStartBreak: false,
+      autoStartFocus: false,
+      soundEnabled: true,
+      soundVolume: 0.5,
+      tickingSound: false,
+      notificationsEnabled: false,
+      notifyBeforeEnd: 1,
+      theme: 'auto',
+      showSecondsInTitle: true,
+      dailyGoalMinutes: 120,
+      weeklyGoalMinutes: 600
+    });
+
+    store.set('timer', {
+      mode: 'focus',
+      isRunning: false,
+      isPaused: false,
+      remainingSeconds: 25 * 60,
+      totalSeconds: 25 * 60,
+      currentRound: 1
+    });
+
+    store.set('tasks', {
+      list: [],
+      selectedId: null
+    });
+
+    console.log('📊 ストアにデフォルト値を設定完了');
   }
 
   async loadUserData() {

@@ -23,8 +23,14 @@ class TimerModule {
     this.cacheElements();
     this.bindEvents();
     this.subscribeToStore();
+    
+    // Initialize timer time based on settings
+    this.resetTimeForCurrentMode();
+    
     this.updateDisplay();
     this.addSvgGradient();
+    
+    console.log('✅ Timer 初期化完了');
   }
 
   cacheElements() {

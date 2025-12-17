@@ -41,11 +41,21 @@ class SettingsModule {
   }
 
   async init() {
+    console.log('⚙️ Settings 初期化開始...');
     this.cacheElements();
     this.bindEvents();
+    console.log('🎯 イベントバインド完了');
+    
     await this.loadSettings();
+    console.log('📦 設定ロード完了');
+    
     this.applySettings();
+    console.log('✅ 設定適用完了');
+    
     this.updateFormValues();
+    console.log('📝 フォーム値更新完了');
+    
+    console.log('✅ Settings 初期化完了');
   }
 
   cacheElements() {
@@ -91,51 +101,63 @@ class SettingsModule {
   }
 
   bindEvents() {
+    // Helper to update setting immediately
+    const updateSetting = (key, value) => {
+      const settings = store.get('settings');
+      settings[key] = value;
+      store.update('settings', settings);
+      this.saveSetting(key, value);
+    };
+
     // Timer settings
     this.elements.focusMinutes?.addEventListener('change', (e) => {
-      this.pendingChanges.focusMinutes = parseInt(e.target.value) || 25;
+      const value = parseInt(e.target.value) || 25;
+      updateSetting('focusMinutes', value);
     });
     
     this.elements.shortBreakMinutes?.addEventListener('change', (e) => {
-      this.pendingChanges.shortBreakMinutes = parseInt(e.target.value) || 5;
+      const value = parseInt(e.target.value) || 5;
+      updateSetting('shortBreakMinutes', value);
     });
     
     this.elements.longBreakMinutes?.addEventListener('change', (e) => {
-      this.pendingChanges.longBreakMinutes = parseInt(e.target.value) || 15;
+      const value = parseInt(e.target.value) || 15;
+      updateSetting('longBreakMinutes', value);
     });
     
     this.elements.pomodorosUntilLongBreak?.addEventListener('change', (e) => {
-      this.pendingChanges.pomodorosUntilLongBreak = parseInt(e.target.value) || 4;
+      const value = parseInt(e.target.value) || 4;
+      updateSetting('pomodorosUntilLongBreak', value);
     });
     
     this.elements.autoStartBreak?.addEventListener('change', (e) => {
-      this.pendingChanges.autoStartBreak = e.target.checked;
+      updateSetting('autoStartBreak', e.target.checked);
     });
     
     this.elements.autoStartFocus?.addEventListener('change', (e) => {
-      this.pendingChanges.autoStartFocus = e.target.checked;
+      updateSetting('autoStartFocus', e.target.checked);
     });
     
     // Sound settings
     this.elements.soundEnabled?.addEventListener('change', (e) => {
-      this.pendingChanges.soundEnabled = e.target.checked;
+      updateSetting('soundEnabled', e.target.checked);
       this.updateSoundControlsState();
     });
     
     this.elements.soundVolume?.addEventListener('input', (e) => {
       const value = parseFloat(e.target.value);
-      this.pendingChanges.soundVolume = value;
+      updateSetting('soundVolume', value);
       if (this.elements.volumeValue) {
         this.elements.volumeValue.textContent = `${Math.round(value * 100)}%`;
       }
     });
     
     this.elements.tickingSound?.addEventListener('change', (e) => {
-      this.pendingChanges.tickingSound = e.target.checked;
+      updateSetting('tickingSound', e.target.checked);
     });
     
     this.elements.testSoundBtn?.addEventListener('click', () => {
-      const settings = { ...store.get('settings'), ...this.pendingChanges };
+      const settings = store.get('settings');
       if (settings.soundEnabled) {
         playSound('complete', settings.soundVolume);
       }
@@ -151,11 +173,12 @@ class SettingsModule {
           return;
         }
       }
-      this.pendingChanges.notificationsEnabled = e.target.checked;
+      updateSetting('notificationsEnabled', e.target.checked);
     });
     
     this.elements.notifyBeforeEnd?.addEventListener('change', (e) => {
-      this.pendingChanges.notifyBeforeEnd = parseInt(e.target.value) || 1;
+      const value = parseInt(e.target.value) || 1;
+      updateSetting('notifyBeforeEnd', value);
     });
     
     this.elements.testNotificationBtn?.addEventListener('click', () => {
@@ -167,21 +190,23 @@ class SettingsModule {
     
     // Theme
     this.elements.themeSelect?.addEventListener('change', (e) => {
-      this.pendingChanges.theme = e.target.value;
+      updateSetting('theme', e.target.value);
       this.applyTheme(e.target.value);
     });
     
     this.elements.showSecondsInTitle?.addEventListener('change', (e) => {
-      this.pendingChanges.showSecondsInTitle = e.target.checked;
+      updateSetting('showSecondsInTitle', e.target.checked);
     });
     
     // Goals
     this.elements.dailyGoalMinutes?.addEventListener('change', (e) => {
-      this.pendingChanges.dailyGoalMinutes = parseInt(e.target.value) || 120;
+      const value = parseInt(e.target.value) || 120;
+      updateSetting('dailyGoalMinutes', value);
     });
     
     this.elements.weeklyGoalMinutes?.addEventListener('change', (e) => {
-      this.pendingChanges.weeklyGoalMinutes = parseInt(e.target.value) || 600;
+      const value = parseInt(e.target.value) || 600;
+      updateSetting('weeklyGoalMinutes', value);
     });
     
     // Data management
@@ -190,18 +215,25 @@ class SettingsModule {
     this.elements.importInput?.addEventListener('change', (e) => this.importData(e));
     this.elements.resetBtn?.addEventListener('click', () => this.confirmResetData());
     
-    // Save button
-    this.elements.saveBtn?.addEventListener('click', () => this.saveSettings());
+    // Note: Save button removed - settings now auto-save on change
   }
 
   async loadSettings() {
     try {
+      console.log('📦 IndexedDB から設定を読み込み中...');
       const saved = await db.get(STORES.SETTINGS, 'settings');
-      const settings = { ...DEFAULT_SETTINGS, ...saved };
-      store.update('settings', settings);
+      
+      if (saved) {
+        console.log('✅ 保存済み設定を読み込みました:', saved);
+        const settings = { ...DEFAULT_SETTINGS, ...saved };
+        store.update('settings', settings);
+      } else {
+        console.log('ℹ️ 保存済み設定がありません。デフォルト値を使用します。');
+        // Settings are already set by initializeStore()
+      }
     } catch (error) {
-      console.error('設定の読み込みに失敗:', error);
-      store.update('settings', DEFAULT_SETTINGS);
+      console.error('❌ 設定の読み込みに失敗:', error);
+      // Use already-set defaults from initializeStore()
     }
   }
 
@@ -282,13 +314,22 @@ class SettingsModule {
     }
   }
 
+  async saveSetting(key, value) {
+    // Save individual setting to database asynchronously
+    try {
+      const settings = store.get('settings');
+      await db.put(STORES.SETTINGS, { id: 'settings', ...settings });
+      console.log(`💾 設定を保存: ${key} = ${value}`);
+    } catch (error) {
+      console.error(`❌ 設定の保存に失敗 (${key}):`, error);
+    }
+  }
+
   async saveSettings() {
     const currentSettings = store.get('settings');
-    const newSettings = { ...currentSettings, ...this.pendingChanges };
     
     try {
-      await db.put(STORES.SETTINGS, { id: 'settings', ...newSettings });
-      store.update('settings', newSettings);
+      await db.put(STORES.SETTINGS, { id: 'settings', ...currentSettings });
       this.pendingChanges = {};
       
       this.showStatus('設定を保存しました', 'success');
