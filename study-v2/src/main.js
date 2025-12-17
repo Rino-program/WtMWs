@@ -132,11 +132,12 @@ class App {
     });
 
     store.set('timer', {
+      status: 'idle',
       mode: 'focus',
       isRunning: false,
       isPaused: false,
-      remainingSeconds: 25 * 60,
-      totalSeconds: 25 * 60,
+      timeLeft: 25 * 60,
+      totalTime: 25 * 60,
       currentRound: 1
     });
 

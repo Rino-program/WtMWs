@@ -61,28 +61,28 @@ class SettingsModule {
   cacheElements() {
     this.elements = {
       // Timer settings
-      focusMinutes: document.getElementById('setting-focus-minutes'),
+      focusMinutes: document.getElementById('setting-focus'),
       shortBreakMinutes: document.getElementById('setting-short-break'),
       longBreakMinutes: document.getElementById('setting-long-break'),
-      pomodorosUntilLongBreak: document.getElementById('setting-pomodoros-until-long'),
+      pomodorosUntilLongBreak: document.getElementById('setting-rounds'),
       autoStartBreak: document.getElementById('setting-auto-start-break'),
       autoStartFocus: document.getElementById('setting-auto-start-focus'),
       
       // Sound settings
-      soundEnabled: document.getElementById('setting-sound-enabled'),
+      soundEnabled: document.getElementById('setting-sound'),
       soundVolume: document.getElementById('setting-sound-volume'),
       volumeValue: document.getElementById('volume-value'),
       tickingSound: document.getElementById('setting-ticking-sound'),
       testSoundBtn: document.getElementById('test-sound-btn'),
       
       // Notification settings
-      notificationsEnabled: document.getElementById('setting-notifications'),
+      notificationsEnabled: document.getElementById('setting-notification'),
       notifyBeforeEnd: document.getElementById('setting-notify-before'),
       testNotificationBtn: document.getElementById('test-notification-btn'),
       
       // Display settings
       themeSelect: document.getElementById('setting-theme'),
-      showSecondsInTitle: document.getElementById('setting-show-seconds'),
+      showSecondsInTitle: document.getElementById('setting-animations'),
       
       // Goals
       dailyGoalMinutes: document.getElementById('setting-daily-goal'),
@@ -103,9 +103,8 @@ class SettingsModule {
   bindEvents() {
     // Helper to update setting immediately
     const updateSetting = (key, value) => {
-      const settings = store.get('settings');
-      settings[key] = value;
-      store.update('settings', settings);
+      console.log(`⚙️ 設定を更新: ${key} = ${value}`);
+      store.set(`settings.${key}`, value);
       this.saveSetting(key, value);
     };
 

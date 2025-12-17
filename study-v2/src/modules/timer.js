@@ -130,7 +130,9 @@ class TimerModule {
     store.subscribe('settings.*', () => {
       // Update time if idle and mode matches
       const status = store.get('timer.status');
+      console.log('⚙️ タイマー設定が変更されました。status:', status);
       if (status === 'idle') {
+        console.log('🔄 タイマー時間をリセット中...');
         this.resetTimeForCurrentMode();
       }
     });
@@ -394,7 +396,7 @@ class TimerModule {
     const timeLeft = store.get('timer.timeLeft');
     const totalTime = store.get('timer.totalTime');
     const mode = store.get('timer.mode');
-    const round = store.get('timer.round');
+    const currentRound = store.get('timer.currentRound');
     const settings = store.get('settings');
     
     // Update time display
@@ -414,7 +416,8 @@ class TimerModule {
     
     // Update round
     if (this.elements.roundDisplay) {
-      this.elements.roundDisplay.textContent = `ラウンド ${round}/${settings.roundsUntilLongBreak}`;
+      const roundsUntilLongBreak = settings.pomodorosUntilLongBreak || 4;
+      this.elements.roundDisplay.textContent = `ラウンド ${currentRound}/${roundsUntilLongBreak}`;
     }
     
     // Update progress ring

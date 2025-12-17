@@ -16,9 +16,21 @@ class StatsModule {
 
   async init() {
     this.cacheElements();
+    this.bindEvents();
     this.subscribeToStore();
     await this.loadStats();
     this.render();
+  }
+
+  bindEvents() {
+    // Bind period tabs for chart switching
+    this.elements.chartPeriodTabs?.forEach(tab => {
+      tab.addEventListener('click', () => {
+        this.elements.chartPeriodTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        this.renderChart(tab.dataset.period);
+      });
+    });
   }
 
   cacheElements() {
@@ -28,7 +40,7 @@ class StatsModule {
       totalPomodorosCard: document.getElementById('stat-total-pomodoros'),
       totalTasksCard: document.getElementById('stat-total-tasks'),
       currentStreakCard: document.getElementById('stat-current-streak'),
-      longestStreakCard: document.getElementById('stat-longest-streak'),
+      longestStreakCard: document.getElementById('stat-best-streak'),
       avgDailyCard: document.getElementById('stat-avg-daily'),
       
       // Today stats
@@ -37,16 +49,11 @@ class StatsModule {
       todayTasks: document.getElementById('today-tasks'),
       
       // Chart
-      chartCanvas: document.getElementById('stats-chart'),
-      chartPeriodTabs: document.querySelectorAll('.chart-period .filter-tab'),
+      chartCanvas: document.getElementById('study-chart-canvas'),
+      chartPeriodTabs: document.querySelectorAll('.chart-period-selector .period-btn'),
       
       // Heatmap
-      heatmapContainer: document.getElementById('heatmap-container'),
-      heatmapLegend: document.getElementById('heatmap-legend'),
-      
-      // Period stats
-      weekStats: document.getElementById('week-stats'),
-      monthStats: document.getElementById('month-stats')
+      heatmapContainer: document.getElementById('heatmap-container')
     };
     
     this.chartCanvas = this.elements.chartCanvas;
@@ -243,15 +250,6 @@ class StatsModule {
       const y = height - padding.bottom - (chartHeight / 4) * i;
       ctx.fillText(`${value}分`, padding.left - 5, y + 3);
     }
-    
-    // Bind period tabs
-    this.elements.chartPeriodTabs?.forEach(tab => {
-      tab.addEventListener('click', () => {
-        this.elements.chartPeriodTabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        this.renderChart(tab.dataset.period);
-      });
-    });
   }
 
   getChartData(period) {
@@ -321,6 +319,10 @@ class StatsModule {
     // Clear container
     container.innerHTML = '';
     
+    // Create wrapper for day labels and grid
+    const wrapper = document.createElement('div');
+    wrapper.className = 'heatmap-wrapper';
+    
     // Create day labels
     const dayLabels = ['日', '月', '火', '水', '木', '金', '土'];
     const labelsDiv = document.createElement('div');
@@ -328,7 +330,7 @@ class StatsModule {
     labelsDiv.innerHTML = dayLabels.map((day, i) => 
       i % 2 === 1 ? `<span>${day}</span>` : '<span></span>'
     ).join('');
-    container.appendChild(labelsDiv);
+    wrapper.appendChild(labelsDiv);
     
     // Create grid
     const grid = document.createElement('div');
@@ -365,20 +367,22 @@ class StatsModule {
       }
     });
     
-    container.appendChild(grid);
+    wrapper.appendChild(grid);
+    container.appendChild(wrapper);
     
     // Render legend
-    if (this.elements.heatmapLegend) {
-      this.elements.heatmapLegend.innerHTML = `
-        <span>少ない</span>
-        <div class="heatmap-cell" data-level="0"></div>
-        <div class="heatmap-cell" data-level="1"></div>
-        <div class="heatmap-cell" data-level="2"></div>
-        <div class="heatmap-cell" data-level="3"></div>
-        <div class="heatmap-cell" data-level="4"></div>
-        <span>多い</span>
-      `;
-    }
+    const legend = document.createElement('div');
+    legend.className = 'heatmap-legend';
+    legend.innerHTML = `
+      <span>少ない</span>
+      <div class="heatmap-cell" data-level="0"></div>
+      <div class="heatmap-cell" data-level="1"></div>
+      <div class="heatmap-cell" data-level="2"></div>
+      <div class="heatmap-cell" data-level="3"></div>
+      <div class="heatmap-cell" data-level="4"></div>
+      <span>多い</span>
+    `;
+    container.appendChild(legend);
   }
 
   getHeatmapLevel(minutes) {

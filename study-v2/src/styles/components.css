@@ -736,9 +736,17 @@
    ---------------------------------------- */
 .heatmap-container {
   display: flex;
+  flex-direction: column;
   gap: var(--spacing-sm);
   overflow-x: auto;
   padding: var(--spacing-md) 0;
+}
+
+.heatmap-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  overflow-x: auto;
 }
 
 .heatmap-day-labels {
@@ -748,6 +756,7 @@
   font-size: 0.65rem;
   color: var(--color-text-muted);
   padding-top: 4px;
+  min-width: fit-content;
 }
 
 .heatmap-day-labels span {
