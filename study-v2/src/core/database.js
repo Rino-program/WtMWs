@@ -19,7 +19,6 @@ class DatabaseManager {
   constructor() {
     this.db = null;
     this.isReady = false;
-    this.readyPromise = this.init();
   }
 
   async init() {
@@ -27,18 +26,19 @@ class DatabaseManager {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
 
       request.onerror = () => {
-        console.error('IndexedDB を開けませんでした:', request.error);
+        console.error('❌ IndexedDB を開けませんでした:', request.error);
         reject(request.error);
       };
 
       request.onsuccess = () => {
         this.db = request.result;
         this.isReady = true;
-        console.log('IndexedDB 接続成功');
+        console.log('✅ IndexedDB 接続成功');
         resolve();
       };
 
       request.onupgradeneeded = (event) => {
+        console.log('📦 IndexedDB スキーマ作成...');
         const db = event.target.result;
         this.createStores(db);
       };
@@ -87,7 +87,7 @@ class DatabaseManager {
 
   async ensureReady() {
     if (!this.isReady) {
-      await this.readyPromise;
+      throw new Error('Database is not initialized. Call db.init() first.');
     }
   }
 

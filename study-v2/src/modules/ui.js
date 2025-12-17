@@ -139,7 +139,7 @@ class Navigation {
   }
 
   init() {
-    this.navItems = document.querySelectorAll('.nav-item');
+    this.navItems = document.querySelectorAll('.nav-btn');
     this.views = document.querySelectorAll('.view');
     
     this.bindEvents();
@@ -190,9 +190,9 @@ class Navigation {
       item.classList.toggle('active', item.dataset.view === viewName);
     });
 
-    // Update views
+    // Update views - fix ID format to match HTML (view-timer not timer-view)
     this.views.forEach(view => {
-      view.classList.toggle('active', view.id === `${viewName}-view`);
+      view.classList.toggle('active', view.id === `view-${viewName}`);
     });
 
     this.currentView = viewName;

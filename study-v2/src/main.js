@@ -25,33 +25,40 @@ class App {
     console.log('🚀 Study Support NG を起動中...');
     
     try {
-      // Show loading
-      loading.init();
-      loading.show('アプリを初期化中...');
-      
-      // Initialize database
-      await db.init();
-      console.log('✅ データベース初期化完了');
-      
-      // Initialize UI
+      // Initialize UI first (before any show() calls)
       initUI();
       console.log('✅ UI初期化完了');
       
+      // Now we can show loading
+      loading.show('アプリを初期化中...');
+      
+      // Initialize database
+      console.log('📦 データベース初期化中...');
+      await db.init();
+      console.log('✅ データベース初期化完了');
+      
       // Load user data
+      console.log('👤 ユーザーデータ読み込み中...');
       await this.loadUserData();
       console.log('✅ ユーザーデータ読み込み完了');
       
       // Initialize modules
+      console.log('⚙️ モジュール初期化中...');
       await this.initModules();
       console.log('✅ モジュール初期化完了');
       
       // Setup event listeners
+      console.log('🎯 イベントリスナー設定中...');
       this.setupGlobalEvents();
+      console.log('✅ イベントリスナー設定完了');
       
       // Check daily reset
+      console.log('📅 デイリーリセット確認中...');
       await this.checkDailyReset();
+      console.log('✅ デイリーリセット完了');
       
       // Register service worker
+      console.log('⚙️ Service Worker 登録中...');
       await this.registerServiceWorker();
       
       // Hide loading
@@ -65,8 +72,17 @@ class App {
       
     } catch (error) {
       console.error('❌ 初期化エラー:', error);
+      console.error('エラーメッセージ:', error.message);
+      console.error('スタックトレース:', error.stack);
       loading.forceHide();
-      toast.error('アプリの初期化に失敗しました。ページを再読み込みしてください。');
+      
+      // Try to show error toast
+      try {
+        toast.error(`初期化エラー: ${error.message}`);
+      } catch (e) {
+        // If toast fails, use alert
+        alert(`Study Support NG の初期化に失敗しました:\n${error.message}\n\nブラウザのコンソールを確認してください。`);
+      }
     }
   }
 
@@ -117,12 +133,46 @@ class App {
   }
 
   async initModules() {
-    // Initialize in order
-    await settings.init();
-    await timer.init();
-    await tasks.init();
-    await stats.init();
-    await achievements.init();
+    // Initialize in order with error handling
+    try {
+      console.log('⚙️ Settings 初期化...');
+      await settings.init();
+      console.log('✅ Settings 初期化完了');
+    } catch (e) {
+      console.error('Settings 初期化エラー:', e);
+    }
+    
+    try {
+      console.log('⏱️ Timer 初期化...');
+      await timer.init();
+      console.log('✅ Timer 初期化完了');
+    } catch (e) {
+      console.error('Timer 初期化エラー:', e);
+    }
+    
+    try {
+      console.log('📋 Tasks 初期化...');
+      await tasks.init();
+      console.log('✅ Tasks 初期化完了');
+    } catch (e) {
+      console.error('Tasks 初期化エラー:', e);
+    }
+    
+    try {
+      console.log('📊 Stats 初期化...');
+      await stats.init();
+      console.log('✅ Stats 初期化完了');
+    } catch (e) {
+      console.error('Stats 初期化エラー:', e);
+    }
+    
+    try {
+      console.log('🏆 Achievements 初期化...');
+      await achievements.init();
+      console.log('✅ Achievements 初期化完了');
+    } catch (e) {
+      console.error('Achievements 初期化エラー:', e);
+    }
   }
 
   setupGlobalEvents() {
