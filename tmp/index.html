@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative Lab - インタラクティブデモ集</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);min-height:100vh;color:#fff;overflow-x:hidden}
+        .stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+        .star{position:absolute;background:#fff;border-radius:50%;animation:twinkle var(--duration) ease-in-out infinite}
+        @keyframes twinkle{0%,100%{opacity:0.3}50%{opacity:1}}
+        header{text-align:center;padding:50px 20px 30px;position:relative;z-index:1}
+        h1{font-size:clamp(2rem,6vw,3.5rem);background:linear-gradient(90deg,#f093fb,#f5576c,#4facfe,#00f2fe);background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gradient 5s ease infinite}
+        @keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+        .subtitle{font-size:1.1rem;color:rgba(255,255,255,0.7);margin-top:10px}
+        .container{max-width:1400px;margin:0 auto;padding:30px 20px;position:relative;z-index:1}
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:25px}
+        .card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:25px;transition:all 0.3s ease;position:relative;overflow:hidden}
+        .card::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,var(--c1,#f093fb),var(--c2,#f5576c));opacity:0;transition:opacity 0.3s;z-index:-1}
+        .card:hover{transform:translateY(-8px);box-shadow:0 15px 35px rgba(0,0,0,0.3)}
+        .card:hover::before{opacity:0.15}
+        .card-icon{font-size:2.5rem;margin-bottom:15px;display:block}
+        .card h2{font-size:1.3rem;margin-bottom:10px}
+        .card p{color:rgba(255,255,255,0.7);line-height:1.5;margin-bottom:15px;font-size:0.9rem}
+        .card-link{display:inline-flex;align-items:center;gap:6px;color:#4facfe;text-decoration:none;font-weight:600;transition:all 0.3s}
+        .card-link:hover{color:#00f2fe;gap:10px}
+        .card:nth-child(1){--c1:#f093fb;--c2:#f5576c}
+        .card:nth-child(2){--c1:#4facfe;--c2:#00f2fe}
+        .card:nth-child(3){--c1:#43e97b;--c2:#38f9d7}
+        .card:nth-child(4){--c1:#fa709a;--c2:#fee140}
+        .card:nth-child(5){--c1:#ff6b6b;--c2:#feca57}
+        .card:nth-child(6){--c1:#10ac84;--c2:#1dd1a1}
+        .card:nth-child(7){--c1:#a8e6cf;--c2:#88d8b0}
+        .card:nth-child(8){--c1:#f8b500;--c2:#ff6f61}
+        .card:nth-child(9){--c1:#667eea;--c2:#764ba2}
+        .card:nth-child(10){--c1:#0f0;--c2:#0a0}
+        .card:nth-child(11){--c1:#00d2ff;--c2:#3a7bd5}
+        .card:nth-child(12){--c1:#ee0979;--c2:#ff6a00}
+        .card:nth-child(13){--c1:#ff9a9e;--c2:#fecfef}
+        .card:nth-child(14){--c1:#a18cd1;--c2:#fbc2eb}
+        .card:nth-child(15){--c1:#84fab0;--c2:#8fd3f4}
+        footer{text-align:center;padding:30px;color:rgba(255,255,255,0.5);position:relative;z-index:1}
+        .new-badge{position:absolute;top:15px;right:15px;background:linear-gradient(135deg,#f5576c,#f093fb);padding:4px 10px;border-radius:12px;font-size:0.7rem;font-weight:bold}
+        @media(max-width:600px){.card{padding:20px}.grid{gap:15px}}
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    <header>
+        <h1>✨ Creative Lab ✨</h1>
+        <p class="subtitle">インタラクティブなWebデモコレクション</p>
+    </header>
+    
+    <div class="container">
+        <div class="grid">
+            <div class="card">
+                <span class="card-icon">🌌</span>
+                <h2>パーティクルギャラクシー</h2>
+                <p>マウスで操作できる幻想的なパーティクルシステム。5種類のモードで重力・斥力・軌道などを体験。</p>
+                <a href="particles/" class="card-link">体験する →</a>
+            </div>
+            
+            <div class="card">
+                <span class="card-icon">🌀</span>
+                <h2>フラクタルエクスプローラー</h2>
+                <p>マンデルブロ・ジュリア等4種類のフラクタルを無限にズーム探索。</p>
+                <a href="fractal/" class="card-link">探索する →</a>
+            </div>
+            
+            <div class="card">
+                <span class="card-icon">🎲</span>
+                <h2>3Dキューブワールド</h2>
+                <p>CSS 3Dで作られた立体空間。5種類の配置モードで回転・変形。</p>
+                <a href="cube3d/" class="card-link">見てみる →</a>
+            </div>
+            
+            <div class="card">
+                <span class="card-icon">🌊</span>
+                <h2>波形シミュレーター</h2>
+                <p>水面のような波の干渉パターン。3つのモードで波紋・雨・干渉を体験。</p>
+                <a href="wave/" class="card-link">試してみる →</a>
+            </div>
+            
+            <div class="card">
+                <span class="card-icon">🎧</span>
+                <h2>オーディオビジュアライザー</h2>
+                <p>お好みの音楽ファイルをアップロードして5種類の表示モードで視覚化。音域調整も可能。</p>
+                <a href="audio/" class="card-link">聴いてみる →</a>
+            </div>
+            
+            <div class="card">
+                <span class="card-icon">🧬</span>
+                <h2>ライフゲーム</h2>
+                <p>コンウェイのライフゲーム。5種類のルールとプリセットで生命の進化を観察。</p>
+                <a href="life/" class="card-link">育てる →</a>
+            </div>
+            
+            <div class="card">
+                <span class="new-badge">NEW</span>
+                <span class="card-icon">⌨️</span>
+                <h2>タイピングゲーム</h2>
+                <p>WPM測定・コンボシステム搭載。4つのモードでタイピングスキルを磨こう。</p>
+                <a href="typing/" class="card-link">タイプする →</a>
+            </div>
+            
+            <div class="card">
+                <span class="card-icon">🔮</span>
+                <h2>万華鏡</h2>
+                <p>美しい対称パターンを描く万華鏡。4つの描画モードで幻想的なアートを作成。</p>
+                <a href="penrose/" class="card-link">描く →</a>
+            </div>
+            
+            <div class="card">
+                <span class="card-icon">🎱</span>
+                <h2>グラビティボール</h2>
+                <p>物理シミュレーションで弾むボール。4種類のモードで重力・衝突を体験。</p>
+                <a href="gravity/" class="card-link">投げる →</a>
+            </div>
+            
+            <div class="card">
+                <span class="new-badge">NEW</span>
+                <span class="card-icon">💚</span>
+                <h2>マトリックス</h2>
+                <p>映画「マトリックス」風のデジタルレイン。カタカナ・バイナリ・漢字から選択可能。</p>
+                <a href="matrix/" class="card-link">入る →</a>
+            </div>
+            
+            <div class="card">
+                <span class="new-badge">NEW</span>
+                <span class="card-icon">🕐</span>
+                <h2>ネオン時計</h2>
+                <p>美しいネオンスタイルのアナログ＆デジタル時計。4種類のカラーテーマ。</p>
+                <a href="clock/" class="card-link">見る →</a>
+            </div>
+            
+            <div class="card">
+                <span class="new-badge">NEW</span>
+                <span class="card-icon">💧</span>
+                <h2>流体シミュレーション</h2>
+                <p>本格的な流体力学シミュレーション。渦度・粘性調整でリアルな流体を体験。</p>
+                <a href="fluid/" class="card-link">触る →</a>
+            </div>
+            
+            <div class="card">
+                <span class="new-badge">NEW</span>
+                <span class="card-icon">🎨</span>
+                <h2>お絵かき</h2>
+                <p>シンプルなペイントツール。ペン・消しゴム・塗りつぶし機能搭載。</p>
+                <a href="paint/" class="card-link">描く →</a>
+            </div>
+            
+            <div class="card">
+                <span class="new-badge">NEW</span>
+                <span class="card-icon">🃏</span>
+                <h2>神経衰弱</h2>
+                <p>絵文字カードの神経衰弱ゲーム。4x4と6x6モードで記憶力を鍛えよう。</p>
+                <a href="memory/" class="card-link">遊ぶ →</a>
+            </div>
+            
+            <div class="card">
+                <span class="new-badge">NEW</span>
+                <span class="card-icon">🐍</span>
+                <h2>スネークゲーム</h2>
+                <p>クラシックなスネークゲーム。スワイプ・キー操作対応。ハイスコアに挑戦！</p>
+                <a href="snake/" class="card-link">プレイ →</a>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Made with 💜 | GitHub Pages | 15のインタラクティブデモ</p>
+    </footer>
+
+    <script>
+        const starsContainer = document.getElementById('stars');
+        const frag = document.createDocumentFragment();
+        for (let i = 0; i < 80; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;width:${Math.random()*2+1}px;height:${Math.random()*2+1}px;--duration:${Math.random()*3+2}s;animation-delay:${Math.random()*3}s;`;
+            frag.appendChild(star);
+        }
+        starsContainer.appendChild(frag);
+    </script>
+</body>
+</html>

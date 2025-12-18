@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Typing Game - タイピングゲーム</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','Hiragino Sans',sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;touch-action:manipulation}
+.back{position:fixed;top:15px;left:15px;color:#fff;text-decoration:none;font-size:1.3rem;z-index:100;opacity:0.7;transition:opacity 0.3s}
+.back:hover,.back:active{opacity:1}
+.container{text-align:center;max-width:800px;width:95%;padding:15px}
+h1{font-size:clamp(1.5rem,5vw,2rem);margin-bottom:15px;background:linear-gradient(90deg,#4facfe,#00f2fe);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stats{display:flex;justify-content:center;gap:15px;margin-bottom:20px;flex-wrap:wrap}
+.stat{background:rgba(255,255,255,0.1);padding:12px 18px;border-radius:10px;min-width:70px}
+.stat-val{font-size:clamp(1.3rem,4vw,1.8rem);font-weight:bold;color:#4facfe}
+.stat-label{font-size:0.7rem;color:#aaa;margin-top:3px}
+.word-box{margin:20px 0;padding:15px;background:rgba(0,0,0,0.3);border-radius:12px;min-height:80px}
+.word-main{font-size:clamp(1.8rem,6vw,2.5rem);margin-bottom:8px;letter-spacing:2px}
+.word-reading{font-size:clamp(1rem,3vw,1.3rem);color:#4facfe;letter-spacing:1px}
+.char{transition:all 0.1s;display:inline-block}
+.char.correct{color:#43e97b}
+.char.wrong{color:#f5576c;animation:shake 0.2s}
+.char.current{background:rgba(79,172,254,0.4);border-radius:3px;padding:0 2px}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+#typingInput{width:100%;padding:15px 20px;font-size:clamp(1rem,3vw,1.2rem);background:rgba(255,255,255,0.1);border:2px solid rgba(79,172,254,0.5);border-radius:10px;color:#fff;outline:none;text-align:center}
+#typingInput:focus{border-color:#4facfe}
+.modes{display:flex;justify-content:center;gap:8px;margin-bottom:15px;flex-wrap:wrap}
+.modes button{background:rgba(255,255,255,0.1);border:none;color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:0.8rem;touch-action:manipulation}
+.modes button:active{transform:scale(0.95)}
+.modes button.active{background:linear-gradient(135deg,#4facfe,#00f2fe)}
+.result{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.result.show{display:flex}
+.result h2{font-size:clamp(1.5rem,5vw,2rem);margin-bottom:25px;background:linear-gradient(90deg,#f093fb,#f5576c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.result-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin-bottom:30px;width:100%;max-width:400px}
+.result-stat{background:rgba(255,255,255,0.1);padding:20px;border-radius:12px}
+.result-stat .val{font-size:clamp(1.5rem,5vw,2rem);color:#4facfe;font-weight:bold}
+.result-stat .label{color:#aaa;margin-top:8px;font-size:0.8rem}
+.result button{background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:#fff;padding:12px 35px;border-radius:10px;font-size:1rem;cursor:pointer}
+.progress{height:5px;background:rgba(255,255,255,0.1);border-radius:3px;margin-top:15px;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(90deg,#4facfe,#00f2fe);transition:width 0.3s;width:0}
+.combo{position:fixed;top:50%;right:20px;transform:translateY(-50%);font-size:1rem;opacity:0;transition:all 0.3s;text-align:center}
+.combo.show{opacity:1}
+.combo-num{font-size:2rem;font-weight:bold;color:#f5576c}
+@media(max-width:600px){.combo{right:10px;font-size:0.8rem}.combo-num{font-size:1.5rem}.stat{padding:10px 12px}}
+</style>
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<div class="container">
+<h1>⌨️ タイピングゲーム</h1>
+<div class="modes">
+<button class="active" data-mode="japanese">日本語</button>
+<button data-mode="english">英語</button>
+<button data-mode="code">コード</button>
+<button data-mode="time">タイムアタック</button>
+</div>
+<div class="stats">
+<div class="stat"><div class="stat-val" id="wpm">0</div><div class="stat-label">WPM</div></div>
+<div class="stat"><div class="stat-val" id="accuracy">100%</div><div class="stat-label">正確率</div></div>
+<div class="stat"><div class="stat-val" id="timeLeft">60</div><div class="stat-label" id="timeLabel">残り時間</div></div>
+<div class="stat"><div class="stat-val" id="score">0</div><div class="stat-label">スコア</div></div>
+</div>
+<div class="word-box">
+<div class="word-main" id="wordMain"></div>
+<div class="word-reading" id="wordReading"></div>
+</div>
+<input type="text" id="typingInput" placeholder="ここに入力..." autocomplete="off" autocapitalize="off" spellcheck="false">
+<div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+</div>
+<div class="combo" id="combo"><div class="combo-num" id="comboNum">0</div>COMBO!</div>
+<div class="result" id="result">
+<h2>🎉 結果発表!</h2>
+<div class="result-stats">
+<div class="result-stat"><div class="val" id="rWpm">0</div><div class="label">WPM</div></div>
+<div class="result-stat"><div class="val" id="rAccuracy">0%</div><div class="label">正確率</div></div>
+<div class="result-stat"><div class="val" id="rScore">0</div><div class="label">スコア</div></div>
+<div class="result-stat"><div class="val" id="rCombo">0</div><div class="label">最大コンボ</div></div>
+</div>
+<button onclick="restart()">もう一度プレイ</button>
+</div>
+<script>
+const jpWords=[
+{w:'桜',r:'sakura'},{w:'富士山',r:'fujisan'},{w:'東京',r:'toukyou'},{w:'日本',r:'nihon'},
+{w:'猫',r:'neko'},{w:'犬',r:'inu'},{w:'本',r:'hon'},{w:'水',r:'mizu'},{w:'火',r:'hi'},
+{w:'空',r:'sora'},{w:'海',r:'umi'},{w:'山',r:'yama'},{w:'川',r:'kawa'},{w:'森',r:'mori'},
+{w:'花',r:'hana'},{w:'鳥',r:'tori'},{w:'魚',r:'sakana'},{w:'月',r:'tsuki'},{w:'星',r:'hoshi'},
+{w:'雨',r:'ame'},{w:'雪',r:'yuki'},{w:'風',r:'kaze'},{w:'雷',r:'kaminari'},{w:'虹',r:'niji'},
+{w:'春',r:'haru'},{w:'夏',r:'natsu'},{w:'秋',r:'aki'},{w:'冬',r:'fuyu'},
+{w:'朝',r:'asa'},{w:'昼',r:'hiru'},{w:'夜',r:'yoru'},{w:'今日',r:'kyou'},{w:'明日',r:'ashita'},
+{w:'学校',r:'gakkou'},{w:'先生',r:'sensei'},{w:'友達',r:'tomodachi'},{w:'家族',r:'kazoku'},
+{w:'電車',r:'densha'},{w:'飛行機',r:'hikouki'},{w:'自転車',r:'jitensha'},{w:'車',r:'kuruma'},
+{w:'食べる',r:'taberu'},{w:'飲む',r:'nomu'},{w:'見る',r:'miru'},{w:'聞く',r:'kiku'},
+{w:'話す',r:'hanasu'},{w:'書く',r:'kaku'},{w:'読む',r:'yomu'},{w:'走る',r:'hashiru'},
+{w:'歩く',r:'aruku'},{w:'泳ぐ',r:'oyogu'},{w:'眠る',r:'nemuru'},{w:'起きる',r:'okiru'},
+{w:'大きい',r:'ookii'},{w:'小さい',r:'chiisai'},{w:'新しい',r:'atarashii'},{w:'古い',r:'furui'},
+{w:'美しい',r:'utsukushii'},{w:'楽しい',r:'tanoshii'},{w:'嬉しい',r:'ureshii'},{w:'悲しい',r:'kanashii'},
+{w:'プログラム',r:'puroguramu'},{w:'コンピュータ',r:'konpyuuta'},{w:'インターネット',r:'intaanetto'},
+{w:'ありがとう',r:'arigatou'},{w:'こんにちは',r:'konnichiha'},{w:'さようなら',r:'sayounara'},
+{w:'おはよう',r:'ohayou'},{w:'おやすみ',r:'oyasumi'},{w:'いただきます',r:'itadakimasu'},
+{w:'最高',r:'saikou'},{w:'完璧',r:'kanpeki'},{w:'挑戦',r:'chousen'},{w:'成功',r:'seikou'}
+];
+const enWords=['hello','world','typing','keyboard','computer','programming','javascript','function','algorithm','development','application','interface','database','network','browser','server','client','variable','constant','object','array','string','number','boolean','module','package','library','framework','design','pattern','security','performance','optimization','animation','responsive','dynamic','static','async','await','promise'];
+const codeWords=['const','let','var','function','return','if','else','for','while','class','import','export','async','await','try','catch','console.log','document.querySelector','addEventListener','setTimeout','setInterval','Promise','Array.map','Object.keys','String.split','JSON.parse','fetch','async function','arrow =>','spread ...'];
+const timeWords=['the','and','for','are','but','not','you','all','can','was','one','our','out','day','get','has','him','his','how','its','may','new','now','see','two','way','who','boy','did','own','say','she','too','use','big','end','few','got','let','put','run','set','top','try','act','age','ago','air','bad','bit'];
+
+let mode='japanese',currentWord=null,romanji='',charIndex=0;
+let score=0,combo=0,maxCombo=0,totalChars=0,correctChars=0;
+let startTime=0,timeLeft=60,timer=null,wordsTyped=0,isPlaying=false;
+const input=document.getElementById('typingInput');
+
+document.querySelectorAll('.modes button').forEach(btn=>{
+btn.onclick=function(){
+document.querySelector('.modes .active').classList.remove('active');
+this.classList.add('active');
+mode=this.dataset.mode;
+restart();
+};
+});
+
+function getWord(){
+if(mode==='japanese'){
+const w=jpWords[Math.random()*jpWords.length|0];
+return{display:w.w,reading:w.r};
+}else if(mode==='english'){
+const w=enWords[Math.random()*enWords.length|0];
+return{display:w,reading:w};
+}else if(mode==='code'){
+const w=codeWords[Math.random()*codeWords.length|0];
+return{display:w,reading:w};
+}else{
+const w=timeWords[Math.random()*timeWords.length|0];
+return{display:w,reading:w};
+}
+}
+
+function renderWord(){
+const mainEl=document.getElementById('wordMain');
+const readEl=document.getElementById('wordReading');
+mainEl.textContent=currentWord.display;
+readEl.innerHTML=romanji.split('').map((c,i)=>{
+let cls='char';
+if(i<charIndex)cls+=' correct';
+if(i===charIndex)cls+=' current';
+return`<span class="${cls}">${c}</span>`;
+}).join('');
+}
+
+function newWord(){
+currentWord=getWord();
+romanji=currentWord.reading;
+charIndex=0;
+input.value='';
+renderWord();
+}
+
+function updateStats(){
+const elapsed=(Date.now()-startTime)/1000/60;
+const wpm=elapsed>0?Math.round(wordsTyped/elapsed):0;
+const acc=totalChars>0?Math.round(correctChars/totalChars*100):100;
+document.getElementById('wpm').textContent=wpm;
+document.getElementById('accuracy').textContent=acc+'%';
+document.getElementById('score').textContent=score;
+}
+
+function showCombo(){
+const el=document.getElementById('combo');
+document.getElementById('comboNum').textContent=combo;
+el.classList.add('show');
+setTimeout(()=>el.classList.remove('show'),500);
+}
+
+function endGame(){
+isPlaying=false;
+clearInterval(timer);
+const elapsed=(Date.now()-startTime)/1000/60;
+const wpm=elapsed>0?Math.round(wordsTyped/elapsed):0;
+const acc=totalChars>0?Math.round(correctChars/totalChars*100):100;
+document.getElementById('rWpm').textContent=wpm;
+document.getElementById('rAccuracy').textContent=acc+'%';
+document.getElementById('rScore').textContent=score;
+document.getElementById('rCombo').textContent=maxCombo;
+document.getElementById('result').classList.add('show');
+}
+
+function restart(){
+document.getElementById('result').classList.remove('show');
+score=0;combo=0;maxCombo=0;totalChars=0;correctChars=0;wordsTyped=0;
+timeLeft=mode==='time'?30:60;
+document.getElementById('timeLeft').textContent=timeLeft;
+document.getElementById('progressBar').style.width='0%';
+clearInterval(timer);
+isPlaying=false;
+newWord();
+input.focus();
+}
+
+input.oninput=function(){
+if(!isPlaying){
+isPlaying=true;
+startTime=Date.now();
+timer=setInterval(()=>{
+timeLeft--;
+document.getElementById('timeLeft').textContent=timeLeft;
+if(timeLeft<=0)endGame();
+},1000);
+}
+const val=this.value.toLowerCase();
+const target=romanji.slice(0,val.length);
+totalChars++;
+if(val===target){
+correctChars++;
+charIndex=val.length;
+if(val===romanji){
+wordsTyped++;
+combo++;
+if(combo>maxCombo)maxCombo=combo;
+score+=romanji.length*10+combo*5;
+showCombo();
+newWord();
+const targetWords=mode==='time'?20:15;
+const progress=Math.min(wordsTyped/targetWords*100,100);
+document.getElementById('progressBar').style.width=progress+'%';
+if(mode!=='time'&&wordsTyped>=targetWords)endGame();
+}
+renderWord();
+}else{
+combo=0;
+const chars=document.getElementById('wordReading').querySelectorAll('.char');
+if(chars[charIndex])chars[charIndex].classList.add('wrong');
+}
+updateStats();
+};
+
+input.onkeydown=function(e){if(e.key==='Tab'){e.preventDefault();restart()}};
+
+restart();
+</script>
+</body>
+</html>

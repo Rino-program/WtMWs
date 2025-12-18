@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Audio Visualizer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#0a0a0f;color:#fff;min-height:100vh;overflow:hidden}
+.back{position:fixed;top:20px;left:20px;color:#fff;text-decoration:none;font-size:1.5rem;z-index:100;opacity:0.7;transition:opacity 0.3s}
+.back:hover{opacity:1}
+canvas{display:block;background:#0a0a0f}
+.ctrl{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.85);padding:15px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:15px;z-index:10}
+.ctrl label{font-size:0.85rem;color:#aaa}
+.ctrl select,.ctrl input[type=range]{background:#222;color:#fff;border:1px solid #444;border-radius:6px;padding:6px 10px;cursor:pointer}
+.ctrl select{min-width:120px}
+.ctrl input[type=range]{width:100px;height:6px;-webkit-appearance:none;appearance:none}
+.ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:#4facfe;border-radius:50%;cursor:pointer}
+.file-label{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#667eea,#764ba2);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.9rem;transition:transform 0.2s}
+.file-label:hover{transform:scale(1.05)}
+.file-label input{display:none}
+.status{font-size:0.8rem;color:#4facfe;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mode-btns{display:flex;gap:8px}
+.mode-btns button{background:#333;border:none;color:#fff;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:0.85rem;transition:all 0.2s}
+.mode-btns button:hover{background:#444}
+.mode-btns button.active{background:linear-gradient(135deg,#4facfe,#00f2fe)}
+.info{position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.7);padding:12px 18px;border-radius:10px;font-size:0.85rem;z-index:10}
+.info div{margin:4px 0}
+@media(max-width:700px){.ctrl{gap:10px;padding:12px}.mode-btns button{padding:6px 10px;font-size:0.75rem}}
+</style>
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<canvas id="cv"></canvas>
+<div class="info">
+<div>🎵 モード: <span id="modeName">バー</span></div>
+<div>📊 周波数: <span id="freqRange">20Hz - 20kHz</span></div>
+</div>
+<div class="ctrl">
+<label class="file-label">🎵 音楽ファイルを選択<input type="file" id="audioFile" accept="audio/*"></label>
+<span class="status" id="status">ファイル未選択</span>
+<div style="display:flex;align-items:center;gap:8px">
+<label>🔊</label>
+<input type="range" id="vol" min="0" max="1" step="0.05" value="0.5">
+</div>
+<div style="display:flex;align-items:center;gap:8px">
+<label>低域</label>
+<input type="range" id="lowFreq" min="20" max="500" step="10" value="20">
+<label>高域</label>
+<input type="range" id="highFreq" min="1000" max="20000" step="100" value="16000">
+</div>
+<div class="mode-btns">
+<button class="active" data-m="0">バー</button>
+<button data-m="1">ウェーブ</button>
+<button data-m="2">サークル</button>
+<button data-m="3">スペクトラム</button>
+<button data-m="4">パーティクル</button>
+</div>
+</div>
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let W,H,mode=0,audioCtx,analyser,source,dataArr,bufLen,isPlaying=false;
+let lowFreq=20,highFreq=16000,particles=[];
+const modeNames=['バー','ウェーブ','サークル','スペクトラム','パーティクル'];
+
+function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight}
+resize();window.onresize=resize;
+
+function initAudio(){
+    if(audioCtx)return;
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    analyser=audioCtx.createAnalyser();
+    analyser.fftSize=2048;
+    bufLen=analyser.frequencyBinCount;
+    dataArr=new Uint8Array(bufLen);
+}
+
+document.getElementById('audioFile').onchange=async function(e){
+    const file=e.target.files[0];
+    if(!file)return;
+    initAudio();
+    if(source){source.stop();source.disconnect()}
+    const arrayBuf=await file.arrayBuffer();
+    const audioBuf=await audioCtx.decodeAudioData(arrayBuf);
+    source=audioCtx.createBufferSource();
+    source.buffer=audioBuf;
+    source.loop=true;
+    const gainNode=audioCtx.createGain();
+    gainNode.gain.value=document.getElementById('vol').value;
+    source.connect(analyser);
+    analyser.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    source.start(0);
+    isPlaying=true;
+    document.getElementById('status').textContent='▶ '+file.name;
+    document.getElementById('vol').oninput=function(){gainNode.gain.value=this.value};
+};
+
+document.getElementById('lowFreq').oninput=function(){
+    lowFreq=+this.value;
+    updateFreqRange();
+};
+document.getElementById('highFreq').oninput=function(){
+    highFreq=+this.value;
+    updateFreqRange();
+};
+function updateFreqRange(){
+    document.getElementById('freqRange').textContent=lowFreq+'Hz - '+(highFreq>=1000?(highFreq/1000).toFixed(1)+'kHz':highFreq+'Hz');
+}
+
+document.querySelectorAll('.mode-btns button').forEach(btn=>{
+    btn.onclick=function(){
+        document.querySelector('.mode-btns .active').classList.remove('active');
+        this.classList.add('active');
+        mode=+this.dataset.m;
+        document.getElementById('modeName').textContent=modeNames[mode];
+        if(mode===4)initParticles();
+    };
+});
+
+function initParticles(){
+    particles=[];
+    for(let i=0;i<150;i++){
+        particles.push({x:Math.random()*W,y:Math.random()*H,vx:0,vy:0,r:Math.random()*3+2,hue:Math.random()*360});
+    }
+}
+initParticles();
+
+function freqToIndex(freq){
+    if(!audioCtx)return 0;
+    return Math.round(freq*analyser.fftSize/audioCtx.sampleRate);
+}
+
+function getFilteredData(){
+    if(!dataArr)return new Uint8Array(64);
+    const low=freqToIndex(lowFreq),high=Math.min(freqToIndex(highFreq),bufLen);
+    const range=high-low;
+    const out=new Uint8Array(64);
+    const step=range/64;
+    for(let i=0;i<64;i++){
+        const idx=Math.floor(low+i*step);
+        out[i]=dataArr[Math.min(idx,bufLen-1)];
+    }
+    return out;
+}
+
+function draw(){
+    ctx.fillStyle='rgba(10,10,15,0.2)';
+    ctx.fillRect(0,0,W,H);
+    if(analyser)analyser.getByteFrequencyData(dataArr);
+    const fd=getFilteredData();
+    const barW=W/64;
+    
+    if(mode===0){// バー
+        for(let i=0;i<64;i++){
+            const v=fd[i]/255;
+            const h=v*H*0.8;
+            const hue=i*5.6;
+            ctx.fillStyle=`hsl(${hue},80%,${50+v*30}%)`;
+            ctx.fillRect(i*barW,H-h,barW-2,h);
+            ctx.fillStyle=`hsla(${hue},80%,70%,0.3)`;
+            ctx.fillRect(i*barW,H-h-10,barW-2,5);
+        }
+    }else if(mode===1){// ウェーブ
+        ctx.beginPath();
+        ctx.moveTo(0,H/2);
+        for(let i=0;i<64;i++){
+            const v=(fd[i]/255-0.5)*H*0.6;
+            ctx.lineTo(i*barW+barW/2,H/2+v);
+        }
+        ctx.strokeStyle='#4facfe';
+        ctx.lineWidth=3;
+        ctx.stroke();
+        ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();
+        const grd=ctx.createLinearGradient(0,0,0,H);
+        grd.addColorStop(0,'rgba(79,172,254,0.4)');
+        grd.addColorStop(1,'rgba(0,242,254,0.1)');
+        ctx.fillStyle=grd;
+        ctx.fill();
+    }else if(mode===2){// サークル
+        const cx=W/2,cy=H/2,r=Math.min(W,H)*0.25;
+        for(let i=0;i<64;i++){
+            const ang=(i/64)*Math.PI*2-Math.PI/2;
+            const v=fd[i]/255;
+            const len=r+v*r;
+            const x1=cx+Math.cos(ang)*r*0.5;
+            const y1=cy+Math.sin(ang)*r*0.5;
+            const x2=cx+Math.cos(ang)*len;
+            const y2=cy+Math.sin(ang)*len;
+            ctx.beginPath();
+            ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);
+            ctx.strokeStyle=`hsl(${i*5.6+Date.now()*0.05},80%,60%)`;
+            ctx.lineWidth=4;
+            ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.arc(cx,cy,r*0.5,0,Math.PI*2);
+        ctx.strokeStyle='rgba(255,255,255,0.2)';
+        ctx.lineWidth=2;
+        ctx.stroke();
+    }else if(mode===3){// スペクトラム
+        const grd=ctx.createLinearGradient(0,H,0,0);
+        grd.addColorStop(0,'#f093fb');grd.addColorStop(0.5,'#f5576c');grd.addColorStop(1,'#4facfe');
+        for(let i=0;i<64;i++){
+            const v=fd[i]/255;
+            const h=v*H*0.8;
+            ctx.fillStyle=grd;
+            ctx.globalAlpha=0.8;
+            ctx.fillRect(i*barW,H-h,barW-1,h);
+            ctx.globalAlpha=1;
+        }
+        ctx.strokeStyle='rgba(255,255,255,0.5)';
+        ctx.lineWidth=2;
+        ctx.beginPath();
+        for(let i=0;i<64;i++){
+            const v=fd[i]/255;
+            const y=H-v*H*0.8;
+            i===0?ctx.moveTo(i*barW,y):ctx.lineTo(i*barW,y);
+        }
+        ctx.stroke();
+    }else if(mode===4){// パーティクル
+        let avg=0;for(let i=0;i<64;i++)avg+=fd[i];avg/=64;
+        const energy=avg/255;
+        particles.forEach((p,idx)=>{
+            const fi=idx%64;
+            const v=fd[fi]/255;
+            p.vx+=(Math.random()-0.5)*energy*3;
+            p.vy+=(Math.random()-0.5)*energy*3-0.5;
+            p.x+=p.vx;p.y+=p.vy;
+            p.vx*=0.96;p.vy*=0.96;
+            if(p.x<0)p.x=W;if(p.x>W)p.x=0;
+            if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+            ctx.beginPath();
+            ctx.arc(p.x,p.y,p.r+v*5,0,Math.PI*2);
+            ctx.fillStyle=`hsla(${p.hue+Date.now()*0.1},80%,60%,${0.5+v*0.5})`;
+            ctx.fill();
+        });
+    }
+    requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

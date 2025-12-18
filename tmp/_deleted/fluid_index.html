@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Fluid Simulation - 流体シミュレーション</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden}
+.back{position:fixed;top:20px;left:20px;color:#fff;text-decoration:none;font-size:1.5rem;z-index:100;opacity:0.7;transition:opacity 0.3s}
+.back:hover{opacity:1}
+canvas{display:block;cursor:crosshair}
+.info{position:fixed;top:20px;right:20px;color:rgba(255,255,255,0.7);font-family:sans-serif;font-size:0.85rem;background:rgba(0,0,0,0.5);padding:10px 15px;border-radius:8px}
+.ctrl{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);padding:12px 20px;border-radius:10px;display:flex;gap:15px;z-index:10}
+.ctrl button{background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:#fff;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:0.85rem}
+.ctrl button:hover{opacity:0.9}
+.ctrl select{background:#222;color:#fff;border:1px solid #444;padding:6px 12px;border-radius:6px}
+</style>
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<canvas id="cv"></canvas>
+<div class="info">クリック＆ドラッグで流体を動かす</div>
+<div class="ctrl">
+<select id="colorMode">
+<option value="rainbow">レインボー</option>
+<option value="fire">炎</option>
+<option value="ocean">海</option>
+<option value="neon">ネオン</option>
+</select>
+<button onclick="clear_()">クリア</button>
+</div>
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let W,H,N,size,dens=[],densOld=[],velX=[],velY=[],velXOld=[],velYOld=[];
+const iter=4,diff=0.0001,visc=0.0001;
+let colorMode='rainbow',mouseX=0,mouseY=0,pmouseX=0,pmouseY=0,mouseDown=false;
+
+function resize(){
+W=cv.width=innerWidth;H=cv.height=innerHeight;
+N=Math.min(128,Math.floor(Math.min(W,H)/6));
+size=N+2;
+const len=size*size;
+dens=new Float32Array(len);densOld=new Float32Array(len);
+velX=new Float32Array(len);velY=new Float32Array(len);
+velXOld=new Float32Array(len);velYOld=new Float32Array(len);
+}
+resize();window.onresize=resize;
+
+document.getElementById('colorMode').onchange=function(){colorMode=this.value};
+function clear_(){
+dens.fill(0);densOld.fill(0);
+velX.fill(0);velY.fill(0);
+velXOld.fill(0);velYOld.fill(0);
+}
+
+function IX(x,y){return x+y*size}
+
+function setBnd(b,x){
+for(let i=1;i<size-1;i++){
+x[IX(0,i)]=b===1?-x[IX(1,i)]:x[IX(1,i)];
+x[IX(size-1,i)]=b===1?-x[IX(size-2,i)]:x[IX(size-2,i)];
+x[IX(i,0)]=b===2?-x[IX(i,1)]:x[IX(i,1)];
+x[IX(i,size-1)]=b===2?-x[IX(i,size-2)]:x[IX(i,size-2)];
+}
+x[IX(0,0)]=0.5*(x[IX(1,0)]+x[IX(0,1)]);
+x[IX(0,size-1)]=0.5*(x[IX(1,size-1)]+x[IX(0,size-2)]);
+x[IX(size-1,0)]=0.5*(x[IX(size-2,0)]+x[IX(size-1,1)]);
+x[IX(size-1,size-1)]=0.5*(x[IX(size-2,size-1)]+x[IX(size-1,size-2)]);
+}
+
+function linSolve(b,x,x0,a,c){
+const cR=1/c;
+for(let k=0;k<iter;k++){
+for(let j=1;j<size-1;j++){
+for(let i=1;i<size-1;i++){
+x[IX(i,j)]=(x0[IX(i,j)]+a*(x[IX(i+1,j)]+x[IX(i-1,j)]+x[IX(i,j+1)]+x[IX(i,j-1)]))*cR;
+}}
+setBnd(b,x);
+}}
+
+function diffuse(b,x,x0,diff_,dt){
+const a=dt*diff_*N*N;
+linSolve(b,x,x0,a,1+4*a);
+}
+
+function advect(b,d,d0,vX,vY,dt){
+const dt0=dt*N;
+for(let j=1;j<size-1;j++){
+for(let i=1;i<size-1;i++){
+let x=i-dt0*vX[IX(i,j)];
+let y=j-dt0*vY[IX(i,j)];
+x=Math.max(0.5,Math.min(size-1.5,x));
+y=Math.max(0.5,Math.min(size-1.5,y));
+const i0=Math.floor(x),i1=i0+1;
+const j0=Math.floor(y),j1=j0+1;
+const s1=x-i0,s0=1-s1;
+const t1=y-j0,t0=1-t1;
+d[IX(i,j)]=s0*(t0*d0[IX(i0,j0)]+t1*d0[IX(i0,j1)])+s1*(t0*d0[IX(i1,j0)]+t1*d0[IX(i1,j1)]);
+}}
+setBnd(b,d);
+}
+
+function project(vX,vY,p,div){
+for(let j=1;j<size-1;j++){
+for(let i=1;i<size-1;i++){
+div[IX(i,j)]=-0.5*(vX[IX(i+1,j)]-vX[IX(i-1,j)]+vY[IX(i,j+1)]-vY[IX(i,j-1)])/N;
+p[IX(i,j)]=0;
+}}
+setBnd(0,div);setBnd(0,p);
+linSolve(0,p,div,1,4);
+for(let j=1;j<size-1;j++){
+for(let i=1;i<size-1;i++){
+vX[IX(i,j)]-=0.5*N*(p[IX(i+1,j)]-p[IX(i-1,j)]);
+vY[IX(i,j)]-=0.5*N*(p[IX(i,j+1)]-p[IX(i,j-1)]);
+}}
+setBnd(1,vX);setBnd(2,vY);
+}
+
+function step(dt){
+diffuse(1,velXOld,velX,visc,dt);
+diffuse(2,velYOld,velY,visc,dt);
+project(velXOld,velYOld,velX,velY);
+advect(1,velX,velXOld,velXOld,velYOld,dt);
+advect(2,velY,velYOld,velXOld,velYOld,dt);
+project(velX,velY,velXOld,velYOld);
+diffuse(0,densOld,dens,diff,dt);
+advect(0,dens,densOld,velX,velY,dt);
+}
+
+function getColor(d){
+d=Math.min(1,d);
+if(colorMode==='rainbow'){
+const h=(1-d)*240;
+return `hsl(${h},100%,${50+d*30}%)`;
+}else if(colorMode==='fire'){
+const r=Math.floor(255*Math.min(1,d*2));
+const g=Math.floor(200*Math.max(0,d-0.3));
+const b=Math.floor(50*Math.max(0,d-0.7));
+return `rgb(${r},${g},${b})`;
+}else if(colorMode==='ocean'){
+const r=Math.floor(50*d);
+const g=Math.floor(100+100*d);
+const b=Math.floor(150+100*d);
+return `rgb(${r},${g},${b})`;
+}else{
+const h=(Date.now()*0.1+d*180)%360;
+return `hsl(${h},100%,${50+d*30}%)`;
+}
+}
+
+function render(){
+const img=ctx.createImageData(W,H);
+const cellW=W/N,cellH=H/N;
+for(let j=0;j<N;j++){
+for(let i=0;i<N;i++){
+const d=Math.min(1,dens[IX(i+1,j+1)]);
+const x0=Math.floor(i*cellW),y0=Math.floor(j*cellH);
+const x1=Math.floor((i+1)*cellW),y1=Math.floor((j+1)*cellH);
+let r,g,b;
+if(colorMode==='rainbow'){
+const h=(1-d)*240;
+[r,g,b]=hslToRgb(h/360,1,0.5+d*0.3);
+}else if(colorMode==='fire'){
+r=Math.floor(255*Math.min(1,d*2));
+g=Math.floor(200*Math.max(0,d-0.3));
+b=Math.floor(50*Math.max(0,d-0.7));
+}else if(colorMode==='ocean'){
+r=Math.floor(50*d);
+g=Math.floor(100+100*d);
+b=Math.floor(150+100*d);
+}else{
+const h=((Date.now()*0.05+d*180)%360)/360;
+[r,g,b]=hslToRgb(h,1,0.5+d*0.3);
+}
+for(let py=y0;py<y1;py++){
+for(let px=x0;px<x1;px++){
+const idx=(py*W+px)*4;
+img.data[idx]=r;img.data[idx+1]=g;img.data[idx+2]=b;img.data[idx+3]=255;
+}}}}
+ctx.putImageData(img,0,0);
+}
+
+function hslToRgb(h,s,l){
+let r,g,b;
+if(s===0){r=g=b=l;}
+else{
+const hue2rgb=(p,q,t)=>{
+if(t<0)t+=1;if(t>1)t-=1;
+if(t<1/6)return p+(q-p)*6*t;
+if(t<1/2)return q;
+if(t<2/3)return p+(q-p)*(2/3-t)*6;
+return p;
+};
+const q=l<0.5?l*(1+s):l+s-l*s;
+const p=2*l-q;
+r=hue2rgb(p,q,h+1/3);
+g=hue2rgb(p,q,h);
+b=hue2rgb(p,q,h-1/3);
+}
+return[Math.round(r*255),Math.round(g*255),Math.round(b*255)];
+}
+
+cv.onmousedown=cv.ontouchstart=function(e){
+mouseDown=true;
+const p=e.touches?e.touches[0]:e;
+pmouseX=mouseX=p.clientX;pmouseY=mouseY=p.clientY;
+};
+cv.onmousemove=cv.ontouchmove=function(e){
+const p=e.touches?e.touches[0]:e;
+pmouseX=mouseX;pmouseY=mouseY;
+mouseX=p.clientX;mouseY=p.clientY;
+if(mouseDown){
+const i=Math.floor(mouseX/W*N)+1;
+const j=Math.floor(mouseY/H*N)+1;
+if(i>0&&i<size-1&&j>0&&j<size-1){
+dens[IX(i,j)]+=0.5;
+velX[IX(i,j)]+=(mouseX-pmouseX)*5;
+velY[IX(i,j)]+=(mouseY-pmouseY)*5;
+}}
+};
+cv.onmouseup=cv.ontouchend=cv.onmouseleave=function(){mouseDown=false};
+
+function loop(){
+step(0.1);
+render();
+requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
