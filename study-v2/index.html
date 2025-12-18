@@ -8,7 +8,7 @@
   <meta name="author" content="Rino-program">
   <meta name="theme-color" content="#0f172a">
   
-  <title>Study Support NG</title>
+  <title>Study Support</title>
   
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>📚</text></svg>">
@@ -125,6 +125,17 @@
               </button>
             </div>
             
+            <!-- Daily Goal Progress Bar -->
+            <div class="daily-goal-progress">
+              <div class="daily-goal-header">
+                <span class="daily-goal-label">📈 今日の目標達成度</span>
+                <span class="daily-goal-value" id="daily-goal-text">0 / 120分</span>
+              </div>
+              <div class="daily-goal-bar">
+                <div class="daily-goal-fill" id="daily-goal-fill" style="width: 0%"></div>
+              </div>
+            </div>
+            
             <div class="timer-today-stats">
               <div class="stat-card stat-card--mini">
                 <span class="stat-card__icon">🎯</span>
@@ -140,6 +151,17 @@
                   <span class="stat-card__label">今日の学習時間</span>
                 </div>
               </div>
+            </div>
+            
+            <!-- Focus Mode Toggle -->
+            <div class="focus-mode-section">
+              <button class="btn btn--secondary focus-mode-btn" id="focus-mode-btn">
+                <span class="btn__icon">🧘</span>
+                フォーカスモード
+              </button>
+              <button class="btn btn--secondary bgm-btn" id="bgm-btn" title="BGM再生">
+                <span class="btn__icon">🎵</span>
+              </button>
             </div>
           </div>
           
@@ -164,6 +186,15 @@
                 <!-- タスクアイテムがここに動的に追加 -->
               </div>
             </div>
+          </div>
+          
+          <!-- Motivation Quote Panel -->
+          <div class="panel motivation-panel">
+            <div class="motivation-quote" id="motivation-quote">
+              <span class="motivation-icon">💡</span>
+              <p class="motivation-text">"継続は力なり。今日の努力が明日の成功を作る。"</p>
+            </div>
+            <button class="btn btn--ghost btn--sm" id="new-quote-btn">次の名言</button>
           </div>
         </div>
       </section>
@@ -217,6 +248,35 @@
       <!-- Stats View -->
       <section class="view view--stats" id="view-stats">
         <div class="stats-layout">
+          <!-- Weekly Summary Card -->
+          <div class="panel weekly-summary-panel">
+            <div class="panel__header">
+              <h2 class="panel__title">📊 週間サマリー</h2>
+              <span class="week-range" id="week-range">12/9 - 12/15</span>
+            </div>
+            <div class="weekly-stats-grid">
+              <div class="weekly-stat">
+                <span class="weekly-stat__value" id="week-total-time">0時間</span>
+                <span class="weekly-stat__label">学習時間</span>
+                <span class="weekly-stat__change positive" id="week-time-change">--</span>
+              </div>
+              <div class="weekly-stat">
+                <span class="weekly-stat__value" id="week-total-pomodoros">0</span>
+                <span class="weekly-stat__label">ポモドーロ</span>
+                <span class="weekly-stat__change positive" id="week-pomo-change">--</span>
+              </div>
+              <div class="weekly-stat">
+                <span class="weekly-stat__value" id="week-total-tasks">0</span>
+                <span class="weekly-stat__label">完了タスク</span>
+                <span class="weekly-stat__change positive" id="week-task-change">--</span>
+              </div>
+              <div class="weekly-stat">
+                <span class="weekly-stat__value" id="week-avg-daily">0分</span>
+                <span class="weekly-stat__label">日平均</span>
+              </div>
+            </div>
+          </div>
+          
           <div class="stats-overview">
             <div class="stat-card">
               <span class="stat-card__icon">⏱️</span>
@@ -267,6 +327,40 @@
             </div>
             <div class="heatmap-container" id="heatmap-container">
               <!-- ヒートマップがここに動的に生成 -->
+            </div>
+            <div class="heatmap-legend">
+              <span class="heatmap-legend__label">少ない</span>
+              <div class="heatmap-legend__squares">
+                <div class="heatmap-square level-0"></div>
+                <div class="heatmap-square level-1"></div>
+                <div class="heatmap-square level-2"></div>
+                <div class="heatmap-square level-3"></div>
+                <div class="heatmap-square level-4"></div>
+              </div>
+              <span class="heatmap-legend__label">多い</span>
+            </div>
+          </div>
+          
+          <!-- Break Stretch Suggestions -->
+          <div class="panel stretch-panel" id="stretch-panel">
+            <div class="panel__header">
+              <h2 class="panel__title">🧘 休憩中のおすすめ</h2>
+            </div>
+            <div class="stretch-suggestions" id="stretch-suggestions">
+              <div class="stretch-item">
+                <span class="stretch-icon">👁️</span>
+                <div class="stretch-content">
+                  <h4>目の休憩</h4>
+                  <p>20秒間、20フィート（約6m）先を見つめましょう</p>
+                </div>
+              </div>
+              <div class="stretch-item">
+                <span class="stretch-icon">🙆</span>
+                <div class="stretch-content">
+                  <h4>肩回し</h4>
+                  <p>両肩を前後に10回ずつ回しましょう</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -336,6 +430,42 @@
                 <label class="setting-item__label" for="setting-rounds">長休憩までのラウンド</label>
                 <input type="number" class="input input--sm" id="setting-rounds" min="1" max="10" value="4">
               </div>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-auto-break">休憩を自動開始</label>
+                <label class="toggle">
+                  <input type="checkbox" id="setting-auto-break">
+                  <span class="toggle__slider"></span>
+                </label>
+              </div>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-auto-focus">集中を自動開始</label>
+                <label class="toggle">
+                  <input type="checkbox" id="setting-auto-focus">
+                  <span class="toggle__slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="settings-group">
+              <h3 class="settings-group__title">🎵 BGM設定</h3>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-bgm-type">BGMタイプ</label>
+                <select class="select select--sm" id="setting-bgm-type">
+                  <option value="none">なし</option>
+                  <option value="whitenoise">ホワイトノイズ</option>
+                  <option value="rain">雨音</option>
+                  <option value="forest">森の音</option>
+                  <option value="cafe">カフェの音</option>
+                  <option value="lofi">Lo-Fi ビート</option>
+                </select>
+              </div>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-bgm-volume">BGM音量</label>
+                <div class="volume-control">
+                  <input type="range" class="range-input" id="setting-bgm-volume" min="0" max="1" step="0.1" value="0.3">
+                  <span class="volume-value" id="bgm-volume-value">30%</span>
+                </div>
+              </div>
             </div>
             
             <div class="settings-group">
@@ -376,6 +506,18 @@
             </div>
             
             <div class="settings-group">
+              <h3 class="settings-group__title">🎯 目標設定</h3>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-daily-goal">1日の目標（分）</label>
+                <input type="number" class="input input--sm" id="setting-daily-goal" min="15" max="720" value="120">
+              </div>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-weekly-goal">1週間の目標（分）</label>
+                <input type="number" class="input input--sm" id="setting-weekly-goal" min="60" max="5040" value="600">
+              </div>
+            </div>
+            
+            <div class="settings-group">
               <h3 class="settings-group__title">💾 データ管理</h3>
               <div class="setting-item setting-item--buttons">
                 <button class="btn btn--secondary" id="export-data-btn">
@@ -393,6 +535,36 @@
                   <span class="btn__icon">🗑️</span>
                   すべてのデータをリセット
                 </button>
+              </div>
+            </div>
+            
+            <div class="settings-group">
+              <h3 class="settings-group__title">⌨️ キーボードショートカット</h3>
+              <div class="shortcuts-list">
+                <div class="shortcut-item">
+                  <kbd>Space</kbd>
+                  <span>タイマー開始/一時停止</span>
+                </div>
+                <div class="shortcut-item">
+                  <kbd>S</kbd>
+                  <span>スキップ</span>
+                </div>
+                <div class="shortcut-item">
+                  <kbd>R</kbd>
+                  <span>リセット</span>
+                </div>
+                <div class="shortcut-item">
+                  <kbd>F</kbd>
+                  <span>フォーカスモード切替</span>
+                </div>
+                <div class="shortcut-item">
+                  <kbd>M</kbd>
+                  <span>BGM切替</span>
+                </div>
+                <div class="shortcut-item">
+                  <kbd>Alt + 1-5</kbd>
+                  <span>ビュー切替</span>
+                </div>
               </div>
             </div>
           </div>
@@ -537,6 +709,42 @@
         <div class="modal__footer">
           <button class="btn btn--ghost" id="confirm-cancel">キャンセル</button>
           <button class="btn btn--danger" id="confirm-ok">OK</button>
+        </div>
+      </div>
+      
+      <!-- Pomodoro Complete Modal -->
+      <div class="modal modal--celebration" id="pomodoro-complete-modal">
+        <div class="pomodoro-complete-content">
+          <div class="pomodoro-complete-icon">🍅</div>
+          <h2 class="pomodoro-complete-title">ポモドーロ完了！</h2>
+          <p class="pomodoro-complete-time" id="completed-focus-time">25分間の集中お疲れ様でした</p>
+          <div class="pomodoro-complete-stats">
+            <div class="complete-stat">
+              <span class="complete-stat__value" id="complete-xp-gained">+25</span>
+              <span class="complete-stat__label">XP獲得</span>
+            </div>
+            <div class="complete-stat">
+              <span class="complete-stat__value" id="complete-today-count">3</span>
+              <span class="complete-stat__label">本日のポモドーロ</span>
+            </div>
+          </div>
+          <p class="pomodoro-complete-break" id="break-message">5分間の休憩を取りましょう</p>
+          <div class="pomodoro-complete-actions">
+            <button class="btn btn--primary" id="start-break-btn">休憩開始</button>
+            <button class="btn btn--ghost" id="skip-break-btn">スキップ</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Break Suggestion Modal -->
+      <div class="modal modal--break" id="break-modal">
+        <div class="break-content">
+          <div class="break-icon">☕</div>
+          <h2 class="break-title">休憩タイム</h2>
+          <div class="break-suggestions-modal" id="break-suggestions-modal">
+            <!-- 動的に休憩アクティビティを表示 -->
+          </div>
+          <button class="btn btn--secondary" id="break-modal-close">閉じる</button>
         </div>
       </div>
     </div>

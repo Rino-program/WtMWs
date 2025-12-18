@@ -123,6 +123,8 @@ class App {
       soundEnabled: true,
       soundVolume: 0.5,
       tickingSound: false,
+      bgmType: 'none',
+      bgmVolume: 0.3,
       notificationsEnabled: false,
       notifyBeforeEnd: 1,
       theme: 'auto',

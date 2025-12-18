@@ -65,8 +65,8 @@ class SettingsModule {
       shortBreakMinutes: document.getElementById('setting-short-break'),
       longBreakMinutes: document.getElementById('setting-long-break'),
       pomodorosUntilLongBreak: document.getElementById('setting-rounds'),
-      autoStartBreak: document.getElementById('setting-auto-start-break'),
-      autoStartFocus: document.getElementById('setting-auto-start-focus'),
+      autoStartBreak: document.getElementById('setting-auto-break'),
+      autoStartFocus: document.getElementById('setting-auto-focus'),
       
       // Sound settings
       soundEnabled: document.getElementById('setting-sound'),
@@ -74,6 +74,11 @@ class SettingsModule {
       volumeValue: document.getElementById('volume-value'),
       tickingSound: document.getElementById('setting-ticking-sound'),
       testSoundBtn: document.getElementById('test-sound-btn'),
+      
+      // BGM settings
+      bgmType: document.getElementById('setting-bgm-type'),
+      bgmVolume: document.getElementById('setting-bgm-volume'),
+      bgmVolumeValue: document.getElementById('bgm-volume-value'),
       
       // Notification settings
       notificationsEnabled: document.getElementById('setting-notification'),
@@ -159,6 +164,19 @@ class SettingsModule {
       const settings = store.get('settings');
       if (settings.soundEnabled) {
         playSound('complete', settings.soundVolume);
+      }
+    });
+    
+    // BGM settings
+    this.elements.bgmType?.addEventListener('change', (e) => {
+      updateSetting('bgmType', e.target.value);
+    });
+    
+    this.elements.bgmVolume?.addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value);
+      updateSetting('bgmVolume', value);
+      if (this.elements.bgmVolumeValue) {
+        this.elements.bgmVolumeValue.textContent = `${Math.round(value * 100)}%`;
       }
     });
     
@@ -253,10 +271,10 @@ class SettingsModule {
       this.elements.pomodorosUntilLongBreak.value = settings.pomodorosUntilLongBreak;
     }
     if (this.elements.autoStartBreak) {
-      this.elements.autoStartBreak.checked = settings.autoStartBreak;
+      this.elements.autoStartBreak.checked = settings.autoStartBreak || false;
     }
     if (this.elements.autoStartFocus) {
-      this.elements.autoStartFocus.checked = settings.autoStartFocus;
+      this.elements.autoStartFocus.checked = settings.autoStartFocus || false;
     }
     
     // Sound settings
@@ -273,6 +291,17 @@ class SettingsModule {
       this.elements.tickingSound.checked = settings.tickingSound;
     }
     this.updateSoundControlsState();
+    
+    // BGM settings
+    if (this.elements.bgmType) {
+      this.elements.bgmType.value = settings.bgmType || 'none';
+    }
+    if (this.elements.bgmVolume) {
+      this.elements.bgmVolume.value = settings.bgmVolume || 0.3;
+    }
+    if (this.elements.bgmVolumeValue) {
+      this.elements.bgmVolumeValue.textContent = `${Math.round((settings.bgmVolume || 0.3) * 100)}%`;
+    }
     
     // Notification settings
     if (this.elements.notificationsEnabled) {

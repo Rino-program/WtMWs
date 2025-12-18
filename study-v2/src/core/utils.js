@@ -400,3 +400,266 @@ export function showXpGain(amount, x, y) {
   
   setTimeout(() => elem.remove(), 1500);
 }
+
+/**
+ * Motivation quotes list
+ */
+export const MOTIVATION_QUOTES = [
+  { text: "継続は力なり。今日の努力が明日の成功を作る。", icon: "💪" },
+  { text: "小さな一歩が大きな変化を生む。", icon: "🚀" },
+  { text: "今日できることを明日に延ばすな。", icon: "⏰" },
+  { text: "学ぶことをやめた時、人は老いる。", icon: "📚" },
+  { text: "困難は成長の機会である。", icon: "🌱" },
+  { text: "1%の改善を毎日続ければ、1年で37倍になる。", icon: "📈" },
+  { text: "休憩は怠けではない。より良い結果のための投資だ。", icon: "☕" },
+  { text: "完璧を目指すより、まず完了させよう。", icon: "✅" },
+  { text: "集中力は筋肉と同じ。鍛えれば強くなる。", icon: "🧠" },
+  { text: "今この瞬間に集中しよう。過去も未来もここにはない。", icon: "🎯" },
+  { text: "成功とは、失敗から失敗へと情熱を失わずに進むことだ。", icon: "🔥" },
+  { text: "できないと思った瞬間、本当にできなくなる。", icon: "💡" },
+  { text: "学びは終わりのない旅。楽しんで進もう。", icon: "🗺️" },
+  { text: "最大の敵は自分自身の中にいる。", icon: "⚔️" },
+  { text: "今日という日は、残りの人生の最初の日。", icon: "🌅" },
+  { text: "ゆっくりでも進み続ける限り、必ずゴールに着く。", icon: "🐢" },
+  { text: "25分間、この一瞬に全力を注ごう。", icon: "🍅" },
+  { text: "習慣が人を作る。良い習慣を身につけよう。", icon: "🔄" },
+  { text: "誰かと比べるな。昨日の自分と比べよう。", icon: "🪞" },
+  { text: "難しいことも、始めてしまえば半分終わったようなもの。", icon: "🎬" }
+];
+
+/**
+ * Get random motivation quote
+ */
+export function getRandomQuote() {
+  return MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)];
+}
+
+/**
+ * Break activity suggestions
+ */
+export const BREAK_ACTIVITIES = [
+  { icon: "👁️", title: "目の休憩", description: "20秒間、20フィート（約6m）先を見つめましょう" },
+  { icon: "🙆", title: "肩回し", description: "両肩を前後に10回ずつ回しましょう" },
+  { icon: "🚶", title: "軽いウォーキング", description: "部屋の中や廊下を少し歩きましょう" },
+  { icon: "💧", title: "水分補給", description: "コップ1杯の水を飲みましょう" },
+  { icon: "🧘", title: "深呼吸", description: "4秒吸って、4秒止めて、4秒吐く呼吸を5回" },
+  { icon: "🤸", title: "ストレッチ", description: "首、腕、背中を軽くストレッチしましょう" },
+  { icon: "👐", title: "手首のストレッチ", description: "手首を回したり、指を伸ばしたりしましょう" },
+  { icon: "🪟", title: "窓の外を見る", description: "窓の外の景色を眺めてリフレッシュ" },
+  { icon: "☕", title: "飲み物を取りに行く", description: "お茶やコーヒーを淹れましょう" },
+  { icon: "🌿", title: "観葉植物に水やり", description: "植物のお世話でリラックス" }
+];
+
+/**
+ * Get random break activities
+ */
+export function getRandomBreakActivities(count = 3) {
+  const shuffled = [...BREAK_ACTIVITIES].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}
+
+/**
+ * Get week date range string
+ */
+export function getWeekRange(date = new Date()) {
+  const startOfWeek = new Date(date);
+  startOfWeek.setDate(date.getDate() - date.getDay() + 1); // Monday
+  
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  
+  const formatShort = (d) => `${d.getMonth() + 1}/${d.getDate()}`;
+  return `${formatShort(startOfWeek)} - ${formatShort(endOfWeek)}`;
+}
+
+/**
+ * BGM Audio Manager
+ */
+export class BGMManager {
+  constructor() {
+    this.audioContext = null;
+    this.noiseNode = null;
+    this.gainNode = null;
+    this.isPlaying = false;
+    this.currentType = 'none';
+  }
+
+  init() {
+    if (!this.audioContext) {
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  }
+
+  play(type = 'whitenoise', volume = 0.3) {
+    this.stop();
+    this.init();
+    
+    if (type === 'none') return;
+    
+    this.currentType = type;
+    this.gainNode = this.audioContext.createGain();
+    this.gainNode.gain.value = volume;
+    this.gainNode.connect(this.audioContext.destination);
+    
+    switch (type) {
+      case 'whitenoise':
+        this.playWhiteNoise();
+        break;
+      case 'rain':
+        this.playRainSound();
+        break;
+      case 'forest':
+        this.playForestSound();
+        break;
+      case 'cafe':
+        this.playCafeSound();
+        break;
+      case 'lofi':
+        this.playLofiSound();
+        break;
+    }
+    
+    this.isPlaying = true;
+  }
+
+  playWhiteNoise() {
+    const bufferSize = 2 * this.audioContext.sampleRate;
+    const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+    const output = buffer.getChannelData(0);
+    
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+    
+    this.noiseNode = this.audioContext.createBufferSource();
+    this.noiseNode.buffer = buffer;
+    this.noiseNode.loop = true;
+    
+    // Add low-pass filter for softer sound
+    const filter = this.audioContext.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 1000;
+    
+    this.noiseNode.connect(filter);
+    filter.connect(this.gainNode);
+    this.noiseNode.start();
+  }
+
+  playRainSound() {
+    // Brown noise for rain-like sound
+    const bufferSize = 2 * this.audioContext.sampleRate;
+    const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+    const output = buffer.getChannelData(0);
+    
+    let lastOut = 0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      output[i] = (lastOut + (0.02 * white)) / 1.02;
+      lastOut = output[i];
+      output[i] *= 3.5;
+    }
+    
+    this.noiseNode = this.audioContext.createBufferSource();
+    this.noiseNode.buffer = buffer;
+    this.noiseNode.loop = true;
+    
+    const filter = this.audioContext.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 400;
+    
+    this.noiseNode.connect(filter);
+    filter.connect(this.gainNode);
+    this.noiseNode.start();
+  }
+
+  playForestSound() {
+    // Pink noise for nature-like sound
+    const bufferSize = 2 * this.audioContext.sampleRate;
+    const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+    const output = buffer.getChannelData(0);
+    
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + white * 0.0555179;
+      b1 = 0.99332 * b1 + white * 0.0750759;
+      b2 = 0.96900 * b2 + white * 0.1538520;
+      b3 = 0.86650 * b3 + white * 0.3104856;
+      b4 = 0.55000 * b4 + white * 0.5329522;
+      b5 = -0.7616 * b5 - white * 0.0168980;
+      output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+      output[i] *= 0.11;
+      b6 = white * 0.115926;
+    }
+    
+    this.noiseNode = this.audioContext.createBufferSource();
+    this.noiseNode.buffer = buffer;
+    this.noiseNode.loop = true;
+    this.noiseNode.connect(this.gainNode);
+    this.noiseNode.start();
+  }
+
+  playCafeSound() {
+    // Mix of brown and pink noise
+    this.playRainSound();
+  }
+
+  playLofiSound() {
+    // Low frequency oscillation for lo-fi feel
+    const osc = this.audioContext.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = 60;
+    
+    const osc2 = this.audioContext.createOscillator();
+    osc2.type = 'triangle';
+    osc2.frequency.value = 90;
+    
+    const filter = this.audioContext.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 200;
+    
+    const subGain = this.audioContext.createGain();
+    subGain.gain.value = 0.3;
+    
+    osc.connect(subGain);
+    osc2.connect(subGain);
+    subGain.connect(filter);
+    filter.connect(this.gainNode);
+    
+    osc.start();
+    osc2.start();
+    
+    this.noiseNode = { 
+      stop: () => { osc.stop(); osc2.stop(); }
+    };
+  }
+
+  stop() {
+    if (this.noiseNode) {
+      try {
+        this.noiseNode.stop();
+      } catch (e) {}
+      this.noiseNode = null;
+    }
+    this.isPlaying = false;
+    this.currentType = 'none';
+  }
+
+  setVolume(volume) {
+    if (this.gainNode) {
+      this.gainNode.gain.value = volume;
+    }
+  }
+
+  toggle(type, volume) {
+    if (this.isPlaying) {
+      this.stop();
+      return false;
+    } else {
+      this.play(type, volume);
+      return true;
+    }
+  }
+}
+
+export const bgmManager = new BGMManager();

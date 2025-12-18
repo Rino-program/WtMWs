@@ -5,7 +5,12 @@
 
 import { store } from '../core/store.js';
 import { db, STORES } from '../core/database.js';
-import { formatDuration, formatDate, getDayOfYear } from '../core/utils.js';
+import { formatDuration, formatDate, getDayOfYear, getWeekRange } from '../core/utils.js';
+
+// Helper to get CSS variable value
+function getCSSVar(varName) {
+  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || '#6366f1';
+}
 
 class StatsModule {
   constructor() {
@@ -48,12 +53,25 @@ class StatsModule {
       todayMinutes: document.getElementById('today-minutes'),
       todayTasks: document.getElementById('today-tasks'),
       
+      // Weekly Summary
+      weekRange: document.getElementById('week-range'),
+      weekTotalTime: document.getElementById('week-total-time'),
+      weekTotalPomodoros: document.getElementById('week-total-pomodoros'),
+      weekTotalTasks: document.getElementById('week-total-tasks'),
+      weekAvgDaily: document.getElementById('week-avg-daily'),
+      weekTimeChange: document.getElementById('week-time-change'),
+      weekPomoChange: document.getElementById('week-pomo-change'),
+      weekTaskChange: document.getElementById('week-task-change'),
+      
       // Chart
       chartCanvas: document.getElementById('study-chart-canvas'),
       chartPeriodTabs: document.querySelectorAll('.chart-period-selector .period-btn'),
       
       // Heatmap
-      heatmapContainer: document.getElementById('heatmap-container')
+      heatmapContainer: document.getElementById('heatmap-container'),
+      
+      // Stretch panel
+      stretchSuggestions: document.getElementById('stretch-suggestions')
     };
     
     this.chartCanvas = this.elements.chartCanvas;
@@ -61,7 +79,10 @@ class StatsModule {
 
   subscribeToStore() {
     store.subscribe('user.*', () => this.updateSummary());
-    store.subscribe('today.*', () => this.updateTodayStats());
+    store.subscribe('today.*', () => {
+      this.updateTodayStats();
+      this.updateWeeklySummary();
+    });
   }
 
   async loadStats() {
@@ -91,9 +112,107 @@ class StatsModule {
   render() {
     this.updateSummary();
     this.updateTodayStats();
+    this.updateWeeklySummary();
     this.renderChart('week');
     this.renderHeatmap();
     this.updatePeriodStats();
+  }
+
+  // Weekly Summary
+  updateWeeklySummary() {
+    // Update week range display
+    if (this.elements.weekRange) {
+      this.elements.weekRange.textContent = getWeekRange();
+    }
+    
+    // Calculate this week's stats
+    const thisWeekStats = this.calculatePeriodStats(7, 0);
+    const lastWeekStats = this.calculatePeriodStats(7, 7);
+    
+    // Update displays
+    if (this.elements.weekTotalTime) {
+      const hours = Math.floor(thisWeekStats.minutes / 60);
+      const mins = thisWeekStats.minutes % 60;
+      this.elements.weekTotalTime.textContent = hours > 0 ? `${hours}時間${mins}分` : `${mins}分`;
+    }
+    
+    if (this.elements.weekTotalPomodoros) {
+      this.elements.weekTotalPomodoros.textContent = thisWeekStats.pomodoros;
+    }
+    
+    if (this.elements.weekTotalTasks) {
+      this.elements.weekTotalTasks.textContent = thisWeekStats.tasks;
+    }
+    
+    if (this.elements.weekAvgDaily) {
+      const avg = Math.round(thisWeekStats.minutes / 7);
+      this.elements.weekAvgDaily.textContent = `${avg}分`;
+    }
+    
+    // Calculate and display changes
+    this.updateChangeIndicator(
+      this.elements.weekTimeChange,
+      thisWeekStats.minutes,
+      lastWeekStats.minutes,
+      'minutes'
+    );
+    
+    this.updateChangeIndicator(
+      this.elements.weekPomoChange,
+      thisWeekStats.pomodoros,
+      lastWeekStats.pomodoros,
+      'count'
+    );
+    
+    this.updateChangeIndicator(
+      this.elements.weekTaskChange,
+      thisWeekStats.tasks,
+      lastWeekStats.tasks,
+      'count'
+    );
+  }
+
+  updateChangeIndicator(element, current, previous, type) {
+    if (!element) return;
+    
+    if (previous === 0) {
+      element.textContent = current > 0 ? '📈 新規' : '--';
+      element.className = 'weekly-stat__change';
+      return;
+    }
+    
+    const change = Math.round(((current - previous) / previous) * 100);
+    
+    if (change > 0) {
+      element.textContent = `↑ ${change}%`;
+      element.className = 'weekly-stat__change positive';
+    } else if (change < 0) {
+      element.textContent = `↓ ${Math.abs(change)}%`;
+      element.className = 'weekly-stat__change negative';
+    } else {
+      element.textContent = '→ 0%';
+      element.className = 'weekly-stat__change';
+    }
+  }
+
+  calculatePeriodStats(days, offset = 0) {
+    const today = new Date();
+    const stats = { minutes: 0, pomodoros: 0, tasks: 0 };
+    
+    for (let i = offset; i < days + offset; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      const log = this.dailyLogs?.find(l => l.date === dateStr);
+      
+      if (log) {
+        stats.minutes += log.minutes || 0;
+        stats.pomodoros += log.pomodoros || 0;
+        stats.tasks += log.tasksCompleted || 0;
+      }
+    }
+    
+    return stats;
   }
 
   updateSummary() {
@@ -193,7 +312,7 @@ class StatsModule {
     // Get data based on period
     const data = this.getChartData(period);
     if (data.length === 0) {
-      ctx.fillStyle = 'var(--text-secondary)';
+      ctx.fillStyle = getCSSVar('--color-text-secondary');
       ctx.textAlign = 'center';
       ctx.font = '14px system-ui';
       ctx.fillText('データがありません', width / 2, height / 2);
@@ -208,8 +327,14 @@ class StatsModule {
     // Find max value
     const maxValue = Math.max(...data.map(d => d.minutes), 60);
     
+    // Get colors
+    const primaryColor = getCSSVar('--color-primary');
+    const primaryLight = getCSSVar('--color-primary-light');
+    const borderColor = getCSSVar('--color-border');
+    const textSecondary = getCSSVar('--color-text-secondary');
+    
     // Draw axes
-    ctx.strokeStyle = 'var(--border-color)';
+    ctx.strokeStyle = borderColor;
     ctx.beginPath();
     ctx.moveTo(padding.left, padding.top);
     ctx.lineTo(padding.left, height - padding.bottom);
@@ -227,21 +352,21 @@ class StatsModule {
       
       // Gradient
       const gradient = ctx.createLinearGradient(x, y, x, height - padding.bottom);
-      gradient.addColorStop(0, 'var(--primary-color)');
-      gradient.addColorStop(1, 'var(--primary-light)');
+      gradient.addColorStop(0, primaryColor);
+      gradient.addColorStop(1, primaryLight);
       
       ctx.fillStyle = gradient;
       ctx.fillRect(x, y, barWidth, barHeight);
       
       // Label
-      ctx.fillStyle = 'var(--text-secondary)';
+      ctx.fillStyle = textSecondary;
       ctx.font = '10px system-ui';
       ctx.textAlign = 'center';
       ctx.fillText(d.label, x + barWidth / 2, height - padding.bottom + 15);
     });
     
     // Y-axis labels
-    ctx.fillStyle = 'var(--text-secondary)';
+    ctx.fillStyle = textSecondary;
     ctx.textAlign = 'right';
     ctx.font = '10px system-ui';
     

@@ -4,13 +4,23 @@
  */
 
 import { store } from '../core/store.js';
-import { formatTime, playSound, showNotification } from '../core/utils.js';
+import { 
+  formatTime, 
+  playSound, 
+  showNotification, 
+  bgmManager,
+  getRandomQuote,
+  getRandomBreakActivities,
+  createConfetti
+} from '../core/utils.js';
 
 class TimerModule {
   constructor() {
     this.intervalId = null;
     this.startTime = null;
     this.pausedTime = null;
+    this.isFocusMode = false;
+    this.isBgmPlaying = false;
     
     // DOM elements
     this.elements = {};
@@ -29,6 +39,8 @@ class TimerModule {
     
     this.updateDisplay();
     this.addSvgGradient();
+    this.updateDailyGoalProgress();
+    this.loadMotivationQuote();
     
     console.log('✅ Timer 初期化完了');
   }
@@ -48,7 +60,25 @@ class TimerModule {
       modeButtons: document.querySelectorAll('.mode-btn'),
       todayPomodoros: document.getElementById('today-pomodoros'),
       todayMinutes: document.getElementById('today-minutes'),
-      timerPanel: document.querySelector('.timer-panel')
+      timerPanel: document.querySelector('.timer-panel'),
+      // New elements
+      dailyGoalText: document.getElementById('daily-goal-text'),
+      dailyGoalFill: document.getElementById('daily-goal-fill'),
+      focusModeBtn: document.getElementById('focus-mode-btn'),
+      bgmBtn: document.getElementById('bgm-btn'),
+      motivationQuote: document.getElementById('motivation-quote'),
+      newQuoteBtn: document.getElementById('new-quote-btn'),
+      // Modals
+      pomodoroCompleteModal: document.getElementById('pomodoro-complete-modal'),
+      completedFocusTime: document.getElementById('completed-focus-time'),
+      completeXpGained: document.getElementById('complete-xp-gained'),
+      completeTodayCount: document.getElementById('complete-today-count'),
+      breakMessage: document.getElementById('break-message'),
+      startBreakBtn: document.getElementById('start-break-btn'),
+      skipBreakBtn: document.getElementById('skip-break-btn'),
+      breakModal: document.getElementById('break-modal'),
+      breakSuggestionsModal: document.getElementById('break-suggestions-modal'),
+      breakModalClose: document.getElementById('break-modal-close')
     };
   }
 
@@ -87,6 +117,28 @@ class TimerModule {
       });
     });
 
+    // Focus mode toggle
+    this.elements.focusModeBtn?.addEventListener('click', () => this.toggleFocusMode());
+    
+    // BGM toggle
+    this.elements.bgmBtn?.addEventListener('click', () => this.toggleBgm());
+    
+    // Motivation quote
+    this.elements.newQuoteBtn?.addEventListener('click', () => this.loadMotivationQuote());
+    
+    // Pomodoro complete modal
+    this.elements.startBreakBtn?.addEventListener('click', () => {
+      this.closePomodoroCompleteModal();
+      this.start();
+    });
+    this.elements.skipBreakBtn?.addEventListener('click', () => {
+      this.closePomodoroCompleteModal();
+      this.setMode('focus');
+    });
+    
+    // Break modal
+    this.elements.breakModalClose?.addEventListener('click', () => this.closeBreakModal());
+
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       // Don't trigger if typing in input
@@ -112,6 +164,18 @@ class TimerModule {
             this.reset();
           }
           break;
+        case 'KeyF':
+          if (!e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+            this.toggleFocusMode();
+          }
+          break;
+        case 'KeyM':
+          if (!e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+            this.toggleBgm();
+          }
+          break;
       }
     });
 
@@ -125,7 +189,10 @@ class TimerModule {
 
   subscribeToStore() {
     store.subscribe('timer.*', () => this.updateDisplay());
-    store.subscribe('today.*', () => this.updateTodayStats());
+    store.subscribe('today.*', () => {
+      this.updateTodayStats();
+      this.updateDailyGoalProgress();
+    });
     store.subscribe('currentTask', () => this.updateTaskDisplay());
     store.subscribe('settings.*', () => {
       // Update time if idle and mode matches
@@ -135,7 +202,56 @@ class TimerModule {
         console.log('🔄 タイマー時間をリセット中...');
         this.resetTimeForCurrentMode();
       }
+      this.updateDailyGoalProgress();
     });
+  }
+
+  // Focus Mode
+  toggleFocusMode() {
+    this.isFocusMode = !this.isFocusMode;
+    document.body.classList.toggle('focus-mode', this.isFocusMode);
+    this.elements.focusModeBtn?.classList.toggle('active', this.isFocusMode);
+  }
+
+  // BGM
+  toggleBgm() {
+    const settings = store.get('settings');
+    const bgmType = settings.bgmType || 'whitenoise';
+    const bgmVolume = settings.bgmVolume || 0.3;
+    
+    if (bgmType === 'none') return;
+    
+    this.isBgmPlaying = bgmManager.toggle(bgmType, bgmVolume);
+    this.elements.bgmBtn?.classList.toggle('active', this.isBgmPlaying);
+  }
+
+  // Motivation Quote
+  loadMotivationQuote() {
+    const quote = getRandomQuote();
+    if (this.elements.motivationQuote) {
+      this.elements.motivationQuote.innerHTML = `
+        <span class="motivation-icon">${quote.icon}</span>
+        <p class="motivation-text">"${quote.text}"</p>
+      `;
+    }
+  }
+
+  // Daily Goal Progress
+  updateDailyGoalProgress() {
+    const today = store.get('today');
+    const settings = store.get('settings');
+    const goalMinutes = settings.dailyGoalMinutes || 120;
+    const currentMinutes = today.minutes || 0;
+    const percentage = Math.min(100, Math.round((currentMinutes / goalMinutes) * 100));
+    
+    if (this.elements.dailyGoalText) {
+      this.elements.dailyGoalText.textContent = `${currentMinutes} / ${goalMinutes}分`;
+    }
+    
+    if (this.elements.dailyGoalFill) {
+      this.elements.dailyGoalFill.style.width = `${percentage}%`;
+      this.elements.dailyGoalFill.classList.toggle('complete', percentage >= 100);
+    }
   }
 
   toggleTimer() {
@@ -330,28 +446,40 @@ class TimerModule {
         showNotification('ポモドーロ完了！', '休憩を取りましょう 🎉');
       }
       
+      // Create confetti effect
+      createConfetti();
+      
       // Move to next round or break
-      const round = store.get('timer.round');
-      const roundsUntilLong = settings.roundsUntilLongBreak;
+      const round = store.get('timer.currentRound') || 1;
+      const roundsUntilLong = settings.pomodorosUntilLongBreak || 4;
       
       if (round >= roundsUntilLong) {
-        store.set('timer.round', 1);
+        store.set('timer.currentRound', 1);
         this.setMode('long');
       } else {
-        store.set('timer.round', round + 1);
+        store.set('timer.currentRound', round + 1);
         this.setMode('short');
       }
+      
+      // Show completion modal
+      this.showPomodoroCompleteModal(timeSpent, round);
+      
     } else if (mode !== 'focus' && completed) {
       // Break completed
       if (settings.soundEnabled) {
         playSound('break');
       }
       
-      if (settings.notificationEnabled) {
+      if (settings.notificationsEnabled) {
         showNotification('休憩終了', '次の集中タイムを始めましょう！ 💪');
       }
       
       this.setMode('focus');
+      
+      // Auto-start focus if enabled
+      if (settings.autoStartFocus) {
+        setTimeout(() => this.start(), 1000);
+      }
     } else {
       // Skipped
       if (mode === 'focus') {
@@ -369,6 +497,70 @@ class TimerModule {
     this.elements.timerPanel?.classList.remove('timer-running', 'timer-paused');
     
     document.title = 'Study Support NG';
+  }
+
+  // Show pomodoro complete modal
+  showPomodoroCompleteModal(minutes, round) {
+    const today = store.get('today');
+    const mode = store.get('timer.mode');
+    const settings = store.get('settings');
+    const xpGained = 25 + Math.floor(minutes / 5) * 2;
+    
+    if (this.elements.completedFocusTime) {
+      this.elements.completedFocusTime.textContent = `${minutes}分間の集中お疲れ様でした`;
+    }
+    if (this.elements.completeXpGained) {
+      this.elements.completeXpGained.textContent = `+${xpGained}`;
+    }
+    if (this.elements.completeTodayCount) {
+      this.elements.completeTodayCount.textContent = today.pomodoros;
+    }
+    if (this.elements.breakMessage) {
+      const breakTime = mode === 'long' ? settings.longBreakMinutes : settings.shortBreakMinutes;
+      this.elements.breakMessage.textContent = `${breakTime}分間の休憩を取りましょう`;
+    }
+    
+    // Show break activities
+    this.showBreakSuggestions();
+    
+    // Show modal
+    if (this.elements.pomodoroCompleteModal) {
+      this.elements.pomodoroCompleteModal.classList.add('active');
+      document.getElementById('modal-overlay')?.classList.add('active');
+    }
+    
+    // Auto start break if enabled
+    if (settings.autoStartBreak) {
+      setTimeout(() => {
+        this.closePomodoroCompleteModal();
+        this.start();
+      }, 3000);
+    }
+  }
+
+  closePomodoroCompleteModal() {
+    this.elements.pomodoroCompleteModal?.classList.remove('active');
+    document.getElementById('modal-overlay')?.classList.remove('active');
+  }
+
+  showBreakSuggestions() {
+    const activities = getRandomBreakActivities(2);
+    if (this.elements.breakSuggestionsModal) {
+      this.elements.breakSuggestionsModal.innerHTML = activities.map(a => `
+        <div class="stretch-item">
+          <span class="stretch-icon">${a.icon}</span>
+          <div class="stretch-content">
+            <h4>${a.title}</h4>
+            <p>${a.description}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+
+  closeBreakModal() {
+    this.elements.breakModal?.classList.remove('active');
+    document.getElementById('modal-overlay')?.classList.remove('active');
   }
 
   recordPomodoro(minutes) {
