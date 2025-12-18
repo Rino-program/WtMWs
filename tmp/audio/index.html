@@ -1,388 +1,270 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Visualizer</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden;
-        }
-
-        .container {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .upload-area {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 15px;
-            padding: 40px;
-            margin-bottom: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .upload-area:hover,
-        .upload-area.dragover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.6);
-            transform: scale(1.05);
-        }
-
-        .upload-area input[type="file"] {
-            display: none;
-        }
-
-        .upload-text {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 16px;
-            font-weight: 500;
-        }
-
-        .visualizer-wrapper {
-            position: relative;
-            width: 400px;
-            height: 400px;
-            margin-bottom: 30px;
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        button {
-            padding: 12px 30px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            border-color: rgba(255, 255, 255, 0.5);
-            transform: translateY(-2px);
-        }
-
-        button.active {
-            background: rgba(76, 175, 80, 0.4);
-            border-color: rgba(76, 175, 80, 0.6);
-        }
-
-        .info {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 12px;
-            margin-top: 15px;
-            text-align: center;
-        }
-
-        .wave-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 120px;
-            opacity: 0.8;
-        }
-
-        svg {
-            width: 100%;
-            height: 100%;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Audio Visualizer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#0a0a0f;color:#fff;min-height:100vh;overflow:hidden;touch-action:none}
+.back{position:fixed;top:15px;left:15px;color:#fff;text-decoration:none;font-size:1.3rem;z-index:100;opacity:0.7}
+.back:hover{opacity:1}
+canvas{display:block}
+.ctrl{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.9);padding:12px 15px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;z-index:10}
+.ctrl label{font-size:0.75rem;color:#aaa;display:flex;align-items:center;gap:5px}
+.ctrl select,.ctrl input[type=range]{background:#222;color:#fff;border:1px solid #444;border-radius:5px;padding:5px 8px;font-size:0.75rem}
+.ctrl input[type=range]{width:60px;height:5px;-webkit-appearance:none}
+.ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;background:#4facfe;border-radius:50%}
+.file-label{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#667eea,#764ba2);padding:7px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem}
+.file-label input{display:none}
+.status{font-size:0.7rem;color:#4facfe;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mode-btns{display:flex;gap:5px;flex-wrap:wrap}
+.mode-btns button{background:#333;border:none;color:#fff;padding:6px 10px;border-radius:5px;cursor:pointer;font-size:0.7rem;touch-action:manipulation}
+.mode-btns button.active{background:linear-gradient(135deg,#4facfe,#00f2fe)}
+.info{position:fixed;top:15px;right:15px;background:rgba(0,0,0,0.7);padding:10px 14px;border-radius:8px;font-size:0.75rem;z-index:10}
+@media(max-width:600px){.ctrl{padding:10px;gap:8px}.mode-btns button{padding:5px 8px}}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="upload-area" id="uploadArea">
-            <input type="file" id="fileInput" accept="audio/*">
-            <div class="upload-text">📁 Drag & drop your audio file here or click to select</div>
-        </div>
+<a href="../" class="back">← 戻る</a>
+<canvas id="cv"></canvas>
+<div class="info">
+<div>🎵 <span id="modeName">バー</span></div>
+<div>📊 <span id="freqRange">全域</span></div>
+</div>
+<div class="ctrl">
+<label class="file-label">🎵 音楽選択<input type="file" id="audioFile" accept="audio/*"></label>
+<span class="status" id="status">未選択</span>
+<label>🔊<input type="range" id="vol" min="0" max="1" step="0.05" value="0.5"></label>
+<label>速度<input type="range" id="speed" min="1" max="10" step="1" value="5"></label>
+<label>低域<input type="range" id="lowFreq" min="20" max="500" step="10" value="20"></label>
+<label>高域<input type="range" id="highFreq" min="1000" max="20000" step="500" value="16000"></label>
+<div class="mode-btns">
+<button class="active" data-m="0">バー</button>
+<button data-m="1">波形</button>
+<button data-m="2">スクロール波</button>
+<button data-m="3">サークル</button>
+<button data-m="4">スペクトラム</button>
+<button data-m="5">パーティクル</button>
+</div>
+</div>
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let W,H,mode=0,audioCtx,analyser,source,freqData,timeData,bufLen,gainNode;
+let lowFreq=20,highFreq=16000,speed=5,particles=[],waveHistory=[];
+const modeNames=['バー','波形','スクロール波','サークル','スペクトラム','パーティクル'];
+const maxHistory=300;
 
-        <div class="visualizer-wrapper">
-            <canvas id="canvas"></canvas>
-        </div>
+function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight-80}
+resize();window.onresize=resize;
 
-        <div class="controls">
-            <button id="playBtn" class="active">▶ Play</button>
-            <button id="pauseBtn">⏸ Pause</button>
-            <button id="stopBtn">⏹ Stop</button>
-        </div>
+function initAudio(){
+if(audioCtx)return;
+audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+analyser=audioCtx.createAnalyser();
+analyser.fftSize=2048;
+analyser.smoothingTimeConstant=0.3;
+bufLen=analyser.frequencyBinCount;
+freqData=new Uint8Array(bufLen);
+timeData=new Uint8Array(bufLen);
+}
 
-        <div class="info">
-            <p>Supported formats: MP3, WAV, OGG, FLAC</p>
-            <p id="filename">No audio file loaded</p>
-        </div>
-    </div>
+document.getElementById('audioFile').onchange=async function(e){
+const file=e.target.files[0];
+if(!file)return;
+initAudio();
+if(source){source.stop();source.disconnect()}
+try{
+const ab=await file.arrayBuffer();
+const buf=await audioCtx.decodeAudioData(ab);
+source=audioCtx.createBufferSource();
+source.buffer=buf;
+source.loop=true;
+gainNode=audioCtx.createGain();
+gainNode.gain.value=document.getElementById('vol').value;
+source.connect(analyser);
+analyser.connect(gainNode);
+gainNode.connect(audioCtx.destination);
+source.start(0);
+document.getElementById('status').textContent='▶ '+file.name;
+}catch(err){document.getElementById('status').textContent='エラー'}
+};
 
-    <div class="wave-container" id="waveContainer"></div>
+document.getElementById('vol').oninput=function(){if(gainNode)gainNode.gain.value=this.value};
+document.getElementById('speed').oninput=function(){speed=+this.value};
+document.getElementById('lowFreq').oninput=function(){lowFreq=+this.value;updateInfo()};
+document.getElementById('highFreq').oninput=function(){highFreq=+this.value;updateInfo()};
+function updateInfo(){
+document.getElementById('freqRange').textContent=lowFreq+'Hz-'+(highFreq>=1000?(highFreq/1000|0)+'kHz':highFreq+'Hz');
+}
 
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const playBtn = document.getElementById('playBtn');
-        const pauseBtn = document.getElementById('pauseBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const filenameDisplay = document.getElementById('filename');
-        const waveContainer = document.getElementById('waveContainer');
+document.querySelectorAll('.mode-btns button').forEach(btn=>{
+btn.onclick=function(){
+document.querySelector('.mode-btns .active').classList.remove('active');
+this.classList.add('active');
+mode=+this.dataset.m;
+document.getElementById('modeName').textContent=modeNames[mode];
+if(mode===5)initParticles();
+if(mode===2)waveHistory=[];
+};
+});
 
-        let audioContext = null;
-        let analyser = null;
-        let dataArray = null;
-        let bufferLength = null;
-        let audioElement = null;
-        let source = null;
-        let isPlaying = false;
+function initParticles(){
+particles=[];
+for(let i=0;i<120;i++)particles.push({x:Math.random()*W,y:Math.random()*H,vx:0,vy:0,r:Math.random()*3+2,hue:Math.random()*360});
+}
+initParticles();
 
-        // Set canvas size
-        function resizeCanvas() {
-            canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-            canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-        }
+function freqToIdx(f){return audioCtx?Math.round(f*analyser.fftSize/audioCtx.sampleRate):0}
 
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
+function getFiltered(){
+if(!freqData)return new Uint8Array(64);
+const lo=freqToIdx(lowFreq),hi=Math.min(freqToIdx(highFreq),bufLen);
+const out=new Uint8Array(64),step=(hi-lo)/64;
+for(let i=0;i<64;i++)out[i]=freqData[Math.min(lo+(i*step|0),bufLen-1)];
+return out;
+}
 
-        // Initialize Web Audio API
-        function initAudioContext() {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioContext.createAnalyser();
-                analyser.fftSize = 256;
-                bufferLength = analyser.frequencyBinCount;
-                dataArray = new Uint8Array(bufferLength);
-            }
-        }
+function draw(){
+const fade=0.15+speed*0.03;
+ctx.fillStyle=`rgba(10,10,15,${fade})`;
+ctx.fillRect(0,0,W,H);
+if(analyser){
+analyser.getByteFrequencyData(freqData);
+analyser.getByteTimeDomainData(timeData);
+}
+const fd=getFiltered();
+const bw=W/64;
 
-        // Handle file upload
-        uploadArea.addEventListener('click', () => fileInput.click());
-
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                loadAudio(files[0]);
-            }
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                loadAudio(e.target.files[0]);
-            }
-        });
-
-        // Load audio file
-        function loadAudio(file) {
-            initAudioContext();
-            
-            const url = URL.createObjectURL(file);
-            
-            // Create audio element
-            if (audioElement) {
-                audioElement.pause();
-            }
-            
-            audioElement = new Audio();
-            audioElement.src = url;
-            audioElement.crossOrigin = 'anonymous';
-            
-            // Create source and connect to analyser
-            if (source) {
-                source.disconnect();
-            }
-            
-            source = audioContext.createMediaElementAudioSource(audioElement);
-            source.connect(analyser);
-            analyser.connect(audioContext.destination);
-            
-            filenameDisplay.textContent = `Now loaded: ${file.name}`;
-            isPlaying = false;
-            updateButtonStates();
-            animate();
-        }
-
-        // Playback controls
-        playBtn.addEventListener('click', () => {
-            if (!audioElement) return;
-            initAudioContext();
-            audioContext.resume().then(() => {
-                audioElement.play();
-                isPlaying = true;
-                updateButtonStates();
-            });
-        });
-
-        pauseBtn.addEventListener('click', () => {
-            if (!audioElement) return;
-            audioElement.pause();
-            isPlaying = false;
-            updateButtonStates();
-        });
-
-        stopBtn.addEventListener('click', () => {
-            if (!audioElement) return;
-            audioElement.pause();
-            audioElement.currentTime = 0;
-            isPlaying = false;
-            updateButtonStates();
-        });
-
-        audioElement?.addEventListener('ended', () => {
-            isPlaying = false;
-            updateButtonStates();
-        });
-
-        function updateButtonStates() {
-            playBtn.classList.toggle('active', isPlaying);
-            pauseBtn.classList.toggle('active', !isPlaying && audioElement?.currentTime > 0);
-        }
-
-        // Animation loop
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            if (!analyser) return;
-            
-            analyser.getByteFrequencyData(dataArray);
-            
-            // Clear canvas with gradient
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#1e3c72');
-            gradient.addColorStop(1, '#2a5298');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw circle with animated colors
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = 80;
-            
-            // Animated hue based on audio
-            const hue = (Date.now() / 50 + dataArray[0] / 255 * 360) % 360;
-            
-            // Draw filled circle with gradient
-            const circleGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-            circleGradient.addColorStop(0, `hsla(${hue}, 100%, 60%, 0.8)`);
-            circleGradient.addColorStop(1, `hsla(${(hue + 60) % 360}, 100%, 40%, 0.4)`);
-            
-            ctx.fillStyle = circleGradient;
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Draw frequency bars around circle
-            const barCount = bufferLength;
-            for (let i = 0; i < barCount; i++) {
-                const angle = (i / barCount) * Math.PI * 2;
-                const barHeight = (dataArray[i] / 255) * 100;
-                
-                const x1 = centerX + Math.cos(angle) * radius;
-                const y1 = centerY + Math.sin(angle) * radius;
-                const x2 = centerX + Math.cos(angle) * (radius + barHeight);
-                const y2 = centerY + Math.sin(angle) * (radius + barHeight);
-                
-                const barHue = (hue + (i / barCount) * 360) % 360;
-                ctx.strokeStyle = `hsla(${barHue}, 100%, 50%, 0.8)`;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.stroke();
-            }
-        }
-
-        // Create animated wave SVG at bottom
-        function createWaveSVG() {
-            const svg = `
-                <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
-                    <defs>
-                        <linearGradient id="waveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:0.8" />
-                            <stop offset="100%" style="stop-color:#2196F3;stop-opacity:0.4" />
-                        </linearGradient>
-                    </defs>
-                    <path d="M0,60 Q150,20 300,60 T600,60 T900,60 T1200,60 L1200,120 L0,120 Z" 
-                          fill="url(#waveGrad)" 
-                          class="wave"
-                          style="animation: wave 8s linear infinite;">
-                    </path>
-                    <path d="M0,60 Q150,30 300,60 T600,60 T900,60 T1200,60 L1200,120 L0,120 Z" 
-                          fill="url(#waveGrad)" 
-                          opacity="0.5"
-                          class="wave"
-                          style="animation: wave 12s linear infinite reverse;">
-                    </path>
-                </svg>
-            `;
-            
-            waveContainer.innerHTML = svg;
-            
-            // Add animation if not already in styles
-            if (!document.querySelector('style[data-wave-animation]')) {
-                const style = document.createElement('style');
-                style.setAttribute('data-wave-animation', 'true');
-                style.textContent = `
-                    @keyframes wave {
-                        0% {
-                            transform: translateX(0);
-                        }
-                        100% {
-                            transform: translateX(300px);
-                        }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-        }
-
-        createWaveSVG();
-        animate();
-    </script>
+if(mode===0){// バー
+for(let i=0;i<64;i++){
+const v=fd[i]/255;
+const h=v*H*0.85;
+const hue=i*5.6;
+ctx.fillStyle=`hsl(${hue},85%,${50+v*30}%)`;
+ctx.fillRect(i*bw,H-h,bw-2,h);
+ctx.shadowBlur=10;ctx.shadowColor=`hsl(${hue},85%,60%)`;
+ctx.fillRect(i*bw,H-h,bw-2,4);
+ctx.shadowBlur=0;
+}}
+else if(mode===1){// 波形(現在の音)
+if(!timeData)return requestAnimationFrame(draw);
+ctx.beginPath();
+ctx.moveTo(0,H/2);
+const slice=W/bufLen;
+for(let i=0;i<bufLen;i++){
+const v=timeData[i]/128-1;
+ctx.lineTo(i*slice,H/2+v*H*0.4);
+}
+ctx.strokeStyle='#4facfe';
+ctx.lineWidth=2;
+ctx.stroke();
+ctx.beginPath();
+ctx.moveTo(0,H/2);
+for(let i=0;i<bufLen;i++){
+const v=timeData[i]/128-1;
+ctx.lineTo(i*slice,H/2+v*H*0.4);
+}
+ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();
+const g=ctx.createLinearGradient(0,0,0,H);
+g.addColorStop(0,'rgba(79,172,254,0.3)');
+g.addColorStop(1,'rgba(0,242,254,0.05)');
+ctx.fillStyle=g;ctx.fill();
+}
+else if(mode===2){// スクロール波
+if(!freqData)return requestAnimationFrame(draw);
+const bw=W/64;
+let wv=0;
+for(let i=0;i<64;i++)wv+=fd[i];
+wv=wv/64/255;
+waveHistory.push(wv);
+if(waveHistory.length>maxHistory)waveHistory.shift();
+ctx.clearRect(0,0,W,H);
+const sw=W/maxHistory;
+ctx.beginPath();
+for(let i=0;i<waveHistory.length;i++){
+const v=waveHistory[i]*H*0.8;
+const x=i*sw;
+const y=H/2;
+if(i===0)ctx.moveTo(x,y-v);
+else ctx.lineTo(x,y-v);
+}
+for(let i=waveHistory.length-1;i>=0;i--){
+const v=waveHistory[i]*H*0.8;
+const x=i*sw;
+ctx.lineTo(x,H/2+v);
+}
+ctx.closePath();
+const hue=(Date.now()*0.1)%360;
+const g=ctx.createLinearGradient(0,0,0,H);
+g.addColorStop(0,`hsla(${hue},100%,60%,0.8)`);
+g.addColorStop(0.5,`hsla(${(hue+40)%360},100%,50%,0.5)`);
+g.addColorStop(1,`hsla(${(hue+80)%360},100%,40%,0.2)`);
+ctx.fillStyle=g;ctx.fill();
+ctx.strokeStyle=`hsl(${hue},100%,60%)`;ctx.lineWidth=3;ctx.stroke();
+}
+else if(mode===3){// サークル
+const cx=W/2,cy=H/2,r=Math.min(W,H)*0.25;
+for(let i=0;i<64;i++){
+const ang=(i/64)*Math.PI*2-Math.PI/2;
+const v=fd[i]/255;
+const len=r+v*r*1.2;
+ctx.beginPath();
+ctx.moveTo(cx+Math.cos(ang)*r*0.3,cy+Math.sin(ang)*r*0.3);
+ctx.lineTo(cx+Math.cos(ang)*len,cy+Math.sin(ang)*len);
+ctx.strokeStyle=`hsl(${i*5.6+Date.now()*0.1},80%,60%)`;
+ctx.lineWidth=3+v*3;
+ctx.stroke();
+}
+ctx.beginPath();ctx.arc(cx,cy,r*0.3,0,Math.PI*2);
+ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=2;ctx.stroke();
+}
+else if(mode===4){// スペクトラム
+const g=ctx.createLinearGradient(0,H,0,0);
+g.addColorStop(0,'#f093fb');g.addColorStop(0.5,'#f5576c');g.addColorStop(1,'#4facfe');
+for(let i=0;i<64;i++){
+const v=fd[i]/255;
+const h=v*H*0.85;
+ctx.fillStyle=g;
+ctx.globalAlpha=0.9;
+ctx.fillRect(i*bw,H-h,bw-1,h);
+ctx.globalAlpha=1;
+}
+ctx.beginPath();
+for(let i=0;i<64;i++){
+const y=H-fd[i]/255*H*0.85;
+i===0?ctx.moveTo(i*bw,y):ctx.lineTo(i*bw,y);
+}
+ctx.strokeStyle='rgba(255,255,255,0.7)';ctx.lineWidth=2;ctx.stroke();
+}
+else if(mode===5){// パーティクル
+let avg=0;for(let i=0;i<64;i++)avg+=fd[i];avg/=64;
+particles.forEach((p,idx)=>{
+const v=fd[idx%64]/255;
+const f=fd[Math.floor(idx/2)%64]/255;
+const force=avg*speed*0.03;
+p.vx+=Math.sin(idx+Date.now()*0.001)*f*speed*0.02;
+p.vy+=Math.cos(idx+Date.now()*0.001)*f*speed*0.02-0.2;
+p.x+=p.vx;p.y+=p.vy;
+p.vx*=0.94;p.vy*=0.94;
+if(p.x<0)p.x=W;if(p.x>W)p.x=0;
+if(p.y<-20)p.y=H+20;if(p.y>H+20)p.y=-20;
+ctx.beginPath();
+ctx.arc(p.x,p.y,p.r*(0.7+v*0.5),0,Math.PI*2);
+ctx.fillStyle=`hsla(${p.hue+(f*60)},80%,${50+v*30}%,${0.4+f*0.6})`;
+ctx.fill();
+ctx.shadowBlur=p.r*v*10;
+ctx.shadowColor=`hsl(${p.hue},100%,60%)`;
+ctx.beginPath();
+ctx.arc(p.x,p.y,p.r*(0.3+v*0.3),0,Math.PI*2);
+ctx.fillStyle=`hsla(255,255%,255%,${0.3*v})`;
+ctx.fill();
+ctx.shadowBlur=0;
+});
+}
+requestAnimationFrame(draw);
+}
+draw();
+</script>
 </body>
 </html>
