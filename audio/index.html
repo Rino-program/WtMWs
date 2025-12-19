@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Audio Visualizer Pro V7</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Canvas Layer -->
+    <canvas id="cv"></canvas>
+
+    <!-- UI Layer -->
+    <div id="uiLayer">
+        <!-- Top Bar -->
+        <div class="top-bar glass">
+            <div class="status-display">
+                <span id="statusText">🎵 待機中...</span>
+                <span id="timeDisplay">0:00 / 0:00</span>
+            </div>
+            <div class="top-controls">
+                <!-- Input Source Toggle -->
+                <div class="input-toggle-group">
+                    <button id="sourceFileBtn" class="toggle-btn active" title="ファイル再生モード">📁 File</button>
+                    <button id="sourceMicBtn" class="toggle-btn" title="マイク入力モード">🎤 Mic</button>
+                </div>
+                <button id="toggleUIBtn" class="icon-btn" title="UI表示切替 (H)">⛶</button>
+                <button id="openSettingsBtn" class="icon-btn" title="設定">⚙️</button>
+            </div>
+        </div>
+
+        <!-- Center Overlay -->
+        <div id="overlayMsg" class="overlay-msg hidden"></div>
+
+        <!-- Bottom Controls -->
+        <div id="controlsBar" class="controls-bar glass">
+            <!-- Progress -->
+            <div class="progress-container" id="progressContainer">
+                <input type="range" id="seekBar" value="0" min="0" step="0.1">
+            </div>
+
+            <!-- Main Controls Row -->
+            <div class="main-controls">
+                <!-- Left: Volume & Playlist -->
+                <div class="control-group left">
+                    <button id="playlistToggle" class="icon-btn" title="プレイリスト">📂</button>
+                    <div class="volume-controls">
+                        <span id="volIcon">🔊</span>
+                        <input type="range" id="volSlider" min="0" max="1" step="0.05" value="1">
+                    </div>
+                </div>
+
+                <!-- Center: Playback -->
+                <div class="control-group center" id="playbackControls">
+                    <button id="prevBtn" class="ctrl-btn sm">⏮</button>
+                    <button id="playBtn" class="ctrl-btn play-btn">▶</button>
+                    <button id="nextBtn" class="ctrl-btn sm">⏭</button>
+                </div>
+
+                <!-- Right: Mode & Export -->
+                <div class="control-group right">
+                    <select id="modeSelect" class="mode-select">
+                        <option value="0">Bars</option>
+                        <option value="1">Wave</option>
+                        <option value="2">Digital</option>
+                        <option value="3">Circle</option>
+                        <option value="4">Spectrum</option>
+                        <option value="5">Galaxy</option>
+                        <option value="6">Monitor</option>
+                        <option value="7">Hexagon</option>
+                        <option value="8">Mirror</option>
+                    </select>
+                    <button id="exportBtn" class="icon-btn" title="動画書き出し">🎬</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Playlist Panel -->
+        <div id="playlistPanel" class="playlist-panel glass collapsed">
+            <div class="playlist-header">
+                <h3>プレイリスト</h3>
+                <div class="playlist-actions">
+                    <label class="file-btn">
+                        📁 追加
+                        <input type="file" id="fileInput" multiple accept="audio/*" hidden>
+                    </label>
+                    <button id="gDriveBtn" class="drive-btn">☁️ Drive</button>
+                </div>
+            </div>
+            <div id="playlistItems" class="playlist-items">
+                <div class="playlist-empty">曲を追加してください</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h2>設定</h2>
+                <button id="closeSettingsBtn" class="close-btn">✖</button>
+            </div>
+            
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="display">表示</button>
+                <button class="tab-btn" data-tab="audio">音声/入力</button>
+                <button class="tab-btn" data-tab="gdrive">Drive連携</button>
+            </div>
+
+            <div class="tab-content active" id="tab-display">
+                <div class="setting-item">
+                    <label>スムージング (滑らかさ)</label>
+                    <input type="range" id="smoothingSlider" min="0.1" max="0.95" step="0.05">
+                    <span id="smoothingValue">0.70</span>
+                </div>
+                <div class="setting-item">
+                    <label>感度 (Sensitivity)</label>
+                    <input type="range" id="sensitivitySlider" min="0.1" max="3.0" step="0.1">
+                    <span id="sensitivityValue">1.0</span>
+                </div>
+                <div class="setting-item">
+                    <label>バーの本数</label>
+                    <select id="barCountSelect">
+                        <option value="32">32</option>
+                        <option value="64">64</option>
+                        <option value="128">128</option>
+                        <option value="256">256</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="showLabelsCheckbox"> 周波数ラベルを表示
+                    </label>
+                </div>
+                <hr style="border-color: var(--glass-border); margin: 20px 0;">
+                <div class="setting-item">
+                    <label>発光強度 (Glow)</label>
+                    <input type="range" id="glowSlider" min="0" max="50" step="1">
+                    <span id="glowValue">中</span>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="rainbowCheckbox"> 虹色モード (Rainbow)
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>固定色</label>
+                    <input type="color" id="fixedColorPicker">
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="persistSettingsCheckbox"> 設定を保存する
+                    </label>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-audio">
+                <div class="setting-item">
+                    <label>マイク入力デバイス</label>
+                    <select id="micDeviceSelect" style="width: 100%;">
+                        <option value="">デフォルト</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>周波数範囲 (Low - High)</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="range" id="lowFreqSlider" min="20" max="500" step="10" style="flex:1">
+                        <span id="lowFreqValue" style="width: 50px; text-align: right;">20Hz</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
+                        <input type="range" id="highFreqSlider" min="1000" max="20000" step="500" style="flex:1">
+                        <span id="highFreqValue" style="width: 50px; text-align: right;">16kHz</span>
+                    </div>
+                </div>
+                <hr style="border-color: var(--glass-border); margin: 20px 0;">
+                <div class="setting-item">
+                    <label>イコライザー (EQ)</label>
+                    <div class="eq-controls" style="display: flex; gap: 4px; height: 100px; align-items: flex-end;">
+                        <!-- EQ Sliders generated by JS, but placeholders here for structure -->
+                        <div style="flex:1; display:flex; flex-direction:column; align-items:center;">
+                            <input type="range" id="eq60" min="-20" max="20" step="1" orient="vertical" style="writing-mode: bt-lr; appearance: slider-vertical; width: 8px; height: 80px;">
+                            <span style="font-size:0.6rem; margin-top:4px;">60</span>
+                        </div>
+                        <div style="flex:1; display:flex; flex-direction:column; align-items:center;">
+                            <input type="range" id="eq170" min="-20" max="20" step="1" orient="vertical" style="writing-mode: bt-lr; appearance: slider-vertical; width: 8px; height: 80px;">
+                            <span style="font-size:0.6rem; margin-top:4px;">170</span>
+                        </div>
+                        <div style="flex:1; display:flex; flex-direction:column; align-items:center;">
+                            <input type="range" id="eq350" min="-20" max="20" step="1" orient="vertical" style="writing-mode: bt-lr; appearance: slider-vertical; width: 8px; height: 80px;">
+                            <span style="font-size:0.6rem; margin-top:4px;">350</span>
+                        </div>
+                        <div style="flex:1; display:flex; flex-direction:column; align-items:center;">
+                            <input type="range" id="eq1k" min="-20" max="20" step="1" orient="vertical" style="writing-mode: bt-lr; appearance: slider-vertical; width: 8px; height: 80px;">
+                            <span style="font-size:0.6rem; margin-top:4px;">1k</span>
+                        </div>
+                        <div style="flex:1; display:flex; flex-direction:column; align-items:center;">
+                            <input type="range" id="eq3k" min="-20" max="20" step="1" orient="vertical" style="writing-mode: bt-lr; appearance: slider-vertical; width: 8px; height: 80px;">
+                            <span style="font-size:0.6rem; margin-top:4px;">3k</span>
+                        </div>
+                        <div style="flex:1; display:flex; flex-direction:column; align-items:center;">
+                            <input type="range" id="eq6k" min="-20" max="20" step="1" orient="vertical" style="writing-mode: bt-lr; appearance: slider-vertical; width: 8px; height: 80px;">
+                            <span style="font-size:0.6rem; margin-top:4px;">6k</span>
+                        </div>
+                        <div style="flex:1; display:flex; flex-direction:column; align-items:center;">
+                            <input type="range" id="eq12k" min="-20" max="20" step="1" orient="vertical" style="writing-mode: bt-lr; appearance: slider-vertical; width: 8px; height: 80px;">
+                            <span style="font-size:0.6rem; margin-top:4px;">12k</span>
+                        </div>
+                        <div style="flex:1; display:flex; flex-direction:column; align-items:center;">
+                            <input type="range" id="eq14k" min="-20" max="20" step="1" orient="vertical" style="writing-mode: bt-lr; appearance: slider-vertical; width: 8px; height: 80px;">
+                            <span style="font-size:0.6rem; margin-top:4px;">14k</span>
+                        </div>
+                    </div>
+                    <button id="resetEqBtn" style="margin-top: 10px; width: 100%; padding: 6px; background: rgba(255,255,255,0.1); border:none; color:#fff; border-radius:4px; cursor:pointer;">EQリセット</button>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-gdrive">
+                <div class="setting-item">
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
+                        Google Driveから音楽ファイルを直接再生するには、Google Cloud ConsoleでAPIキーとクライアントIDを取得する必要があります。
+                    </p>
+                    <label>Client ID</label>
+                    <input type="text" id="clientIdInput" placeholder="YOUR_CLIENT_ID" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: #fff; border-radius: 4px;">
+                </div>
+                <div class="setting-item">
+                    <label>API Key</label>
+                    <input type="text" id="apiKeyInput" placeholder="YOUR_API_KEY" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: #fff; border-radius: 4px;">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="saveSettingsBtn">保存して閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

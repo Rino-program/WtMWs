@@ -1,9 +1,9 @@
 /**
  * Service Worker for Study Support NG
- * v1.0.0
+ * v1.0.1
  */
 
-const CACHE_NAME = 'study-support-ng-v1';
+const CACHE_NAME = 'study-support-ng-v1.0.1';
 const OFFLINE_URL = './index.html';
 
 const STATIC_ASSETS = [

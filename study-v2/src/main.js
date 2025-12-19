@@ -1,6 +1,6 @@
 /**
  * Study Support NG - Main Entry Point
- * v1.0.0
+ * v1.0.1
  */
 
 import { db, STORES } from './core/database.js';
@@ -336,7 +336,8 @@ class App {
   async registerServiceWorker() {
     if ('serviceWorker' in navigator) {
       try {
-        const registration = await navigator.serviceWorker.register('./sw.js');
+        // Add version query to bypass browser cache for the SW file itself
+        const registration = await navigator.serviceWorker.register('./sw.js?v=1.0.1');
         console.log('✅ Service Worker 登録完了:', registration.scope);
         
         // Check for updates

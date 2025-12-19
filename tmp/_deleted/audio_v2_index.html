@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Audio Visualizer & Player</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Canvas for Visualization -->
+    <canvas id="cv"></canvas>
+
+    <!-- UI Layer -->
+    <div class="ui-layer">
+        <!-- Header -->
+        <div class="header ui-element">
+            <div style="display: flex; gap: 10px;">
+                <a href="../" class="back-btn">← 戻る</a>
+                <button class="btn-icon" id="openSettingsBtn" title="設定">⚙️</button>
+            </div>
+            <div class="info-panel">
+                <div id="statusText">未選択</div>
+            </div>
+        </div>
+
+        <!-- Playlist Panel -->
+        <div class="playlist-panel collapsed ui-element" id="playlistPanel">
+            <div class="playlist-header">
+                <span>プレイリスト</span>
+                <div class="playlist-toggle" id="playlistToggle">📂</div>
+            </div>
+            <div class="playlist-content" id="playlistItems">
+                <!-- Items will be added here -->
+                <div style="padding:15px; color:#aaa; text-align:center; font-size:0.8rem;">
+                    曲を追加してください
+                </div>
+            </div>
+            <div class="playlist-controls">
+                <label class="btn btn-primary" style="flex:1; justify-content:center;">
+                    📁 ローカル追加
+                    <input type="file" id="fileInput" accept="audio/*" multiple style="display:none">
+                </label>
+                <button class="btn btn-google" id="gDriveBtn" style="flex:1; justify-content:center;">
+                    ☁ Drive追加
+                </button>
+            </div>
+        </div>
+
+        <!-- Bottom Controls -->
+        <div class="controls-bar ui-element">
+            <!-- Seek Bar -->
+            <div class="seek-container">
+                <span id="currentTime">0:00</span>
+                <input type="range" class="seek-bar" id="seekBar" value="0" min="0" step="0.1">
+                <span id="duration">0:00</span>
+            </div>
+
+            <!-- Main Controls -->
+            <div class="main-controls">
+                <!-- Playback Buttons -->
+                <div class="playback-controls">
+                    <button class="btn-icon" id="prevBtn">⏮</button>
+                    <button class="btn-icon btn-play" id="playBtn">▶</button>
+                    <button class="btn-icon" id="nextBtn">⏭</button>
+                </div>
+
+                <!-- Settings -->
+                <div class="settings-group">
+                    <select id="modeSelect" class="mode-select">
+                        <option value="0">バー</option>
+                        <option value="1">波形</option>
+                        <option value="2">スクロール波</option>
+                        <option value="3">サークル</option>
+                        <option value="4">スペクトラム</option>
+                        <option value="5">パーティクル</option>
+                    </select>
+                    
+                    <div class="volume-container">
+                        <span>🔊</span>
+                        <input type="range" id="volSlider" class="volume-slider" min="0" max="1" step="0.05" value="1">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Drive Settings Modal -->
+    <div class="modal-overlay" id="gDriveModal">
+        <div class="modal ui-element">
+            <h3>Google Drive 設定</h3>
+            <p style="font-size:0.8rem; color:#aaa; margin-bottom:15px;">
+                Google Driveからファイルを選択するには、Google Cloud ProjectのClient IDとAPI Keyが必要です。
+            </p>
+            <div class="form-group">
+                <label>Client ID</label>
+                <input type="text" id="clientIdInput" placeholder="YOUR_CLIENT_ID.apps.googleusercontent.com">
+            </div>
+            <div class="form-group">
+                <label>API Key</label>
+                <input type="text" id="apiKeyInput" placeholder="YOUR_API_KEY">
+            </div>
+            <div class="modal-actions">
+                <button class="btn" id="cancelGDriveSettings">キャンセル</button>
+                <button class="btn btn-primary" id="saveGDriveSettings">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
