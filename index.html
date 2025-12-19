@@ -1,132 +1,759 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="./img/title.png">
-    <link rel="stylesheet" href=".\\html\\blog\\blogcss\\blogstyle.css">
-    <title>Welcome to My Website (main page)</title>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-144HPKP3NS"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-144HPKP3NS');
-    </script>
-    <style>
-    body {
-        margin-left: 20px; /* 左に20pxの空白を作成 */
-    }
-    #main-header {
-        margin-left: -20px;
-    }
-    #main-nav {
-        margin-left: -20px;
-    }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Study Support - 学習を冒険に変える次世代学習サポートアプリ">
+  <meta name="keywords" content="ポモドーロ,タイマー,学習,タスク管理,ゲーミフィケーション">
+  <meta name="author" content="Rino-program">
+  <meta name="theme-color" content="#0f172a">
+  
+  <title>Study Support</title>
+  
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>📚</text></svg>">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="./src/styles/variables.css">
+  <link rel="stylesheet" href="./src/styles/reset.css">
+  <link rel="stylesheet" href="./src/styles/animations.css">
+  <link rel="stylesheet" href="./src/styles/components.css">
+  <link rel="stylesheet" href="./src/styles/layout.css">
+  <link rel="stylesheet" href="./src/styles/main.css">
 </head>
 <body>
-    <header id="main-header">
-        <h1>Welcome to My Website</h1>
-        <p>全体最終更新日:2025/12/15</p>
-        <p>ノーコードで作れるようなツールは基本使っていません。(一部githubcopilotを使用)</p>
-        <p>このサイトはRino-programが作成したものです。</p>
+  <div id="app" class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header__brand">
+        <span class="header__logo">📚</span>
+        <h1 class="header__title">Study Support</h1>
+      </div>
+      
+      <div class="header__stats">
+        <div class="level-badge" id="level-badge">
+          <span class="level-badge__icon">⭐</span>
+          <span class="level-badge__level">Lv.1</span>
+          <div class="level-badge__xp-bar">
+            <div class="level-badge__xp-fill" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="streak-badge" id="streak-badge">
+          <span class="streak-badge__icon">🔥</span>
+          <span class="streak-badge__count">0日</span>
+        </div>
+      </div>
+      
+      <nav class="header__nav">
+        <button class="nav-btn active" data-view="timer" title="タイマー">
+          <span class="nav-btn__icon">⏱️</span>
+          <span class="nav-btn__label">タイマー</span>
+        </button>
+        <button class="nav-btn" data-view="tasks" title="タスク">
+          <span class="nav-btn__icon">✅</span>
+          <span class="nav-btn__label">タスク</span>
+        </button>
+        <button class="nav-btn" data-view="stats" title="統計">
+          <span class="nav-btn__icon">📊</span>
+          <span class="nav-btn__label">統計</span>
+        </button>
+        <button class="nav-btn" data-view="achievements" title="実績">
+          <span class="nav-btn__icon">🏆</span>
+          <span class="nav-btn__label">実績</span>
+        </button>
+        <button class="nav-btn" data-view="settings" title="設定">
+          <span class="nav-btn__icon">⚙️</span>
+          <span class="nav-btn__label">設定</span>
+        </button>
+      </nav>
     </header>
-    <nav id="main-nav">
-        <ul>
-            <li><a href="./html/index.html">メインページ</a></li>
-            <li><a href="./html/blog_list.html">ブログ一覧</a></li>
-            <li><a href="./tokusetu.html">特設サイト一覧</a></li>
-            <li><a href="./vote/index.html">投票ページ</a></li>
-            <li><a href="./post">ポスト集 (不定期更新中！)</a></li>
-            <li><a href="./study-v2">勉強補助サイト</a></li>
-            <li><a href="https://forms.gle/6dbLHQxDBsK87Ksv6">お問い合わせ</a></li>
-        </ul>
-    </nav>
-    <br>
-    <h2>サイトの説明</h2>
-    <p>このサイトでは</p>
-    <p>ブログやリンク集などの</p>
-    <p>様々な情報を提供します。</p>
-    <p>〜最近のお知らせ〜(基本3つ)</p>
-    <ul>
-        <li>25/11/15 AtCoder(外部): 初入茶達成！418茶(+36)</li>
-        <li>25/10/05 tsite-blog: 特設サイト内のLGBTQ+に関するブログ記事(blog0,1)を公開しました。</li>
-        <li>25/10/05 tsite: 特設サイト<a href="./algo">「Algorithm Visualizer - アルゴリズム可視化ツール」</a>を公開しました。</li>
-    </ul>
-    <h2>～投票・アンケート～</h2>
-    <a style="margin-left: 30px;" href="./vote/index.html">投票ページ</a>
-    <h2>〜特設サイト〜</h2>
-    <a style="margin-left: 30px;" href="./tokusetu.html">特設サイト一覧</a>
-    <h2>～ブログ～</h2>
-    <a style="margin-left: 30px;" href="./html/blog_list.html">ブログ一覧</a>
-    <h2>～ポスト集～ (不定期更新中！！)</h2>
-    <a style="margin-left: 30px;" href="./post">ポスト集</a>
-    <h2>～勉強補助サイト～</h2>
-    <a style="margin-left: 30px;" href="./study-v2">勉強補助サイト</a><br>
-    <p style="margin-left: 30px;">ほぼ完成です！</p>
-    <h2>～デモコレクション集～</h2>
-    <a style="margin-left: 30px;" href="./tmp">デモコレクション集(pre)</a><br>
-    <h2>～Rinotti-Familyとは～</h2>
-    <p style="margin-left: 30px;">
-        Rinotti-Familyは、Rino-programを中心とした家族のようなコミュニティです。<br>
-        運営は実質一人ですが、閲覧者の事も考えながらの運営を心がけて、<br>
-        Rinotti-Familyとしました。(ほかにも理由はありますが...)
-    </p>
-    <h2>～リンク集～</h2>
-    <ul>
-        <li>
-            <a href="./index.html">Welcome to My Website (ここです)</a>
-            <p>私のウェブサイトです。ブログやリンク集などがあります。</p>
-        </li>
-        <li>
-            <a href="./html/blog_list.html">ブログ一覧</a>
-            <p>ブログの一覧ページです。投稿を確認できます。</p>
-        </li>
-        <li>
-            <a href="./post">ポスト集</a>
-            <p>ちょっとした投稿を集めたページです。短い内容の投稿が多いです。</p>
-        </li>
-        <li>
-            <a href="https://forms.gle/6dbLHQxDBsK87Ksv6">google フォーム</a>
-            <p>
-                もともとマシュマロで受付していたものを移行しました。<br>
-                不具合報告、依頼受付、質問受付、ご感想などが送れます。<br>
-                内容はお問い合わせと全く同じです。
-            </p>
-        </li>
-        <li>
-            <a href="https://atcoder.jp/users/yakiringo">AtCoder(競技プログラミング)</a>
-            <p>
-                AtCoderという国内最大級・世界規模の競技プログラミングサイトです。<br>
-                現在491茶色(2025/12/15)まで上り詰めています！<br>
-                応援よろしくお願いします！
-            </p>
-        </li>
-        <li>
-            <a href="https://github.com/Rino-program/public-code">github</a>
-            <p>プログラムの保管庫です。</p>
-        </li>
-    </ul>
-    <section id="update-schedule">
-        <h2>製作中, 制作予定リスト</h2>
-        <ul>
-            <li>ブログ記事を制作予定 (C++) → 大幅延期中</li>
-            <li>地震の特設サイトを制作中 → apiの利用規約により不可能かも...</li>
-            <li>勉強補助サイト → AIの発達に合わせて進行させる予定です。少々お待ちを。</li>
-        </ul>
-    </section>
-    <h2 id="otoiawase">～お問い合わせ～</h2>
-    <p>ご意見やご質問がありましたら、<a href="https://forms.gle/6dbLHQxDBsK87Ksv6">google フォーム</a>でご連絡ください。</p>
-    <br>
-    <h3>～感謝～</h3>
-    <p>サイトのコードや公開: <a href="https://docs.github.com/jp/pages">GitHub Pages</a></p>
-    <p>コーディング補助・一部サイトの構築: <a href="https://github.com/features/copilot">GitHubCopilot</a></p>
-    <p>サイトURLのDNS: <a href="https://ddns.kuku.lu/">DDSN Now</a> / <a href="https://aquapal.net/">aquapal</a></p>
-    <br>
-    <hr>
-    <p>このサイト内ではより良いサイト作りの為、Google Analyticsでの情報収集を行っています。</p>
-    <footer><a href="https://github.com/Rino-program">@Rino-program</a></footer>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Timer View -->
+      <section class="view view--timer active" id="view-timer">
+        <div class="timer-layout">
+          <!-- Timer Panel -->
+          <div class="panel timer-panel">
+            <div class="panel__header">
+              <h2 class="panel__title">🍅 ポモドーロタイマー</h2>
+              <div class="timer-mode-selector">
+                <button class="mode-btn active" data-mode="focus">集中</button>
+                <button class="mode-btn" data-mode="short">短休憩</button>
+                <button class="mode-btn" data-mode="long">長休憩</button>
+              </div>
+            </div>
+            
+            <div class="timer-display">
+              <div class="timer-ring">
+                <svg class="timer-ring__svg" viewBox="0 0 200 200">
+                  <circle class="timer-ring__bg" cx="100" cy="100" r="90" />
+                  <circle class="timer-ring__progress" cx="100" cy="100" r="90" id="timer-progress" />
+                </svg>
+                <div class="timer-ring__content">
+                  <div class="timer-time" id="timer-time">25:00</div>
+                  <div class="timer-label" id="timer-label">集中タイム</div>
+                </div>
+              </div>
+              
+              <div class="timer-info">
+                <span class="timer-round" id="timer-round">ラウンド 1/4</span>
+                <span class="timer-task" id="timer-task">タスク未選択</span>
+              </div>
+            </div>
+            
+            <div class="timer-controls">
+              <button class="btn btn--primary btn--lg" id="timer-start">
+                <span class="btn__icon">▶️</span>
+                スタート
+              </button>
+              <button class="btn btn--secondary btn--lg hidden" id="timer-pause">
+                <span class="btn__icon">⏸️</span>
+                一時停止
+              </button>
+              <button class="btn btn--primary btn--lg hidden" id="timer-resume">
+                <span class="btn__icon">▶️</span>
+                再開
+              </button>
+              <button class="btn btn--ghost" id="timer-skip">
+                <span class="btn__icon">⏭️</span>
+                スキップ
+              </button>
+              <button class="btn btn--danger btn--ghost" id="timer-reset">
+                <span class="btn__icon">🔄</span>
+                リセット
+              </button>
+            </div>
+            
+            <!-- Daily Goal Progress Bar -->
+            <div class="daily-goal-progress">
+              <div class="daily-goal-header">
+                <span class="daily-goal-label">📈 今日の目標達成度</span>
+                <span class="daily-goal-value" id="daily-goal-text">0 / 120分</span>
+              </div>
+              <div class="daily-goal-bar">
+                <div class="daily-goal-fill" id="daily-goal-fill" style="width: 0%"></div>
+              </div>
+            </div>
+            
+            <div class="timer-today-stats">
+              <div class="stat-card stat-card--mini">
+                <span class="stat-card__icon">🎯</span>
+                <div class="stat-card__content">
+                  <span class="stat-card__value" id="today-pomodoros">0</span>
+                  <span class="stat-card__label">今日のポモドーロ</span>
+                </div>
+              </div>
+              <div class="stat-card stat-card--mini">
+                <span class="stat-card__icon">⏰</span>
+                <div class="stat-card__content">
+                  <span class="stat-card__value" id="today-minutes">0分</span>
+                  <span class="stat-card__label">今日の学習時間</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Focus Mode Toggle -->
+            <div class="focus-mode-section">
+              <button class="btn btn--secondary focus-mode-btn" id="focus-mode-btn">
+                <span class="btn__icon">🧘</span>
+                フォーカスモード
+              </button>
+              <button class="btn btn--secondary bgm-btn" id="bgm-btn" title="BGM再生">
+                <span class="btn__icon">🎵</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Current Task Panel -->
+          <div class="panel task-quick-panel">
+            <div class="panel__header">
+              <h2 class="panel__title">📋 現在のタスク</h2>
+              <button class="btn btn--icon" id="quick-add-task" title="タスク追加">➕</button>
+            </div>
+            
+            <div class="current-task-display" id="current-task-display">
+              <div class="current-task-empty">
+                <span class="current-task-empty__icon">📝</span>
+                <p>タスクを選択してください</p>
+                <button class="btn btn--secondary btn--sm" id="select-task-btn">タスクを選択</button>
+              </div>
+            </div>
+            
+            <div class="quick-task-list" id="quick-task-list">
+              <h3 class="quick-task-list__title">最近のタスク</h3>
+              <div class="quick-task-items" id="quick-task-items">
+                <!-- タスクアイテムがここに動的に追加 -->
+              </div>
+            </div>
+          </div>
+          
+          <!-- Motivation Quote Panel -->
+          <div class="panel motivation-panel">
+            <div class="motivation-quote" id="motivation-quote">
+              <span class="motivation-icon">💡</span>
+              <p class="motivation-text">"継続は力なり。今日の努力が明日の成功を作る。"</p>
+            </div>
+            <button class="btn btn--ghost btn--sm" id="new-quote-btn">次の名言</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tasks View -->
+      <section class="view view--tasks" id="view-tasks">
+        <div class="tasks-layout">
+          <div class="panel tasks-panel">
+            <div class="panel__header">
+              <h2 class="panel__title">✅ タスク管理</h2>
+              <div class="tasks-actions">
+                <button class="btn btn--primary btn--sm" id="add-task-btn">
+                  <span class="btn__icon">➕</span>
+                  タスク追加
+                </button>
+                <button class="btn btn--secondary btn--sm" id="add-folder-btn">
+                  <span class="btn__icon">📁</span>
+                  フォルダ追加
+                </button>
+              </div>
+            </div>
+            
+            <div class="tasks-filters">
+              <div class="filter-group">
+                <select class="select" id="folder-filter">
+                  <option value="all">すべてのフォルダ</option>
+                </select>
+              </div>
+              <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">すべて</button>
+                <button class="filter-tab" data-filter="active">未完了</button>
+                <button class="filter-tab" data-filter="completed">完了</button>
+              </div>
+              <div class="search-box">
+                <input type="text" class="input" id="task-search" placeholder="タスクを検索...">
+              </div>
+            </div>
+            
+            <div class="tasks-list" id="tasks-list">
+              <!-- タスクリストがここに動的に追加 -->
+              <div class="tasks-empty" id="tasks-empty">
+                <span class="tasks-empty__icon">📋</span>
+                <p>タスクがありません</p>
+                <p class="tasks-empty__hint">「タスク追加」ボタンから新しいタスクを作成しましょう</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Stats View -->
+      <section class="view view--stats" id="view-stats">
+        <div class="stats-layout">
+          <!-- Weekly Summary Card -->
+          <div class="panel weekly-summary-panel">
+            <div class="panel__header">
+              <h2 class="panel__title">📊 週間サマリー</h2>
+              <span class="week-range" id="week-range">12/9 - 12/15</span>
+            </div>
+            <div class="weekly-stats-grid">
+              <div class="weekly-stat">
+                <span class="weekly-stat__value" id="week-total-time">0時間</span>
+                <span class="weekly-stat__label">学習時間</span>
+                <span class="weekly-stat__change positive" id="week-time-change">--</span>
+              </div>
+              <div class="weekly-stat">
+                <span class="weekly-stat__value" id="week-total-pomodoros">0</span>
+                <span class="weekly-stat__label">ポモドーロ</span>
+                <span class="weekly-stat__change positive" id="week-pomo-change">--</span>
+              </div>
+              <div class="weekly-stat">
+                <span class="weekly-stat__value" id="week-total-tasks">0</span>
+                <span class="weekly-stat__label">完了タスク</span>
+                <span class="weekly-stat__change positive" id="week-task-change">--</span>
+              </div>
+              <div class="weekly-stat">
+                <span class="weekly-stat__value" id="week-avg-daily">0分</span>
+                <span class="weekly-stat__label">日平均</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="stats-overview">
+            <div class="stat-card">
+              <span class="stat-card__icon">⏱️</span>
+              <div class="stat-card__content">
+                <span class="stat-card__value" id="stat-total-time">0時間</span>
+                <span class="stat-card__label">総学習時間</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-card__icon">🍅</span>
+              <div class="stat-card__content">
+                <span class="stat-card__value" id="stat-total-pomodoros">0</span>
+                <span class="stat-card__label">総ポモドーロ</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-card__icon">✅</span>
+              <div class="stat-card__content">
+                <span class="stat-card__value" id="stat-total-tasks">0</span>
+                <span class="stat-card__label">完了タスク</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-card__icon">🔥</span>
+              <div class="stat-card__content">
+                <span class="stat-card__value" id="stat-best-streak">0日</span>
+                <span class="stat-card__label">最長連続記録</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="panel stats-chart-panel">
+            <div class="panel__header">
+              <h2 class="panel__title">📈 学習推移</h2>
+              <div class="chart-period-selector">
+                <button class="period-btn active" data-period="week">週</button>
+                <button class="period-btn" data-period="month">月</button>
+              </div>
+            </div>
+            <div class="chart-container" id="study-chart">
+              <canvas id="study-chart-canvas"></canvas>
+            </div>
+          </div>
+          
+          <div class="panel stats-heatmap-panel">
+            <div class="panel__header">
+              <h2 class="panel__title">📅 学習カレンダー</h2>
+            </div>
+            <div class="heatmap-container" id="heatmap-container">
+              <!-- ヒートマップがここに動的に生成 -->
+            </div>
+            <div class="heatmap-legend">
+              <span class="heatmap-legend__label">少ない</span>
+              <div class="heatmap-legend__squares">
+                <div class="heatmap-square level-0"></div>
+                <div class="heatmap-square level-1"></div>
+                <div class="heatmap-square level-2"></div>
+                <div class="heatmap-square level-3"></div>
+                <div class="heatmap-square level-4"></div>
+              </div>
+              <span class="heatmap-legend__label">多い</span>
+            </div>
+          </div>
+          
+          <!-- Break Stretch Suggestions -->
+          <div class="panel stretch-panel" id="stretch-panel">
+            <div class="panel__header">
+              <h2 class="panel__title">🧘 休憩中のおすすめ</h2>
+            </div>
+            <div class="stretch-suggestions" id="stretch-suggestions">
+              <div class="stretch-item">
+                <span class="stretch-icon">👁️</span>
+                <div class="stretch-content">
+                  <h4>目の休憩</h4>
+                  <p>20秒間、20フィート（約6m）先を見つめましょう</p>
+                </div>
+              </div>
+              <div class="stretch-item">
+                <span class="stretch-icon">🙆</span>
+                <div class="stretch-content">
+                  <h4>肩回し</h4>
+                  <p>両肩を前後に10回ずつ回しましょう</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Achievements View -->
+      <section class="view view--achievements" id="view-achievements">
+        <div class="achievements-layout">
+          <div class="achievements-summary">
+            <div class="level-display">
+              <div class="level-display__badge">
+                <span class="level-display__number" id="current-level">1</span>
+              </div>
+              <div class="level-display__info">
+                <h2>レベル <span id="level-text">1</span></h2>
+                <div class="xp-bar">
+                  <div class="xp-bar__fill" id="xp-bar-fill" style="width: 0%"></div>
+                </div>
+                <p class="xp-text"><span id="current-xp">0</span> / <span id="next-level-xp">100</span> XP</p>
+              </div>
+            </div>
+            <div class="achievements-count">
+              <span class="achievements-count__number" id="unlocked-achievements">0</span>
+              <span class="achievements-count__label">/ <span id="total-achievements">0</span> 実績獲得</span>
+            </div>
+          </div>
+          
+          <div class="panel achievements-panel">
+            <div class="panel__header">
+              <h2 class="panel__title">🏆 実績一覧</h2>
+              <div class="achievements-filter">
+                <button class="filter-tab active" data-filter="all">すべて</button>
+                <button class="filter-tab" data-filter="unlocked">獲得済み</button>
+                <button class="filter-tab" data-filter="locked">未獲得</button>
+              </div>
+            </div>
+            <div class="achievements-grid" id="achievements-grid">
+              <!-- 実績がここに動的に追加 -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings View -->
+      <section class="view view--settings" id="view-settings">
+        <div class="settings-layout">
+          <div class="panel settings-panel">
+            <div class="panel__header">
+              <h2 class="panel__title">⚙️ 設定</h2>
+            </div>
+            
+            <div class="settings-group">
+              <h3 class="settings-group__title">⏱️ タイマー設定</h3>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-focus">集中時間（分）</label>
+                <input type="number" class="input input--sm" id="setting-focus" min="1" max="120" value="25">
+              </div>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-short-break">短い休憩（分）</label>
+                <input type="number" class="input input--sm" id="setting-short-break" min="1" max="30" value="5">
+              </div>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-long-break">長い休憩（分）</label>
+                <input type="number" class="input input--sm" id="setting-long-break" min="1" max="60" value="15">
+              </div>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-rounds">長休憩までのラウンド</label>
+                <input type="number" class="input input--sm" id="setting-rounds" min="1" max="10" value="4">
+              </div>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-auto-break">休憩を自動開始</label>
+                <label class="toggle">
+                  <input type="checkbox" id="setting-auto-break">
+                  <span class="toggle__slider"></span>
+                </label>
+              </div>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-auto-focus">集中を自動開始</label>
+                <label class="toggle">
+                  <input type="checkbox" id="setting-auto-focus">
+                  <span class="toggle__slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="settings-group">
+              <h3 class="settings-group__title">🎵 BGM設定</h3>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-bgm-type">BGMタイプ</label>
+                <select class="select select--sm" id="setting-bgm-type">
+                  <option value="none">なし</option>
+                  <option value="whitenoise">ホワイトノイズ</option>
+                  <option value="rain">雨音</option>
+                  <option value="forest">森の音</option>
+                  <option value="cafe">カフェの音</option>
+                  <option value="lofi">Lo-Fi ビート</option>
+                </select>
+              </div>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-bgm-volume">BGM音量</label>
+                <div class="volume-control">
+                  <input type="range" class="range-input" id="setting-bgm-volume" min="0" max="1" step="0.1" value="0.3">
+                  <span class="volume-value" id="bgm-volume-value">30%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="settings-group">
+              <h3 class="settings-group__title">🔔 通知設定</h3>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-sound">効果音</label>
+                <label class="toggle">
+                  <input type="checkbox" id="setting-sound" checked>
+                  <span class="toggle__slider"></span>
+                </label>
+              </div>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-notification">デスクトップ通知</label>
+                <label class="toggle">
+                  <input type="checkbox" id="setting-notification">
+                  <span class="toggle__slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="settings-group">
+              <h3 class="settings-group__title">🎨 表示設定</h3>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-theme">テーマ</label>
+                <select class="select select--sm" id="setting-theme">
+                  <option value="dark">ダーク</option>
+                  <option value="light">ライト</option>
+                  <option value="system">システム設定に従う</option>
+                </select>
+              </div>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-animations">アニメーション</label>
+                <label class="toggle">
+                  <input type="checkbox" id="setting-animations" checked>
+                  <span class="toggle__slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="settings-group">
+              <h3 class="settings-group__title">🎯 目標設定</h3>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-daily-goal">1日の目標（分）</label>
+                <input type="number" class="input input--sm" id="setting-daily-goal" min="15" max="720" value="120">
+              </div>
+              <div class="setting-item">
+                <label class="setting-item__label" for="setting-weekly-goal">1週間の目標（分）</label>
+                <input type="number" class="input input--sm" id="setting-weekly-goal" min="60" max="5040" value="600">
+              </div>
+            </div>
+            
+            <div class="settings-group">
+              <h3 class="settings-group__title">💾 データ管理</h3>
+              <div class="setting-item setting-item--buttons">
+                <button class="btn btn--secondary" id="export-data-btn">
+                  <span class="btn__icon">📤</span>
+                  データをエクスポート
+                </button>
+                <button class="btn btn--secondary" id="import-data-btn">
+                  <span class="btn__icon">📥</span>
+                  データをインポート
+                </button>
+                <input type="file" id="import-file-input" accept=".json" hidden>
+              </div>
+              <div class="setting-item setting-item--buttons">
+                <button class="btn btn--danger" id="reset-data-btn">
+                  <span class="btn__icon">🗑️</span>
+                  すべてのデータをリセット
+                </button>
+              </div>
+            </div>
+            
+            <div class="settings-group">
+              <h3 class="settings-group__title">⌨️ キーボードショートカット</h3>
+              <div class="shortcuts-list">
+                <div class="shortcut-item">
+                  <kbd>Space</kbd>
+                  <span>タイマー開始/一時停止</span>
+                </div>
+                <div class="shortcut-item">
+                  <kbd>S</kbd>
+                  <span>スキップ</span>
+                </div>
+                <div class="shortcut-item">
+                  <kbd>R</kbd>
+                  <span>リセット</span>
+                </div>
+                <div class="shortcut-item">
+                  <kbd>F</kbd>
+                  <span>フォーカスモード切替</span>
+                </div>
+                <div class="shortcut-item">
+                  <kbd>M</kbd>
+                  <span>BGM切替</span>
+                </div>
+                <div class="shortcut-item">
+                  <kbd>Alt + 1-5</kbd>
+                  <span>ビュー切替</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="modal-overlay">
+      <!-- Task Modal -->
+      <div class="modal" id="task-modal">
+        <div class="modal__header">
+          <h2 class="modal__title" id="task-modal-title">タスクを追加</h2>
+          <button class="modal__close" id="task-modal-close">&times;</button>
+        </div>
+        <form class="modal__body" id="task-form">
+          <div class="form-group">
+            <label class="form-label" for="task-title">タイトル <span class="required">*</span></label>
+            <input type="text" class="input" id="task-title" required placeholder="タスクのタイトル">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="task-folder">フォルダ</label>
+              <select class="select" id="task-folder">
+                <option value="default">デフォルト</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="task-priority">優先度</label>
+              <select class="select" id="task-priority">
+                <option value="low">🔵 低</option>
+                <option value="normal" selected>🟢 通常</option>
+                <option value="high">🟠 高</option>
+                <option value="urgent">🔴 緊急</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="task-estimated">見積もりポモドーロ</label>
+              <input type="number" class="input" id="task-estimated" min="0" max="100" value="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="task-deadline">締切日</label>
+              <input type="date" class="input" id="task-deadline">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="task-tags">タグ（カンマ区切り）</label>
+            <input type="text" class="input" id="task-tags" placeholder="数学, 試験対策">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="task-notes">メモ</label>
+            <textarea class="textarea" id="task-notes" rows="3" placeholder="タスクの詳細..."></textarea>
+          </div>
+          <div class="modal__footer">
+            <button type="button" class="btn btn--ghost" id="task-cancel-btn">キャンセル</button>
+            <button type="submit" class="btn btn--primary" id="task-save-btn">保存</button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Folder Modal -->
+      <div class="modal" id="folder-modal">
+        <div class="modal__header">
+          <h2 class="modal__title">フォルダを追加</h2>
+          <button class="modal__close" id="folder-modal-close">&times;</button>
+        </div>
+        <form class="modal__body" id="folder-form">
+          <div class="form-group">
+            <label class="form-label" for="folder-name">フォルダ名 <span class="required">*</span></label>
+            <input type="text" class="input" id="folder-name" required placeholder="フォルダ名">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="folder-color">色</label>
+            <input type="color" class="input input--color" id="folder-color" value="#22c55e">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="folder-icon">アイコン</label>
+            <select class="select" id="folder-icon">
+              <option value="📁">📁 フォルダ</option>
+              <option value="📚">📚 本</option>
+              <option value="💼">💼 仕事</option>
+              <option value="🎓">🎓 学校</option>
+              <option value="💡">💡 アイデア</option>
+              <option value="🏠">🏠 家</option>
+              <option value="🎯">🎯 目標</option>
+              <option value="⭐">⭐ 重要</option>
+            </select>
+          </div>
+          <div class="modal__footer">
+            <button type="button" class="btn btn--ghost" id="folder-cancel-btn">キャンセル</button>
+            <button type="submit" class="btn btn--primary">作成</button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Task Select Modal -->
+      <div class="modal" id="task-select-modal">
+        <div class="modal__header">
+          <h2 class="modal__title">タスクを選択</h2>
+          <button class="modal__close" id="task-select-modal-close">&times;</button>
+        </div>
+        <div class="modal__body">
+          <div class="task-select-list" id="task-select-list">
+            <!-- タスク選択リストがここに動的に追加 -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Level Up Modal -->
+      <div class="modal modal--celebration" id="level-up-modal">
+        <div class="level-up-content">
+          <div class="level-up-icon">🎉</div>
+          <h2 class="level-up-title">レベルアップ！</h2>
+          <p class="level-up-level">Level <span id="new-level">2</span></p>
+          <p class="level-up-message">おめでとうございます！学習の成果が出ていますね！</p>
+          <button class="btn btn--primary" id="level-up-close">続ける</button>
+        </div>
+      </div>
+      
+      <!-- Achievement Modal -->
+      <div class="modal modal--celebration" id="achievement-modal">
+        <div class="achievement-content">
+          <div class="achievement-icon" id="achievement-icon">🏆</div>
+          <h2 class="achievement-title">実績獲得！</h2>
+          <p class="achievement-name" id="achievement-name">早起き学習者</p>
+          <p class="achievement-description" id="achievement-description">午前6時前に学習を開始しました</p>
+          <p class="achievement-xp">+<span id="achievement-xp">50</span> XP</p>
+          <button class="btn btn--primary" id="achievement-close">やったー！</button>
+        </div>
+      </div>
+      
+      <!-- Confirm Modal -->
+      <div class="modal modal--confirm" id="confirm-modal">
+        <div class="modal__header">
+          <h2 class="modal__title" id="confirm-title">確認</h2>
+        </div>
+        <div class="modal__body">
+          <p id="confirm-message">本当によろしいですか？</p>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--ghost" id="confirm-cancel">キャンセル</button>
+          <button class="btn btn--danger" id="confirm-ok">OK</button>
+        </div>
+      </div>
+      
+      <!-- Pomodoro Complete Modal -->
+      <div class="modal modal--celebration" id="pomodoro-complete-modal">
+        <div class="pomodoro-complete-content">
+          <div class="pomodoro-complete-icon">🍅</div>
+          <h2 class="pomodoro-complete-title">ポモドーロ完了！</h2>
+          <p class="pomodoro-complete-time" id="completed-focus-time">25分間の集中お疲れ様でした</p>
+          <div class="pomodoro-complete-stats">
+            <div class="complete-stat">
+              <span class="complete-stat__value" id="complete-xp-gained">+25</span>
+              <span class="complete-stat__label">XP獲得</span>
+            </div>
+            <div class="complete-stat">
+              <span class="complete-stat__value" id="complete-today-count">3</span>
+              <span class="complete-stat__label">本日のポモドーロ</span>
+            </div>
+          </div>
+          <p class="pomodoro-complete-break" id="break-message">5分間の休憩を取りましょう</p>
+          <div class="pomodoro-complete-actions">
+            <button class="btn btn--primary" id="start-break-btn">休憩開始</button>
+            <button class="btn btn--ghost" id="skip-break-btn">スキップ</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Break Suggestion Modal -->
+      <div class="modal modal--break" id="break-modal">
+        <div class="break-content">
+          <div class="break-icon">☕</div>
+          <h2 class="break-title">休憩タイム</h2>
+          <div class="break-suggestions-modal" id="break-suggestions-modal">
+            <!-- 動的に休憩アクティビティを表示 -->
+          </div>
+          <button class="btn btn--secondary" id="break-modal-close">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="./src/main.js"></script>
 </body>
 </html>
