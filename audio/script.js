@@ -499,20 +499,9 @@ function initGoogleAuth() { if (typeof google === 'undefined' || !google.account
 function requestGoogleToken() { const tokenClient = google.accounts.oauth2.initTokenClient({ client_id: state.settings.gDriveClientId, scope: 'https://www.googleapis.com/auth/drive.readonly', callback: r => { if (r.error) return; accessToken = r.access_token; loadPickerApi(); } }); tokenClient.requestAccessToken({ prompt: 'consent' }); }
 function loadPickerApi() { if (typeof gapi !== 'undefined' && gapi.picker) createPicker(); else { const script = document.createElement('script'); script.src = 'https://apis.google.com/js/api.js'; script.onload = () => gapi.load('picker', createPicker); document.body.appendChild(script); } }
 function createPicker() { 
-    const mimeTypes = [
-        'audio/mpeg', 'audio/mp3',           // MP3
-        'audio/wav', 'audio/x-wav',          // WAV
-        'audio/ogg', 'audio/x-ogg',          // OGG/Vorbis
-        'audio/aac', 'audio/x-aac',          // AAC
-        'audio/m4a', 'audio/x-m4a', 'audio/mp4',  // M4A/MP4
-        'audio/webm', 'audio/x-webm',        // WebM
-        'audio/flac', 'audio/x-flac',        // FLAC
-        'audio/opus', 'audio/ogg; codecs=opus'    // Opus
-    ].join(',');
-    
+    // MIMEタイプフィルタを使用せず、すべてのファイルを表示可能にする
     const docsView = new google.picker.DocsView()
-        .setIncludeFolders(true)
-        .setMimeTypes(mimeTypes);
+        .setIncludeFolders(true);
     
     new google.picker.PickerBuilder()
         .addView(docsView)
@@ -523,7 +512,22 @@ function createPicker() {
         .build()
         .setVisible(true);
 }
-async function pickerCallback(data) { if (data[google.picker.Response.ACTION] === google.picker.Action.PICKED) { const docs = data[google.picker.Response.DOCUMENTS]; for (const doc of docs) await fetchDriveFile(doc[google.picker.Document.ID], doc[google.picker.Document.NAME]); } }
+async function pickerCallback(data) { 
+    if (data[google.picker.Response.ACTION] === google.picker.Action.PICKED) { 
+        const docs = data[google.picker.Response.DOCUMENTS]; 
+        for (const doc of docs) {
+            const fileName = doc[google.picker.Document.NAME];
+            const ext = fileName.toLowerCase().split('.').pop();
+            const allowedExt = new Set(['mp3', 'wav', 'm4a', 'aac', 'ogg', 'flac', 'mp4', 'webm', 'opus']);
+            
+            if (allowedExt.has(ext)) {
+                await fetchDriveFile(doc[google.picker.Document.ID], fileName);
+            } else {
+                console.warn(`非対応ファイル: ${fileName}`);
+            }
+        }
+    } 
+}
 async function fetchDriveFile(fileId, fileName) { try { const r = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, { headers: { 'Authorization': 'Bearer ' + accessToken } }); if (!r.ok) return; const blob = await r.blob(); state.playlist.push({ name: fileName, url: URL.createObjectURL(blob), source: 'drive' }); renderPlaylist(); if (state.currentIndex === -1) playTrack(state.playlist.length - 1); } catch (e) {} }
 
 // ============== UI CONTROLS ==============
