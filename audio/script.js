@@ -433,9 +433,28 @@ function formatTime(s) { if (!s || isNaN(s)) return '0:00'; const m = Math.floor
 // ============== PLAYLIST & DRIVE ==============
 function handleLocalFiles(e) {
     const files = Array.from(e.target.files);
-    files.forEach(file => { state.playlist.push({ name: file.name, url: URL.createObjectURL(file), source: 'local' }); });
+    const allowedExt = new Set(['mp3', 'wav', 'm4a', 'aac', 'ogg', 'flac', 'mp4', 'webm', 'opus']);
+    const accepted = [];
+
+    files.forEach(file => {
+        const name = (file.name || '').toLowerCase();
+        const ext = name.includes('.') ? name.split('.').pop() : '';
+        const isAudioMime = typeof file.type === 'string' && file.type.startsWith('audio/');
+        const isAllowedExt = allowedExt.has(ext);
+        if (isAudioMime || isAllowedExt) accepted.push(file);
+    });
+
+    if (accepted.length === 0) {
+        showOverlay('音声ファイルを選択してください');
+        e.target.value = '';
+        return;
+    }
+
+    accepted.forEach(file => {
+        state.playlist.push({ name: file.name, url: URL.createObjectURL(file), source: 'local' });
+    });
     renderPlaylist();
-    if (state.currentIndex === -1) playTrack(state.playlist.length - files.length);
+    if (state.currentIndex === -1) playTrack(state.playlist.length - accepted.length);
     e.target.value = '';
 }
 

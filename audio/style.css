@@ -402,9 +402,7 @@ select option {
 }
 
 .playlist-panel.collapsed {
-    transform: translateX(-20px);
-    opacity: 0;
-    pointer-events: none;
+    display: none;
 }
 
 .playlist-header {
