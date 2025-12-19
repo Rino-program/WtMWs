@@ -67,7 +67,13 @@ body {
 
 #uiLayer.hidden {
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
+}
+
+/* When UI is hidden, nothing inside it should ever receive pointer events. */
+#uiLayer.hidden, #uiLayer.hidden * {
+    pointer-events: none !important;
 }
 
 #uiLayer > * {
