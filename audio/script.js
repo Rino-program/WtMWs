@@ -79,6 +79,7 @@ const els = {
     fileInput: $('fileInput'),
     gDriveBtn: $('gDriveBtn'),
     toggleUIBtn: $('toggleUIBtn'),
+    fullscreenBtn: $('fullscreenBtn'),
     openSettingsBtn: $('openSettingsBtn'),
     exportBtn: $('exportBtn'),
     sourceFileBtn: $('sourceFileBtn'),
@@ -131,7 +132,8 @@ function init() {
     els.modeSelect.onchange = e => { state.mode = +e.target.value; };
     els.toggleUIBtn.onclick = toggleUI;
     // Initialize toggle button label
-    els.toggleUIBtn.textContent = state.uiVisible ? '⛶' : '◻';
+    els.toggleUIBtn.textContent = state.uiVisible ? '🔳' : '🔲';
+    els.fullscreenBtn.onclick = toggleFullscreen;
     els.openSettingsBtn.onclick = openSettings;
     els.closeSettingsBtn.onclick = closeSettings;
     els.saveSettingsBtn.onclick = saveSettings;
@@ -466,7 +468,24 @@ async function pickerCallback(data) { if (data[google.picker.Response.ACTION] ==
 async function fetchDriveFile(fileId, fileName) { try { const r = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, { headers: { 'Authorization': 'Bearer ' + accessToken } }); if (!r.ok) return; const blob = await r.blob(); state.playlist.push({ name: fileName, url: URL.createObjectURL(blob), source: 'drive' }); renderPlaylist(); if (state.currentIndex === -1) playTrack(state.playlist.length - 1); } catch (e) {} }
 
 // ============== UI CONTROLS ==============
-function toggleUI() { state.uiVisible = !state.uiVisible; els.uiLayer.classList.toggle('hidden', !state.uiVisible); els.toggleUIBtn.textContent = state.uiVisible ? '⛶' : '◻'; }
+function toggleUI() { 
+    state.uiVisible = !state.uiVisible; 
+    els.uiLayer.classList.toggle('hidden', !state.uiVisible); 
+    els.toggleUIBtn.textContent = state.uiVisible ? '🔳' : '🔲'; 
+}
+
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(e => {
+            console.error(`Error attempting to enable full-screen mode: ${e.message}`);
+        });
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+    }
+}
+
 function showOverlay(msg, duration = 2000) { els.overlayMsg.textContent = msg; els.overlayMsg.classList.remove('hidden'); if (duration > 0) setTimeout(() => { els.overlayMsg.classList.add('hidden'); }, duration); }
 function handleKeyboard(e) { if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return; switch (e.key.toLowerCase()) { case ' ': e.preventDefault(); togglePlay(); break; case 'h': toggleUI(); break; case 'arrowleft': prevTrack(); break; case 'arrowright': nextTrack(); break; } }
 
@@ -589,7 +608,16 @@ function drawSpectrum(fd, maxH, drawH, drawStartY) {
         const v = fd[i] / 255; const h = v * maxH; const x = i * bw + bw / 2; const y = drawStartY + drawH - h;
         if (i === 0) ctx.lineTo(x, y); else { const prevX = (i - 1) * bw + bw / 2; const prevY = drawStartY + drawH - (fd[i - 1] / 255) * maxH; const cx = (prevX + x) / 2; ctx.bezierCurveTo(cx, prevY, cx, y, x, y); }
     }
-    ctx.lineTo(W, drawStartY + drawH); ctx.closePath(); const grad = ctx.createLinearGradient(0, drawStartY + drawH - maxH, 0, drawStartY + drawH); const c = state.settings.rainbow ? `hsl(${(Date.now()*0.05)%360}, 80%, 60%)` : state.settings.fixedColor; grad.addColorStop(0, c); grad.addColorStop(1, 'transparent'); ctx.fillStyle = grad; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.lineTo(W, drawStartY + drawH); ctx.closePath(); 
+    
+    const grad = ctx.createLinearGradient(0, drawStartY + drawH - maxH, 0, drawStartY + drawH); 
+    const hue = (Date.now() * 0.05) % 360;
+    const c = state.settings.rainbow ? `hsl(${hue}, 80%, 60%)` : state.settings.fixedColor; 
+    grad.addColorStop(0, c); grad.addColorStop(1, 'transparent'); 
+    ctx.fillStyle = grad; ctx.fill(); 
+    
+    ctx.strokeStyle = state.settings.rainbow ? `hsl(${hue}, 80%, 80%)` : '#fff'; 
+    ctx.lineWidth = 2; ctx.stroke();
 }
 function drawGalaxy(fd, drawH, drawStartY) {
     const cx = W/2, cy = drawStartY + drawH/2; const bass = fd[0] / 255; ctx.save(); ctx.translate(cx, cy); ctx.rotate(Date.now() * 0.0005);
@@ -611,7 +639,7 @@ function drawMonitor(fd, drawH, drawStartY) {
     let sum = 0, max = 0, maxIdx = 0; for(let i=0; i<fd.length; i++) { sum += fd[i]; if(fd[i] > max) { max = fd[i]; maxIdx = i; } }
     const avg = sum / fd.length; const peakFreq = Math.round(maxIdx * (state.settings.highFreq - state.settings.lowFreq) / fd.length + state.settings.lowFreq);
     const boxW = Math.min(320, W - 40); const boxX = W - boxW - 20; const boxY = drawStartY + 20;
-    ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.strokeStyle = state.settings.fixedColor; ctx.lineWidth = 2; ctx.fillRect(boxX, boxY, boxW, 280); ctx.strokeRect(boxX, boxY, boxW, 280);
+    ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.strokeStyle = state.settings.rainbow ? `hsl(${(Date.now()*0.05)%360}, 80%, 60%)` : state.settings.fixedColor; ctx.lineWidth = 2; ctx.fillRect(boxX, boxY, boxW, 280); ctx.strokeRect(boxX, boxY, boxW, 280);
     ctx.fillStyle = '#fff'; ctx.font = '14px monospace'; ctx.fillText(`PEAK LEVEL: ${max} / 255`, boxX + 20, boxY + 30); ctx.fillText(`AVG LEVEL : ${avg.toFixed(1)}`, boxX + 20, boxY + 50); ctx.fillText(`PEAK FREQ : ${peakFreq} Hz`, boxX + 20, boxY + 70); ctx.fillText(`FFT SIZE  : ${state.analyser.fftSize}`, boxX + 20, boxY + 90);
     const bands = [{name: 'SUB (20-60)', val: (fd[0]+fd[1])/2}, {name: 'LOW (60-250)', val: (fd[2]+fd[3]+fd[4])/3}, {name: 'MID (250-2k)', val: (fd[10]+fd[11]+fd[12])/3}, {name: 'HGH (2k-4k)', val: (fd[20]+fd[21]+fd[22])/3}, {name: 'AIR (4k+)', val: (fd[30]+fd[31])/2}];
     bands.forEach((b, i) => { const y = boxY + 120 + i * 30; ctx.fillText(b.name, boxX + 20, y + 14); ctx.fillStyle = '#333'; ctx.fillRect(boxX + 120, y, boxW - 140, 16); const w = (b.val / 255) * (boxW - 140); ctx.fillStyle = getColor(i * 10, 1, 40); ctx.fillRect(boxX + 120, y, w, 16); });
