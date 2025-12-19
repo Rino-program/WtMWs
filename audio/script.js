@@ -433,49 +433,29 @@ function formatTime(s) { if (!s || isNaN(s)) return '0:00'; const m = Math.floor
 // ============== PLAYLIST & DRIVE ==============
 function handleLocalFiles(e) {
     const files = Array.from(e.target.files);
+    
+    // ブラウザのサポート状況に合わせて許可リストを動的に生成
+    const testAudio = new Audio();
+    const allowedExt = new Set(['mp3', 'wav', 'm4a', 'aac', 'mp4']); // 基本セット
+    
+    // 追加フォーマットのサポート確認
+    if (testAudio.canPlayType('audio/ogg') !== '') allowedExt.add('ogg');
+    if (testAudio.canPlayType('audio/flac') !== '') allowedExt.add('flac');
+    if (testAudio.canPlayType('audio/webm') !== '') allowedExt.add('webm');
+    if (testAudio.canPlayType('audio/ogg; codecs=opus') !== '' || testAudio.canPlayType('audio/webm; codecs=opus') !== '') allowedExt.add('opus');
+
     const accepted = [];
-    const rejected = [];
-
-    const canPlay = (mime) => {
-        if (!mime) return false;
-        const r = audio.canPlayType(mime);
-        return r === 'probably' || r === 'maybe';
-    };
-
-    const extCandidates = {
-        mp3: ['audio/mpeg'],
-        wav: ['audio/wav'],
-        m4a: ['audio/mp4', 'audio/x-m4a'],
-        aac: ['audio/aac'],
-        ogg: ['audio/ogg; codecs="vorbis"', 'audio/ogg'],
-        opus: ['audio/ogg; codecs="opus"', 'audio/opus'],
-        flac: ['audio/flac'],
-        mp4: ['audio/mp4', 'video/mp4'],
-        webm: ['audio/webm; codecs="opus"', 'audio/webm', 'video/webm']
-    };
 
     files.forEach(file => {
         const name = (file.name || '').toLowerCase();
         const ext = name.includes('.') ? name.split('.').pop() : '';
-
-        // Prefer the file's MIME type if present.
-        let playable = false;
-        if (typeof file.type === 'string' && file.type.length > 0) {
-            playable = canPlay(file.type);
-        }
-
-        // Fallback: determine by extension.
-        if (!playable && ext && extCandidates[ext]) {
-            playable = extCandidates[ext].some(canPlay);
-        }
-
-        // If we can't determine it's playable, reject.
-        if (playable) accepted.push(file);
-        else rejected.push(file);
+        const isAudioMime = typeof file.type === 'string' && file.type.startsWith('audio/');
+        const isAllowedExt = allowedExt.has(ext);
+        if (isAudioMime || isAllowedExt) accepted.push(file);
     });
 
     if (accepted.length === 0) {
-        showOverlay('この端末では再生できない形式です');
+        showOverlay('音声ファイルを選択してください');
         e.target.value = '';
         return;
     }
@@ -485,10 +465,6 @@ function handleLocalFiles(e) {
     });
     renderPlaylist();
     if (state.currentIndex === -1) playTrack(state.playlist.length - accepted.length);
-
-    if (rejected.length > 0) {
-        showOverlay(`非対応形式を除外: ${rejected.length}件`);
-    }
     e.target.value = '';
 }
 
