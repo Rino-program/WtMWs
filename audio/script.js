@@ -12,6 +12,8 @@ const state = {
     isPlaying: false,
     mode: 0,
     uiVisible: true,
+    playlistVisible: false,
+    settingsOpen: false,
     isExporting: false,
     mediaRecorder: null,
     recordedChunks: [],
@@ -262,8 +264,8 @@ function applySettingsToUI() {
     });
 }
 
-function openSettings() { els.settingsModal.classList.add('open'); }
-function closeSettings() { els.settingsModal.classList.remove('open'); }
+function openSettings() { els.settingsModal.classList.add('open'); state.settingsOpen = true; }
+function closeSettings() { els.settingsModal.classList.remove('open'); state.settingsOpen = false; }
 function saveSettings() { saveSettingsToStorage(); closeSettings(); }
 
 function switchTab(tabId) {
@@ -455,7 +457,11 @@ function removeFromPlaylist(index) {
     renderPlaylist();
 }
 
-function togglePlaylist() { els.playlistPanel.classList.toggle('collapsed'); els.playlistToggle.textContent = els.playlistPanel.classList.contains('collapsed') ? '📂' : '✖'; }
+function togglePlaylist() {
+    const isCollapsed = els.playlistPanel.classList.toggle('collapsed');
+    state.playlistVisible = !isCollapsed;
+    els.playlistToggle.textContent = isCollapsed ? '📂' : '✖';
+}
 
 // Google Drive (Simplified)
 let accessToken = null;
@@ -472,6 +478,16 @@ function toggleUI() {
     state.uiVisible = !state.uiVisible; 
     els.uiLayer.classList.toggle('hidden', !state.uiVisible); 
     els.toggleUIBtn.textContent = state.uiVisible ? '🔳' : '🔲'; 
+
+    // When hiding UI, also close any open panels/modals to avoid mixed visibility states.
+    if (!state.uiVisible) {
+        if (state.settingsOpen) closeSettings();
+        if (state.playlistVisible) {
+            els.playlistPanel.classList.add('collapsed');
+            state.playlistVisible = false;
+            els.playlistToggle.textContent = '📂';
+        }
+    }
 }
 
 function toggleFullscreen() {
@@ -551,7 +567,13 @@ function getFilteredData() {
 }
 function freqToIdx(f) { return state.audioCtx ? Math.round(f * state.analyser.fftSize / state.audioCtx.sampleRate) : 0; }
 function getColor(i, v = 1, total = state.settings.barCount) {
-    if (state.settings.rainbow) { const hue = (i / total) * 360 + Date.now() * 0.05; return `hsl(${hue}, 80%, ${50 + v * 20}%)`; }
+    if (state.settings.rainbow) {
+        const baseHue = (i / total) * 360;
+        const timeHue = (state.mode === 1 || state.mode === 4) ? (Date.now() * 0.05) : 0;
+        const hue = Math.floor((baseHue + timeHue) % 360);
+        const lightness = Math.max(0, Math.min(100, Math.round(50 + v * 20)));
+        return `hsl(${hue}, 80%, ${lightness}%)`;
+    }
     return state.settings.fixedColor;
 }
 

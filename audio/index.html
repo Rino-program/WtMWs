@@ -29,12 +29,6 @@
             </div>
         </div>
 
-        <!-- Persistent Controls (Always Visible) -->
-        <div id="persistentControls">
-            <button id="toggleUIBtn" class="icon-btn" title="UI表示切替 (H)">🔳</button>
-            <button id="fullscreenBtn" class="icon-btn" title="全画面表示">⛶</button>
-        </div>
-
         <!-- Center Overlay -->
         <div id="overlayMsg" class="overlay-msg hidden"></div>
 
@@ -88,7 +82,7 @@
                 <div class="playlist-actions">
                     <label class="file-btn">
                         📁 追加
-                        <input type="file" id="fileInput" multiple accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/aac,audio/m4a,audio/mp4,.mp3,.wav,.m4a,.aac" hidden>
+                        <input type="file" id="fileInput" multiple accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.mp4,.flac" hidden>
                     </label>
                     <button id="gDriveBtn" class="drive-btn">☁️ Drive</button>
                 </div>
@@ -97,6 +91,12 @@
                 <div class="playlist-empty">曲を追加してください</div>
             </div>
         </div>
+    </div>
+
+    <!-- Persistent Controls (Always Visible) -->
+    <div id="persistentControls">
+        <button id="toggleUIBtn" class="icon-btn" title="UI表示切替 (H)">🔳</button>
+        <button id="fullscreenBtn" class="icon-btn" title="全画面表示">⛶</button>
     </div>
 
     <!-- Settings Modal -->

@@ -77,12 +77,13 @@ body {
 /* Persistent Controls */
 #persistentControls {
     position: fixed;
-    top: 32px; /* Matches top-bar padding + margin */
-    right: 40px;
+    top: 20px;
+    right: 20px;
     display: flex;
     gap: 12px;
     z-index: 1001;
     transition: var(--transition);
+    pointer-events: auto;
 }
 
 #uiLayer.hidden ~ #persistentControls {
@@ -232,6 +233,7 @@ body {
 .progress-container.hidden { display: none; }
 
 input[type=range] {
+    appearance: none;
     -webkit-appearance: none;
     width: 100%;
     background: transparent;
@@ -644,11 +646,24 @@ select option {
 
 /* Responsive */
 @media (max-width: 768px) {
+    /* Keep the fixed buttons from overlapping the title/status on small screens */
+    #persistentControls {
+        top: 12px;
+        right: 12px;
+        gap: 8px;
+    }
+
+    .icon-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+
     .top-bar {
         flex-direction: column;
         gap: 12px;
         align-items: stretch;
-        padding: 12px;
+        padding: 56px 12px 12px; /* top padding leaves room for fixed buttons */
     }
     
     .status-display {
