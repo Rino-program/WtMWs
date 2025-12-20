@@ -316,6 +316,13 @@ function init() {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
         switch(e.code) {
+            case 'Escape':
+                if (state.settingsOpen) {
+                    closeSettings();
+                } else if (state.playlistVisible) {
+                    togglePlaylist();
+                }
+                break;
             case 'Space': e.preventDefault(); togglePlay(); break;
             case 'ArrowLeft': prevTrack(); break;
             case 'ArrowRight': nextTrack(); break;
@@ -499,6 +506,28 @@ function calculateUIHeights() {
     const controlsBar = document.querySelector('.controls-bar');
     if (topBar) topBarH = topBar.getBoundingClientRect().height;
     if (controlsBar) bottomBarH = controlsBar.getBoundingClientRect().height;
+
+    // Keep the playlist panel from overlapping the controls bar (mainly on mobile bottom-sheet layout).
+    updatePlaylistLayout();
+}
+
+function updatePlaylistLayout() {
+    if (!els.playlistPanel || !els.controlsBar) return;
+
+    const panelStyle = window.getComputedStyle(els.playlistPanel);
+    // Only adjust for the mobile bottom-sheet style (position: fixed).
+    if (panelStyle.position !== 'fixed') {
+        els.playlistPanel.style.bottom = '';
+        return;
+    }
+
+    const controlsRect = els.controlsBar.getBoundingClientRect();
+    if (!Number.isFinite(controlsRect.top)) return;
+
+    // Place playlist above controls bar with a small gap.
+    const gap = 12;
+    const offsetFromBottom = Math.max(0, Math.round(window.innerHeight - controlsRect.top + gap));
+    els.playlistPanel.style.bottom = `${offsetFromBottom}px`;
 }
 
 // ============== SETTINGS ==============
@@ -1245,9 +1274,10 @@ function togglePlaylist() {
     const isCollapsed = els.playlistPanel.classList.toggle('collapsed');
     state.playlistVisible = !isCollapsed;
     els.playlistToggle.textContent = isCollapsed ? '📂' : '✖';
-    // 両方のボタンの状態を同期
-    if (els.closePlaylistBtn) {
-        els.closePlaylistBtn.style.display = isCollapsed ? 'none' : 'block';
+
+    if (!isCollapsed) {
+        // Ensure layout is updated when opening (prevents overlap making it hard to close).
+        updatePlaylistLayout();
     }
 }
 
