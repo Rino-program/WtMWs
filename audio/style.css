@@ -607,14 +607,16 @@ select option {
     position: absolute;
     top: 80px;
     left: 20px;
-    width: 320px;
+    width: 400px;
+    max-width: calc(100vw - 40px);
     max-height: calc(100vh - 240px);
     border-radius: var(--radius-lg);
     display: flex;
     flex-direction: column;
     transition: var(--transition);
-    z-index: 15;
+    z-index: 1005;
     overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
 }
 
 .playlist-panel.collapsed {
@@ -628,34 +630,15 @@ select option {
 }
 
 .playlist-header {
-    padding: 12px;
+    padding: 10px 12px;
     background: rgba(255, 255, 255, 0.03);
     border-bottom: 1px solid var(--glass-border);
     display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.playlist-search {
-    padding: 8px 16px;
-    border-bottom: 1px solid var(--glass-border);
-}
-
-.playlist-search input {
-    width: 100%;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--glass-border);
-    border-radius: 6px;
-    padding: 8px 12px;
-    color: #fff;
-    font-size: 0.85rem;
-    transition: var(--transition);
-}
-
-.playlist-search input:focus {
-    outline: none;
-    border-color: var(--primary);
-    background: rgba(0, 0, 0, 0.4);
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
 }
 
 .playlist-header h3 {
@@ -666,37 +649,37 @@ select option {
     flex-shrink: 0;
 }
 
-.playlist-header > div:first-child {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    gap: 8px;
-}
-
 .playlist-actions {
     display: flex;
-    gap: 4px;
-    flex-shrink: 1;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-    width: 100%;
+    gap: 6px;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    flex: 1;
+    min-width: 160px; /* これを下回ると折り返す */
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.playlist-actions::-webkit-scrollbar { display: none; }
+
+.playlist-header #closePlaylistBtn {
+    flex-shrink: 0;
 }
 
 .file-btn, .drive-btn {
     background: rgba(255, 255, 255, 0.1);
-    padding: 4px 8px;
+    padding: 6px 10px;
     border-radius: var(--radius-sm);
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     cursor: pointer;
     border: none;
     color: var(--text-main);
     display: inline-flex;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
     transition: var(--transition);
     white-space: nowrap;
-    min-width: max-content;
+    flex-shrink: 0;
 }
 
 .file-btn:hover, .drive-btn:hover {
@@ -706,7 +689,30 @@ select option {
 .playlist-items {
     overflow-y: auto;
     flex: 1;
-    padding: 8px;
+    padding: 6px;
+}
+
+.playlist-search {
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.playlist-search input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    outline: none;
+    transition: var(--transition);
+}
+
+.playlist-search input:focus {
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .playlist-items::-webkit-scrollbar {
@@ -718,19 +724,17 @@ select option {
 }
 
 .playlist-item {
-    padding: 10px 12px;
+    padding: 8px 12px;
     border-radius: var(--radius-sm);
-    cursor: pointer;
+    cursor: default;
     display: flex;
     justify-content: space-between;
     align-items: center;
     transition: var(--transition);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     background: rgba(255, 255, 255, 0.02);
-    /* タッチ操作での誤操作防止 */
     -webkit-user-select: none;
     user-select: none;
-    /* 長押し対応 */
     touch-action: manipulation;
 }
 
@@ -750,35 +754,50 @@ select option {
     background: rgba(99, 102, 241, 0.3);
 }
 
+/* タッチ操作時のみ pointer-events を無効化して背後の要素を判定可能にする */
+.playlist-item.touch-dragging {
+    pointer-events: none;
+}
+
 .playlist-item.drag-over {
     background: rgba(99, 102, 241, 0.4);
     border: 1px dashed var(--primary);
 }
 
 .drag-handle {
-    color: var(--text-muted);
+    color: var(--text-main);
     cursor: grab;
     margin-right: 8px;
-    font-size: 0.9rem;
-    opacity: 0;
+    font-size: 1.2rem;
+    opacity: 0.8;
     transition: opacity 0.2s;
     user-select: none;
-    /* タッチ操作で誤検出を防ぐ */
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     touch-action: none;
-    padding: 4px 2px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .playlist-item:hover .drag-handle {
     opacity: 1;
 }
 
-/* タッチ時にドラッグハンドルを常に表示（モバイル） */
+/* タッチデバイスでハンドルを常に見やすく表示 */
 @media (hover: none) {
     .drag-handle {
-        opacity: 0.6;
+        opacity: 0.9;
     }
+}
+
+.track-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
 }
 
 .playlist-item .name {
@@ -786,24 +805,49 @@ select option {
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 0.9rem;
-    flex: 1;
-    margin-right: 10px;
 }
 
-.playlist-item .remove-btn {
+.item-actions {
+    display: flex;
+    gap: 2px;
+    align-items: center;
     opacity: 0;
-    color: var(--text-muted);
-    font-size: 1.1rem;
-    padding: 4px;
     transition: var(--transition);
 }
 
-.playlist-item:hover .remove-btn {
+.playlist-item:hover .item-actions {
     opacity: 1;
 }
 
-.playlist-item .remove-btn:hover {
-    color: #ef4444; /* Red */
+.move-btn, .remove-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    border-radius: var(--radius-sm);
+}
+
+.move-btn:hover {
+    color: var(--primary);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.remove-btn:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* タッチデバイスではアクションを常に表示 */
+@media (hover: none) {
+    .item-actions {
+        opacity: 1;
+    }
 }
 
 .playlist-empty {
@@ -1077,14 +1121,23 @@ select option {
     /* Playlist becomes a bottom sheet on mobile */
     .playlist-panel {
         position: fixed;
-        left: calc(12px + var(--safe-left));
-        right: calc(12px + var(--safe-right));
+        left: 12px;
+        right: 12px;
         top: auto;
-        bottom: calc(140px + var(--safe-bottom));
+        bottom: calc(160px + var(--safe-bottom));
         width: auto;
-        max-height: min(50vh, calc(100vh - 220px));
+        max-height: min(70vh, calc(100vh - 200px));
         border-radius: var(--radius-lg);
-        z-index: 1002;
+        z-index: 1005;
+    }
+
+    .playlist-items {
+        padding: 4px;
+    }
+
+    .playlist-item {
+        padding: 6px 10px;
+        margin-bottom: 2px;
     }
 
     .playlist-header {

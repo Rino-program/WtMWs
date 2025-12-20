@@ -94,18 +94,16 @@
         <!-- Playlist Panel -->
         <div id="playlistPanel" class="playlist-panel glass collapsed">
             <div class="playlist-header">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3>プレイリスト</h3>
-                    <button id="closePlaylistBtn" class="icon-btn sm" title="閉じる" aria-label="プレイリストを閉じる">✖</button>
-                </div>
+                <h3>プレイリスト</h3>
                 <div class="playlist-actions">
                     <button id="clearPlaylistBtn" class="icon-btn sm" title="すべて削除" aria-label="プレイリストをすべて削除">🗑️</button>
                     <label class="file-btn">
                         📁 追加
-                        <input type="file" id="fileInput" multiple accept="*/*" hidden>
+                        <input type="file" id="fileInput" multiple accept="audio/*,video/*" hidden>
                     </label>
                     <button id="gDriveBtn" class="drive-btn" aria-label="Google Driveから追加">☁️ Drive</button>
                 </div>
+                <button id="closePlaylistBtn" class="icon-btn sm" title="閉じる" aria-label="プレイリストを閉じる">✖</button>
             </div>
             <div class="playlist-search">
                 <input type="text" id="playlistSearchInput" placeholder="曲名で検索..." aria-label="プレイリスト検索">

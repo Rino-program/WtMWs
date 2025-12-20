@@ -316,13 +316,6 @@ function init() {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
         switch(e.code) {
-            case 'Escape':
-                if (state.settingsOpen) {
-                    closeSettings();
-                } else if (state.playlistVisible) {
-                    togglePlaylist();
-                }
-                break;
             case 'Space': e.preventDefault(); togglePlay(); break;
             case 'ArrowLeft': prevTrack(); break;
             case 'ArrowRight': nextTrack(); break;
@@ -506,28 +499,6 @@ function calculateUIHeights() {
     const controlsBar = document.querySelector('.controls-bar');
     if (topBar) topBarH = topBar.getBoundingClientRect().height;
     if (controlsBar) bottomBarH = controlsBar.getBoundingClientRect().height;
-
-    // Keep the playlist panel from overlapping the controls bar (mainly on mobile bottom-sheet layout).
-    updatePlaylistLayout();
-}
-
-function updatePlaylistLayout() {
-    if (!els.playlistPanel || !els.controlsBar) return;
-
-    const panelStyle = window.getComputedStyle(els.playlistPanel);
-    // Only adjust for the mobile bottom-sheet style (position: fixed).
-    if (panelStyle.position !== 'fixed') {
-        els.playlistPanel.style.bottom = '';
-        return;
-    }
-
-    const controlsRect = els.controlsBar.getBoundingClientRect();
-    if (!Number.isFinite(controlsRect.top)) return;
-
-    // Place playlist above controls bar with a small gap.
-    const gap = 12;
-    const offsetFromBottom = Math.max(0, Math.round(window.innerHeight - controlsRect.top + gap));
-    els.playlistPanel.style.bottom = `${offsetFromBottom}px`;
 }
 
 // ============== SETTINGS ==============
@@ -1057,19 +1028,38 @@ function renderPlaylist() {
 
     els.playlistItems.innerHTML = filtered.map(track => `
         <div class="playlist-item ${track.originalIndex === state.currentIndex ? 'active' : ''}" data-index="${track.originalIndex}" draggable="true">
-            <span class="drag-handle">☰</span>
-            <span class="name">${track.originalIndex + 1}. ${track.name}</span>
-            <span class="remove-btn" data-index="${track.originalIndex}">✖</span>
+            <div class="drag-handle" title="ドラッグして移動">☰</div>
+            <div class="track-info">
+                <span class="name">${track.originalIndex + 1}. ${track.name}</span>
+            </div>
+            <div class="item-actions">
+                <button class="move-btn up" data-index="${track.originalIndex}" title="上に移動">▲</button>
+                <button class="move-btn down" data-index="${track.originalIndex}" title="下に移動">▼</button>
+                <button class="remove-btn" data-index="${track.originalIndex}" title="削除">✖</button>
+            </div>
         </div>
     `).join('');
 
     // プレイリストアイテムのクリック処理
     els.playlistItems.querySelectorAll('.playlist-item').forEach(item => { 
         item.onclick = e => { 
-            if (!e.target.classList.contains('remove-btn') && !e.target.classList.contains('drag-handle')) {
+            if (!e.target.closest('.remove-btn') && !e.target.closest('.drag-handle') && !e.target.closest('.move-btn')) {
                 playTrack(+item.dataset.index); 
             }
         }; 
+    });
+    
+    // 移動ボタン処理
+    els.playlistItems.querySelectorAll('.move-btn').forEach(btn => {
+        btn.onclick = e => {
+            e.stopPropagation();
+            const idx = +btn.dataset.index;
+            const direction = btn.classList.contains('up') ? -1 : 1;
+            const targetIdx = idx + direction;
+            if (targetIdx >= 0 && targetIdx < state.playlist.length) {
+                performPlaylistReorder(idx, targetIdx);
+            }
+        };
     });
     
     // 削除ボタン処理
@@ -1087,7 +1077,6 @@ function renderPlaylist() {
 let draggedIndex = -1;
 let touchStartItem = null;
 let touchStartTime = 0;
-const TOUCH_HOLD_TIME = 500; // 500msのホールド時間
 
 function setupPlaylistDragDrop() {
     const items = els.playlistItems.querySelectorAll('.playlist-item');
@@ -1095,10 +1084,16 @@ function setupPlaylistDragDrop() {
     items.forEach(item => {
         // ===== Mouse Drag & Drop Events =====
         item.ondragstart = e => {
+            const handle = e.target.closest('.drag-handle');
+            if (!handle) {
+                e.preventDefault();
+                return;
+            }
             draggedIndex = +item.dataset.index;
             item.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/html', item.innerHTML);
+            // Firefox等でドラッグを開始するために必要
+            e.dataTransfer.setData('text/plain', draggedIndex);
         };
         
         item.ondragend = e => {
@@ -1110,14 +1105,13 @@ function setupPlaylistDragDrop() {
         item.ondragover = e => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
-            if (item.classList.contains('dragging')) return;
+            const targetIdx = +item.dataset.index;
+            if (draggedIndex === -1 || draggedIndex === targetIdx) return;
             item.classList.add('drag-over');
         };
         
         item.ondragleave = e => {
-            if (e.target === item) {
-                item.classList.remove('drag-over');
-            }
+            item.classList.remove('drag-over');
         };
         
         item.ondrop = e => {
@@ -1138,9 +1132,11 @@ function setupPlaylistDragDrop() {
         let touchStartDragHandle = false;
         
         item.addEventListener('touchstart', e => {
-            // ドラッグハンドルをタッチしたかチェック
             const handle = e.target.closest('.drag-handle');
-            if (!handle) return; // ドラッグハンドル以外をタッチしたら何もしない
+            if (!handle) return; 
+            
+            // タッチイベントのデフォルト動作（スクロール等）を防止
+            if (e.cancelable) e.preventDefault();
             
             touchStartItem = item;
             touchStartTime = Date.now();
@@ -1148,37 +1144,24 @@ function setupPlaylistDragDrop() {
             touchStartX = e.touches[0].clientX;
             touchStartDragHandle = true;
             
-            // フィードバック
             item.classList.add('dragging');
-        }, { passive: true });
+            item.classList.add('touch-dragging');
+        }, { passive: false });
         
         item.addEventListener('touchmove', e => {
             if (!touchStartDragHandle || !touchStartItem) return;
             
-            const currentY = e.touches[0].clientY;
-            const currentX = e.touches[0].clientX;
-            const deltaY = Math.abs(currentY - touchStartY);
-            const deltaX = Math.abs(currentX - touchStartX);
+            if (e.cancelable) e.preventDefault();
             
-            // スクロール許容範囲（10px以内）
-            if (deltaX < 10 && deltaY < 10) return;
-            
-            // 縦方向のドラッグが主な場合のみ継続
-            if (deltaY < deltaX) {
-                touchStartDragHandle = false;
-                return;
-            }
-            
-            // ドラッグ中のターゲット判定
             const touch = e.touches[0];
             const elementAtPoint = document.elementFromPoint(touch.clientX, touch.clientY);
             const targetItem = elementAtPoint?.closest('.playlist-item');
             
+            items.forEach(i => i.classList.remove('drag-over'));
             if (targetItem && targetItem !== touchStartItem) {
-                items.forEach(i => i.classList.remove('drag-over'));
                 targetItem.classList.add('drag-over');
             }
-        }, { passive: true });
+        }, { passive: false });
         
         item.addEventListener('touchend', e => {
             if (!touchStartItem || !touchStartDragHandle) {
@@ -1186,19 +1169,6 @@ function setupPlaylistDragDrop() {
                 return;
             }
             
-            const touchEndTime = Date.now();
-            const holdTime = touchEndTime - touchStartTime;
-            
-            // ホールド時間が短すぎる場合はキャンセル（誤操作防止）
-            if (holdTime < TOUCH_HOLD_TIME) {
-                item.classList.remove('dragging');
-                items.forEach(i => i.classList.remove('drag-over'));
-                touchStartItem = null;
-                touchStartDragHandle = false;
-                return;
-            }
-            
-            // ドロップ処理
             const touch = e.changedTouches[0];
             const elementAtPoint = document.elementFromPoint(touch.clientX, touch.clientY);
             const targetItem = elementAtPoint?.closest('.playlist-item');
@@ -1209,8 +1179,8 @@ function setupPlaylistDragDrop() {
                 performPlaylistReorder(dragIdx, targetIdx);
             }
             
-            // クリーンアップ
             item.classList.remove('dragging');
+            item.classList.remove('touch-dragging');
             items.forEach(i => i.classList.remove('drag-over'));
             touchStartItem = null;
             touchStartDragHandle = false;
@@ -1223,16 +1193,17 @@ function performPlaylistReorder(draggedIdx, targetIdx) {
     
     // プレイリストの順序を変更
     const [removed] = state.playlist.splice(draggedIdx, 1);
-    const insertIndex = draggedIdx < targetIdx ? targetIdx - 1 : targetIdx;
-    state.playlist.splice(insertIndex, 0, removed);
+    state.playlist.splice(targetIdx, 0, removed);
     
     // 現在再生中のインデックスを更新
     if (state.currentIndex === draggedIdx) {
-        state.currentIndex = insertIndex;
-    } else if (draggedIdx < state.currentIndex && state.currentIndex <= targetIdx) {
-        state.currentIndex--;
-    } else if (draggedIdx > state.currentIndex && state.currentIndex >= targetIdx) {
-        state.currentIndex++;
+        state.currentIndex = targetIdx;
+    } else {
+        if (draggedIdx < state.currentIndex && targetIdx >= state.currentIndex) {
+            state.currentIndex--;
+        } else if (draggedIdx > state.currentIndex && targetIdx <= state.currentIndex) {
+            state.currentIndex++;
+        }
     }
     
     renderPlaylist();
@@ -1274,10 +1245,9 @@ function togglePlaylist() {
     const isCollapsed = els.playlistPanel.classList.toggle('collapsed');
     state.playlistVisible = !isCollapsed;
     els.playlistToggle.textContent = isCollapsed ? '📂' : '✖';
-
-    if (!isCollapsed) {
-        // Ensure layout is updated when opening (prevents overlap making it hard to close).
-        updatePlaylistLayout();
+    // 両方のボタンの状態を同期
+    if (els.closePlaylistBtn) {
+        els.closePlaylistBtn.style.display = isCollapsed ? 'none' : 'block';
     }
 }
 
