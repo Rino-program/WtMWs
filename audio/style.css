@@ -628,12 +628,12 @@ select option {
 }
 
 .playlist-header {
-    padding: 16px;
+    padding: 12px;
     background: rgba(255, 255, 255, 0.03);
     border-bottom: 1px solid var(--glass-border);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .playlist-search {
@@ -660,32 +660,43 @@ select option {
 
 .playlist-header h3 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     white-space: nowrap;
     flex-shrink: 0;
 }
 
+.playlist-header > div:first-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+}
+
 .playlist-actions {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     flex-shrink: 1;
     justify-content: flex-end;
+    flex-wrap: wrap;
+    width: 100%;
 }
 
 .file-btn, .drive-btn {
     background: rgba(255, 255, 255, 0.1);
-    padding: 6px 10px;
+    padding: 4px 8px;
     border-radius: var(--radius-sm);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     cursor: pointer;
     border: none;
     color: var(--text-main);
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
     transition: var(--transition);
     white-space: nowrap;
+    min-width: max-content;
 }
 
 .file-btn:hover, .drive-btn:hover {
