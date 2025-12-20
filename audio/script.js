@@ -107,6 +107,7 @@ const els = {
     statusText: $('statusText'),
     playlistPanel: $('playlistPanel'),
     playlistToggle: $('playlistToggle'),
+    closePlaylistBtn: $('closePlaylistBtn'),
     playlistItems: $('playlistItems'),
     playlistSearchInput: $('playlistSearchInput'),
     clearPlaylistBtn: $('clearPlaylistBtn'),
@@ -240,6 +241,7 @@ function init() {
     };
     els.exportBtn.onclick = startExport;
     els.playlistToggle.onclick = togglePlaylist;
+    els.closePlaylistBtn.onclick = togglePlaylist;
     els.playlistSearchInput.oninput = renderPlaylist;
     els.clearPlaylistBtn.onclick = () => {
         if (confirm('プレイリストをすべてクリアしますか？')) {
@@ -1243,6 +1245,10 @@ function togglePlaylist() {
     const isCollapsed = els.playlistPanel.classList.toggle('collapsed');
     state.playlistVisible = !isCollapsed;
     els.playlistToggle.textContent = isCollapsed ? '📂' : '✖';
+    // 両方のボタンの状態を同期
+    if (els.closePlaylistBtn) {
+        els.closePlaylistBtn.style.display = isCollapsed ? 'none' : 'block';
+    }
 }
 
 // Google Drive (Simplified)

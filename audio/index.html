@@ -94,7 +94,10 @@
         <!-- Playlist Panel -->
         <div id="playlistPanel" class="playlist-panel glass collapsed">
             <div class="playlist-header">
-                <h3>プレイリスト</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>プレイリスト</h3>
+                    <button id="closePlaylistBtn" class="icon-btn sm" title="閉じる" aria-label="プレイリストを閉じる">✖</button>
+                </div>
                 <div class="playlist-actions">
                     <button id="clearPlaylistBtn" class="icon-btn sm" title="すべて削除" aria-label="プレイリストをすべて削除">🗑️</button>
                     <label class="file-btn">

@@ -1069,9 +1069,9 @@ select option {
         left: calc(12px + var(--safe-left));
         right: calc(12px + var(--safe-right));
         top: auto;
-        bottom: calc(12px + var(--safe-bottom));
+        bottom: calc(140px + var(--safe-bottom));
         width: auto;
-        max-height: min(70vh, calc(100vh - 160px));
+        max-height: min(50vh, calc(100vh - 220px));
         border-radius: var(--radius-lg);
         z-index: 1002;
     }
