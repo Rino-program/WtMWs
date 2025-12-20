@@ -133,8 +133,6 @@ const els = {
     lowPowerModeCheckbox: $('lowPowerModeCheckbox'),
     showVideoCheckbox: $('showVideoCheckbox'),
     videoModeSelect: $('videoModeSelect'),
-    playbackRateSlider: $('playbackRateSlider'),
-    playbackRateValue: $('playbackRateValue'),
     sleepTimerSelect: $('sleepTimerSelect'),
     sleepTimerStatus: $('sleepTimerStatus'),
     autoPlayNextCheckbox: $('autoPlayNextCheckbox'),
@@ -257,7 +255,7 @@ function init() {
     };
     els.fileInput.onchange = handleLocalFiles;
     els.gDriveBtn.onclick = openGDrivePicker;
-    els.closeVideoBtn.onclick = () => { state.settings.showVideo = false; updateVideoVisibility(); };
+    els.closeVideoBtn.onclick = () => { state.settings.showVideo = false; updateVideoVisibility(); applySettingsToUI(); };
     els.toggleVideoModeBtn.onclick = () => {
         state.settings.videoMode = state.settings.videoMode === 'window' ? 'background' : 'window';
         updateVideoVisibility();
@@ -329,7 +327,7 @@ function init() {
                 showOverlay(`🔉 音量: ${Math.round(audio.volume * 100)}%`);
                 break;
             case 'KeyF': toggleFullscreen(); break;
-            case 'KeyH': toggleUI(); break;
+            case 'KeyH': e.preventDefault(); toggleUI(); break;
             case 'KeyV': 
                 state.settings.showVideo = !state.settings.showVideo; 
                 updateVideoVisibility(); 
@@ -353,20 +351,6 @@ function init() {
                 break;
             case 'KeyS': toggleShuffle(); applySettingsToUI(); break;
             case 'KeyP': toggleRepeat(); applySettingsToUI(); break;
-            case 'BracketLeft': 
-                state.settings.playbackRate = Math.max(0.5, state.settings.playbackRate - 0.1);
-                audio.playbackRate = state.settings.playbackRate;
-                if (bgVideo.src) bgVideo.playbackRate = state.settings.playbackRate;
-                applySettingsToUI();
-                showOverlay(`⏩ 再生速度: ${state.settings.playbackRate.toFixed(1)}x`);
-                break;
-            case 'BracketRight': 
-                state.settings.playbackRate = Math.min(2.0, state.settings.playbackRate + 0.1);
-                audio.playbackRate = state.settings.playbackRate;
-                if (bgVideo.src) bgVideo.playbackRate = state.settings.playbackRate;
-                applySettingsToUI();
-                showOverlay(`⏩ 再生速度: ${state.settings.playbackRate.toFixed(1)}x`);
-                break;
             case 'KeyM': 
                 state.mode = (state.mode + 1) % 9; 
                 els.modeSelect.value = state.mode;
@@ -480,7 +464,6 @@ function updateVideoVisibility() {
         if (bgVideo.src !== track.url) {
             bgVideo.src = track.url;
             bgVideo.load(); // 明示的にロード
-            bgVideo.playbackRate = state.settings.playbackRate;
             
             // ロード完了後に時間を合わせる
             const onLoaded = () => {
@@ -588,12 +571,6 @@ function setupSettingsInputs() {
     $('apiKeyInput').onchange = e => { state.settings.gDriveApiKey = e.target.value.trim(); };
     $('persistSettingsCheckbox').onchange = e => { state.settings.persistSettings = e.target.checked; };
 
-    $('playbackRateSlider').oninput = e => {
-        state.settings.playbackRate = +e.target.value;
-        $('playbackRateValue').textContent = state.settings.playbackRate.toFixed(1) + 'x';
-        audio.playbackRate = state.settings.playbackRate;
-        bgVideo.playbackRate = state.settings.playbackRate;
-    };
     $('sleepTimerSelect').onchange = e => {
         state.settings.sleepTimer = +e.target.value;
         updateSleepTimer();
@@ -717,8 +694,8 @@ function applySettingsToUI() {
     $('apiKeyInput').value = state.settings.gDriveApiKey;
     $('persistSettingsCheckbox').checked = state.settings.persistSettings;
     
-    $('playbackRateSlider').value = state.settings.playbackRate;
-    $('playbackRateValue').textContent = state.settings.playbackRate.toFixed(1) + 'x';
+    $('showVideoCheckbox').value = state.settings.showVideo;
+    $('videoModeSelect').value = state.settings.videoMode;
     $('sleepTimerSelect').value = state.settings.sleepTimer;
     $('autoPlayNextCheckbox').checked = state.settings.autoPlayNext;
     $('stopOnVideoEndCheckbox').checked = state.settings.stopOnVideoEnd;
@@ -1237,6 +1214,13 @@ function getColor(i, v = 1, total = state.settings.barCount) {
 
 function draw() {
     if (document.hidden) {
+        // バックグラウンドでも動画のタイミングを同期
+        if (bgVideo.src && state.isPlaying && state.settings.showVideo) {
+            const timeDiff = Math.abs(bgVideo.currentTime - audio.currentTime);
+            if (timeDiff > 0.5) {
+                bgVideo.currentTime = audio.currentTime;
+            }
+        }
         requestAnimationFrame(draw);
         return;
     }
@@ -1246,9 +1230,6 @@ function draw() {
         setTimeout(() => {
             requestAnimationFrame(draw);
         }, 1000 / 30);
-        
-        // 動画のフレームレートも落とす（再生速度を微調整してデコード負荷を下げる試みは不安定なので、
-        // 代わりに動画の表示品質をブラウザ任せにする）
     } else {
         requestAnimationFrame(draw);
     }
@@ -1269,12 +1250,6 @@ function draw() {
     const drawH = H;
     const drawStartY = 0;
     const maxH = drawH * 0.9;
-
-    // 軽量化: 設定画面が開いている時は描画負荷を下げる（フレームスキップ）
-    if (state.settingsOpen && !state.settings.lowPowerMode) {
-        // 2フレームに1回だけ描画 (30fps相当)
-        if (Date.now() % 2 !== 0) return;
-    }
 
     // 軽量化モード時はシャドウを無効化
     const originalGlow = state.settings.glowStrength;
