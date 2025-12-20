@@ -249,8 +249,11 @@ function init() {
             audio.pause();
             state.isPlaying = false;
             updatePlayBtn();
+            updateVideoVisibility();
             renderPlaylist();
             els.statusText.textContent = '待機中...';
+            saveSettingsToStorage();
+            showOverlay('✅ プレイリストをクリアしました');
         }
     };
     els.fileInput.onchange = handleLocalFiles;
@@ -511,6 +514,14 @@ function saveSettingsToStorage() {
     if (state.settings.persistSettings) {
         localStorage.setItem('audioVisualizerSettingsV7', JSON.stringify(state.settings));
     }
+    // プレイリストの位置情報（Google Drive/ローカルのみ保存）
+    const playlistData = state.playlist.map(track => ({
+        name: track.name,
+        source: track.source,
+        isVideo: track.isVideo,
+        ...(track.source === 'drive' && { fileId: track.fileId })
+    }));
+    localStorage.setItem('audioVisualizerPlaylist', JSON.stringify(playlistData));
 }
 
 function setupSettingsInputs() {
@@ -694,8 +705,6 @@ function applySettingsToUI() {
     $('apiKeyInput').value = state.settings.gDriveApiKey;
     $('persistSettingsCheckbox').checked = state.settings.persistSettings;
     
-    $('showVideoCheckbox').value = state.settings.showVideo;
-    $('videoModeSelect').value = state.settings.videoMode;
     $('sleepTimerSelect').value = state.settings.sleepTimer;
     $('autoPlayNextCheckbox').checked = state.settings.autoPlayNext;
     $('stopOnVideoEndCheckbox').checked = state.settings.stopOnVideoEnd;
@@ -710,7 +719,11 @@ function applySettingsToUI() {
 
 function openSettings() { els.settingsModal.classList.add('open'); state.settingsOpen = true; }
 function closeSettings() { els.settingsModal.classList.remove('open'); state.settingsOpen = false; }
-function saveSettings() { saveSettingsToStorage(); closeSettings(); }
+function saveSettings() { 
+    saveSettingsToStorage(); 
+    closeSettings(); 
+    showOverlay('✅ 設定を保存しました');
+}
 
 function switchTab(tabId) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -915,7 +928,6 @@ function playTrack(index) {
     audio.pause();
     audio.currentTime = 0;
     audio.src = track.url;
-    audio.playbackRate = state.settings.playbackRate;
     audio.load();
     connectFileSource();
     updateVideoVisibility();
@@ -1007,34 +1019,125 @@ function renderPlaylist() {
     }
 
     els.playlistItems.innerHTML = filtered.map(track => `
-        <div class="playlist-item ${track.originalIndex === state.currentIndex ? 'active' : ''}" data-index="${track.originalIndex}">
+        <div class="playlist-item ${track.originalIndex === state.currentIndex ? 'active' : ''}" data-index="${track.originalIndex}" draggable="true">
+            <span class="drag-handle">☰</span>
             <span class="name">${track.originalIndex + 1}. ${track.name}</span>
             <span class="remove-btn" data-index="${track.originalIndex}">✖</span>
         </div>
     `).join('');
 
+    // プレイリストアイテムのクリック処理
     els.playlistItems.querySelectorAll('.playlist-item').forEach(item => { 
         item.onclick = e => { 
-            if (!e.target.classList.contains('remove-btn')) playTrack(+item.dataset.index); 
+            if (!e.target.classList.contains('remove-btn') && !e.target.classList.contains('drag-handle')) {
+                playTrack(+item.dataset.index); 
+            }
         }; 
     });
+    
+    // 削除ボタン処理
     els.playlistItems.querySelectorAll('.remove-btn').forEach(btn => { 
         btn.onclick = e => { 
             e.stopPropagation(); 
             removeFromPlaylist(+btn.dataset.index); 
         }; 
     });
+    
+    // ドラッグ&ドロップ処理
+    setupPlaylistDragDrop();
+}
+
+let draggedIndex = -1;
+
+function setupPlaylistDragDrop() {
+    const items = els.playlistItems.querySelectorAll('.playlist-item');
+    
+    items.forEach(item => {
+        item.ondragstart = e => {
+            draggedIndex = +item.dataset.index;
+            item.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', item.innerHTML);
+        };
+        
+        item.ondragend = e => {
+            item.classList.remove('dragging');
+            items.forEach(i => i.classList.remove('drag-over'));
+            draggedIndex = -1;
+        };
+        
+        item.ondragover = e => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (item.classList.contains('dragging')) return;
+            item.classList.add('drag-over');
+        };
+        
+        item.ondragleave = e => {
+            // dragover時と異なるアイテムでdragleaveされたときのみremove
+            if (e.target === item) {
+                item.classList.remove('drag-over');
+            }
+        };
+        
+        item.ondrop = e => {
+            e.preventDefault();
+            e.stopPropagation();
+            item.classList.remove('drag-over');
+            
+            const targetIndex = +item.dataset.index;
+            if (draggedIndex === -1 || draggedIndex === targetIndex) return;
+            
+            // プレイリストの順序を変更
+            const [removed] = state.playlist.splice(draggedIndex, 1);
+            const insertIndex = draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
+            state.playlist.splice(insertIndex, 0, removed);
+            
+            // 現在再生中のインデックスを更新
+            if (state.currentIndex === draggedIndex) {
+                state.currentIndex = insertIndex;
+            } else if (draggedIndex < state.currentIndex && state.currentIndex <= targetIndex) {
+                state.currentIndex--;
+            } else if (draggedIndex > state.currentIndex && state.currentIndex >= targetIndex) {
+                state.currentIndex++;
+            }
+            
+            draggedIndex = -1;
+            renderPlaylist();
+            saveSettingsToStorage();
+            showOverlay('プレイリストの順序を変更しました');
+        };
+    });
 }
 
 function removeFromPlaylist(index) {
+    if (index < 0 || index >= state.playlist.length) return;
     const track = state.playlist[index];
     if (track.source === 'local') URL.revokeObjectURL(track.url);
     state.playlist.splice(index, 1);
+    
+    // 現在再生中の曲を削除した場合の処理
     if (state.currentIndex === index) {
-        if (state.playlist.length > 0) playTrack(index < state.playlist.length ? index : 0);
-        else { audio.pause(); state.currentIndex = -1; state.isPlaying = false; updatePlayBtn(); els.statusText.textContent = '待機中...'; }
-    } else if (state.currentIndex > index) state.currentIndex--;
+        state.isPlaying = false;
+        updatePlayBtn();
+        if (state.playlist.length > 0) {
+            // 同じインデックスまたはその前の曲があればそれを再生
+            const nextIndex = Math.min(index, state.playlist.length - 1);
+            playTrack(nextIndex);
+        } else {
+            // プレイリストが空になった場合
+            audio.pause();
+            state.currentIndex = -1;
+            els.statusText.textContent = '待機中...';
+            updateVideoVisibility();
+        }
+    } else if (state.currentIndex > index) {
+        // 削除した曲がcurrentIndexより前の場合、インデックスをデクリメント
+        state.currentIndex--;
+    }
+    
     renderPlaylist();
+    saveSettingsToStorage();
 }
 
 function togglePlaylist() {
