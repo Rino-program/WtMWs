@@ -589,6 +589,7 @@ function setupSettingsInputs() {
     $('autoPlayNextCheckbox').onchange = e => { state.settings.autoPlayNext = e.target.checked; };
     $('stopOnVideoEndCheckbox').onchange = e => { state.settings.stopOnVideoEnd = e.target.checked; };
 
+    // persistSettingsCheckboxは既に上で処理済みなので重複を避ける
     setupPresets();
 }
 
@@ -956,22 +957,6 @@ function updateProgress() {
     if (!isNaN(audio.currentTime)) { 
         els.seekBar.value = audio.currentTime; 
         updateTimeDisplay(); 
-        
-        // 動画と音声の同期（小さなズレは緩やかに同期）
-        if (bgVideo.src && state.isPlaying && state.settings.showVideo && !document.hidden) {
-            const timeDiff = audio.currentTime - bgVideo.currentTime;
-            // ±0.1秒の範囲なら無視（小さなズレ）
-            if (Math.abs(timeDiff) > 0.1) {
-                // 大きなズレの場合は急速に同期
-                if (Math.abs(timeDiff) > 1.0) {
-                    bgVideo.currentTime = audio.currentTime;
-                } else {
-                    // 小さなズレは徐々に同期（5フレーム※onUpdateは約100msごと）
-                    const syncRate = 0.1; // 10%ずつ同期
-                    bgVideo.currentTime += timeDiff * syncRate;
-                }
-            }
-        }
     } 
 }
 function updateTimeDisplay() { els.timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`; }
