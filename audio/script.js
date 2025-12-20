@@ -952,7 +952,28 @@ function updateVolume() {
     els.volIcon.textContent = v == 0 ? '🔇' : v < 0.5 ? '🔉' : '🔊';
 }
 function onMetadataLoaded() { els.seekBar.max = audio.duration || 0; updateTimeDisplay(); }
-function updateProgress() { if (!isNaN(audio.currentTime)) { els.seekBar.value = audio.currentTime; updateTimeDisplay(); } }
+function updateProgress() { 
+    if (!isNaN(audio.currentTime)) { 
+        els.seekBar.value = audio.currentTime; 
+        updateTimeDisplay(); 
+        
+        // 動画と音声の同期（小さなズレは緩やかに同期）
+        if (bgVideo.src && state.isPlaying && state.settings.showVideo && !document.hidden) {
+            const timeDiff = audio.currentTime - bgVideo.currentTime;
+            // ±0.1秒の範囲なら無視（小さなズレ）
+            if (Math.abs(timeDiff) > 0.1) {
+                // 大きなズレの場合は急速に同期
+                if (Math.abs(timeDiff) > 1.0) {
+                    bgVideo.currentTime = audio.currentTime;
+                } else {
+                    // 小さなズレは徐々に同期（5フレーム※onUpdateは約100msごと）
+                    const syncRate = 0.1; // 10%ずつ同期
+                    bgVideo.currentTime += timeDiff * syncRate;
+                }
+            }
+        }
+    } 
+}
 function updateTimeDisplay() { els.timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`; }
 function updatePlayBtn() { els.playBtn.textContent = state.isPlaying ? '⏸' : '▶'; }
 function handleAudioError(e) { 
@@ -1048,11 +1069,15 @@ function renderPlaylist() {
 }
 
 let draggedIndex = -1;
+let touchStartItem = null;
+let touchStartTime = 0;
+const TOUCH_HOLD_TIME = 500; // 500msのホールド時間
 
 function setupPlaylistDragDrop() {
     const items = els.playlistItems.querySelectorAll('.playlist-item');
     
     items.forEach(item => {
+        // ===== Mouse Drag & Drop Events =====
         item.ondragstart = e => {
             draggedIndex = +item.dataset.index;
             item.classList.add('dragging');
@@ -1074,7 +1099,6 @@ function setupPlaylistDragDrop() {
         };
         
         item.ondragleave = e => {
-            // dragover時と異なるアイテムでdragleaveされたときのみremove
             if (e.target === item) {
                 item.classList.remove('drag-over');
             }
@@ -1088,26 +1112,116 @@ function setupPlaylistDragDrop() {
             const targetIndex = +item.dataset.index;
             if (draggedIndex === -1 || draggedIndex === targetIndex) return;
             
-            // プレイリストの順序を変更
-            const [removed] = state.playlist.splice(draggedIndex, 1);
-            const insertIndex = draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
-            state.playlist.splice(insertIndex, 0, removed);
+            performPlaylistReorder(draggedIndex, targetIndex);
+            draggedIndex = -1;
+        };
+        
+        // ===== Touch Events (タッチドラッグ対応) =====
+        let touchStartY = 0;
+        let touchStartX = 0;
+        let touchStartDragHandle = false;
+        
+        item.addEventListener('touchstart', e => {
+            // ドラッグハンドルをタッチしたかチェック
+            const handle = e.target.closest('.drag-handle');
+            if (!handle) return; // ドラッグハンドル以外をタッチしたら何もしない
             
-            // 現在再生中のインデックスを更新
-            if (state.currentIndex === draggedIndex) {
-                state.currentIndex = insertIndex;
-            } else if (draggedIndex < state.currentIndex && state.currentIndex <= targetIndex) {
-                state.currentIndex--;
-            } else if (draggedIndex > state.currentIndex && state.currentIndex >= targetIndex) {
-                state.currentIndex++;
+            touchStartItem = item;
+            touchStartTime = Date.now();
+            touchStartY = e.touches[0].clientY;
+            touchStartX = e.touches[0].clientX;
+            touchStartDragHandle = true;
+            
+            // フィードバック
+            item.classList.add('dragging');
+        }, { passive: true });
+        
+        item.addEventListener('touchmove', e => {
+            if (!touchStartDragHandle || !touchStartItem) return;
+            
+            const currentY = e.touches[0].clientY;
+            const currentX = e.touches[0].clientX;
+            const deltaY = Math.abs(currentY - touchStartY);
+            const deltaX = Math.abs(currentX - touchStartX);
+            
+            // スクロール許容範囲（10px以内）
+            if (deltaX < 10 && deltaY < 10) return;
+            
+            // 縦方向のドラッグが主な場合のみ継続
+            if (deltaY < deltaX) {
+                touchStartDragHandle = false;
+                return;
             }
             
-            draggedIndex = -1;
-            renderPlaylist();
-            saveSettingsToStorage();
-            showOverlay('プレイリストの順序を変更しました');
-        };
+            // ドラッグ中のターゲット判定
+            const touch = e.touches[0];
+            const elementAtPoint = document.elementFromPoint(touch.clientX, touch.clientY);
+            const targetItem = elementAtPoint?.closest('.playlist-item');
+            
+            if (targetItem && targetItem !== touchStartItem) {
+                items.forEach(i => i.classList.remove('drag-over'));
+                targetItem.classList.add('drag-over');
+            }
+        }, { passive: true });
+        
+        item.addEventListener('touchend', e => {
+            if (!touchStartItem || !touchStartDragHandle) {
+                touchStartDragHandle = false;
+                return;
+            }
+            
+            const touchEndTime = Date.now();
+            const holdTime = touchEndTime - touchStartTime;
+            
+            // ホールド時間が短すぎる場合はキャンセル（誤操作防止）
+            if (holdTime < TOUCH_HOLD_TIME) {
+                item.classList.remove('dragging');
+                items.forEach(i => i.classList.remove('drag-over'));
+                touchStartItem = null;
+                touchStartDragHandle = false;
+                return;
+            }
+            
+            // ドロップ処理
+            const touch = e.changedTouches[0];
+            const elementAtPoint = document.elementFromPoint(touch.clientX, touch.clientY);
+            const targetItem = elementAtPoint?.closest('.playlist-item');
+            
+            if (targetItem && targetItem !== touchStartItem) {
+                const dragIdx = +touchStartItem.dataset.index;
+                const targetIdx = +targetItem.dataset.index;
+                performPlaylistReorder(dragIdx, targetIdx);
+            }
+            
+            // クリーンアップ
+            item.classList.remove('dragging');
+            items.forEach(i => i.classList.remove('drag-over'));
+            touchStartItem = null;
+            touchStartDragHandle = false;
+        });
     });
+}
+
+function performPlaylistReorder(draggedIdx, targetIdx) {
+    if (draggedIdx === -1 || draggedIdx === targetIdx) return;
+    
+    // プレイリストの順序を変更
+    const [removed] = state.playlist.splice(draggedIdx, 1);
+    const insertIndex = draggedIdx < targetIdx ? targetIdx - 1 : targetIdx;
+    state.playlist.splice(insertIndex, 0, removed);
+    
+    // 現在再生中のインデックスを更新
+    if (state.currentIndex === draggedIdx) {
+        state.currentIndex = insertIndex;
+    } else if (draggedIdx < state.currentIndex && state.currentIndex <= targetIdx) {
+        state.currentIndex--;
+    } else if (draggedIdx > state.currentIndex && state.currentIndex >= targetIdx) {
+        state.currentIndex++;
+    }
+    
+    renderPlaylist();
+    saveSettingsToStorage();
+    showOverlay('プレイリストの順序を変更しました');
 }
 
 function removeFromPlaylist(index) {
@@ -1316,16 +1430,22 @@ function getColor(i, v = 1, total = state.settings.barCount) {
 }
 
 function draw() {
+    // バックグラウンドから復帰時に同期を取る
     if (document.hidden) {
-        // バックグラウンドでも動画のタイミングを同期
-        if (bgVideo.src && state.isPlaying && state.settings.showVideo) {
-            const timeDiff = Math.abs(bgVideo.currentTime - audio.currentTime);
-            if (timeDiff > 0.5) {
-                bgVideo.currentTime = audio.currentTime;
-            }
-        }
+        // バックグラウンド中は動画を再生し続けるが、描画は行わない
+        // 復帰時に同期するため何もしない
         requestAnimationFrame(draw);
         return;
+    }
+    
+    // フォアグラウンドに復帰したとき、動画と音声の同期を確認
+    if (bgVideo.src && state.isPlaying && state.settings.showVideo) {
+        const timeDiff = Math.abs(bgVideo.currentTime - audio.currentTime);
+        // 遅延が1秒以上ある場合のみ同期（小さなズレは無視）
+        if (timeDiff > 1.0) {
+            console.log(`Syncing video: audio=${audio.currentTime.toFixed(2)}s, video=${bgVideo.currentTime.toFixed(2)}s`);
+            bgVideo.currentTime = audio.currentTime;
+        }
     }
 
     if (state.settings.lowPowerMode) {

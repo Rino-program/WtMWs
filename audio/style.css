@@ -716,6 +716,11 @@ select option {
     transition: var(--transition);
     margin-bottom: 4px;
     background: rgba(255, 255, 255, 0.02);
+    /* タッチ操作での誤操作防止 */
+    -webkit-user-select: none;
+    user-select: none;
+    /* 長押し対応 */
+    touch-action: manipulation;
 }
 
 .playlist-item:hover {
@@ -746,10 +751,23 @@ select option {
     font-size: 0.9rem;
     opacity: 0;
     transition: opacity 0.2s;
+    user-select: none;
+    /* タッチ操作で誤検出を防ぐ */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    padding: 4px 2px;
 }
 
 .playlist-item:hover .drag-handle {
     opacity: 1;
+}
+
+/* タッチ時にドラッグハンドルを常に表示（モバイル） */
+@media (hover: none) {
+    .drag-handle {
+        opacity: 0.6;
+    }
 }
 
 .playlist-item .name {
