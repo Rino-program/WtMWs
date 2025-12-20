@@ -17,15 +17,6 @@
     --radius-full: 9999px;
     
     --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-    /* Layout helpers */
-    --safe-top: env(safe-area-inset-top, 0px);
-    --safe-right: env(safe-area-inset-right, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --safe-left: env(safe-area-inset-left, 0px);
-
-    --ui-pad: 20px;
-    --ui-pad-mobile: 12px;
 }
 
 * {
@@ -46,16 +37,6 @@ body {
     height: 100vh;
     font-size: 14px;
     line-height: 1.5;
-}
-
-button, input, select {
-    font-family: inherit;
-}
-
-/* Better default focus (keyboard / accessibility) */
-:focus-visible {
-    outline: 2px solid rgba(99, 102, 241, 0.65);
-    outline-offset: 2px;
 }
 
 /* Canvas Layer */
@@ -261,7 +242,7 @@ body.drag-over::after {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: calc(var(--ui-pad) + var(--safe-top)) calc(var(--ui-pad) + var(--safe-right)) calc(var(--ui-pad) + var(--safe-bottom)) calc(var(--ui-pad) + var(--safe-left));
+    padding: 20px;
 }
 
 #uiLayer.hidden {
@@ -282,8 +263,8 @@ body.drag-over::after {
 /* Persistent Controls */
 #persistentControls {
     position: fixed;
-    top: calc(20px + var(--safe-top));
-    right: calc(20px + var(--safe-right));
+    top: 20px;
+    right: 20px;
     display: flex;
     gap: 12px;
     z-index: 1001;
@@ -301,7 +282,7 @@ body.drag-over::after {
 
 /* Adjust Top Bar to make space for persistent controls */
 .top-bar {
-    padding-right: 140px; /* Space for fixed buttons (desktop) */
+    padding-right: 140px; /* Space for buttons */
 }
 
 /* Glassmorphism Utility */
@@ -430,11 +411,6 @@ body.drag-over::after {
     width: 100%;
     max-width: 900px;
     margin: 0 auto; /* Center horizontally */
-}
-
-/* Prevent accidental text selection when dragging ranges on mobile */
-input[type="range"] {
-    touch-action: pan-y;
 }
 
 /* Progress Bar */
@@ -619,12 +595,6 @@ select option {
 
 .playlist-panel.collapsed {
     display: none;
-}
-
-/* Improve tap targets inside playlist header on touch devices */
-.playlist-actions .icon-btn.sm {
-    width: 36px;
-    height: 36px;
 }
 
 .playlist-header {
@@ -814,17 +784,6 @@ select option {
     background: #1a1a20; /* Solid background to prevent transparency lag */
 }
 
-@media (prefers-reduced-motion: reduce) {
-    * {
-        transition: none !important;
-        scroll-behavior: auto !important;
-    }
-
-    .icon-btn:hover {
-        transform: none;
-    }
-}
-
 .modal-header {
     padding: 16px 24px;
     border-bottom: 1px solid var(--glass-border);
@@ -976,8 +935,8 @@ select option {
 @media (max-width: 768px) {
     /* Keep the fixed buttons from overlapping the title/status on small screens */
     #persistentControls {
-        top: calc(12px + var(--safe-top));
-        right: calc(12px + var(--safe-right));
+        top: 12px;
+        right: 12px;
         gap: 8px;
     }
 
@@ -991,8 +950,7 @@ select option {
         flex-direction: column;
         gap: 12px;
         align-items: stretch;
-        padding: calc(56px + var(--safe-top)) 12px 12px; /* top padding leaves room for fixed buttons */
-        padding-right: 12px; /* Cancel desktop fixed-button padding */
+        padding: 56px 12px 12px; /* top padding leaves room for fixed buttons */
     }
     
     .status-display {
@@ -1021,73 +979,7 @@ select option {
     .control-group.left { order: 2; justify-content: flex-start; }
     .control-group.center { order: 1; width: 100%; margin-bottom: 8px; }
     .control-group.right { order: 3; justify-content: flex-end; }
-
-    /* Playlist becomes a bottom sheet on mobile */
-    .playlist-panel {
-        position: fixed;
-        left: calc(12px + var(--safe-left));
-        right: calc(12px + var(--safe-right));
-        top: auto;
-        bottom: calc(12px + var(--safe-bottom));
-        width: auto;
-        max-height: min(70vh, calc(100vh - 160px));
-        border-radius: var(--radius-lg);
-        z-index: 1002;
-    }
-
-    .playlist-header {
-        gap: 10px;
-        align-items: flex-start;
-    }
-
-    .playlist-actions {
-        flex-wrap: wrap;
-        justify-content: flex-end;
-    }
-
-    .volume-controls {
-        width: min(220px, 45vw);
-    }
     
-
-@media (max-width: 520px) {
-    #uiLayer {
-        padding: calc(var(--ui-pad-mobile) + var(--safe-top)) calc(var(--ui-pad-mobile) + var(--safe-right)) calc(var(--ui-pad-mobile) + var(--safe-bottom)) calc(var(--ui-pad-mobile) + var(--safe-left));
-    }
-
-    .ctrl-btn.play-btn {
-        width: 60px;
-        height: 60px;
-        font-size: 1.7rem;
-    }
-
-    .control-group.center {
-        gap: 14px;
-    }
-
-    .control-group.right {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .mode-select {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .volume-controls {
-        width: min(240px, 60vw);
-    }
-
-    /* Settings modal should feel native on phones */
-    .modal-content {
-        width: 100%;
-        height: 100%;
-        max-width: none;
-        max-height: none;
-        border-radius: 0;
-    }
-}
     .modal-content {
         width: 95%;
         max-height: 90vh;

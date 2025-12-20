@@ -2,9 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="color-scheme" content="dark">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Audio Visualizer Pro V7</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet">
@@ -18,8 +16,8 @@
         <video id="bgVideo" loop playsinline muted preload="auto"></video>
         <div class="video-controls">
             <div style="display: flex; gap: 5px;">
-                <button id="closeVideoBtn" class="mini-btn" title="閉じる" aria-label="動画を閉じる">✖</button>
-                <button id="toggleVideoModeBtn" class="mini-btn" title="背景切替" aria-label="動画表示モードを切り替える">🖼️</button>
+                <button id="closeVideoBtn" class="mini-btn" title="閉じる">✖</button>
+                <button id="toggleVideoModeBtn" class="mini-btn" title="背景切替">🖼️</button>
             </div>
             <div class="video-handle">⠿</div>
         </div>
@@ -36,10 +34,10 @@
             <div class="top-controls">
                 <!-- Input Source Toggle -->
                 <div class="input-toggle-group">
-                    <button id="sourceFileBtn" class="toggle-btn active" title="ファイル再生モード" aria-label="ファイル再生モード">📁 File</button>
-                    <button id="sourceMicBtn" class="toggle-btn" title="マイク入力モード" aria-label="マイク入力モード">🎤 Mic</button>
+                    <button id="sourceFileBtn" class="toggle-btn active" title="ファイル再生モード">📁 File</button>
+                    <button id="sourceMicBtn" class="toggle-btn" title="マイク入力モード">🎤 Mic</button>
                 </div>
-                <button id="openSettingsBtn" class="icon-btn" title="設定" aria-label="設定を開く">⚙️</button>
+                <button id="openSettingsBtn" class="icon-btn" title="設定">⚙️</button>
             </div>
         </div>
 
@@ -57,20 +55,20 @@
             <div class="main-controls">
                 <!-- Left: Volume & Playlist -->
                 <div class="control-group left">
-                    <button id="playlistToggle" class="icon-btn" title="プレイリスト" aria-label="プレイリストを開く">📂</button>
+                    <button id="playlistToggle" class="icon-btn" title="プレイリスト">📂</button>
                     <div class="volume-controls">
                         <span id="volIcon">🔊</span>
-                        <input type="range" id="volSlider" min="0" max="1" step="0.05" value="1" aria-label="音量">
+                        <input type="range" id="volSlider" min="0" max="1" step="0.05" value="1">
                     </div>
                 </div>
 
                 <!-- Center: Playback -->
                 <div class="control-group center" id="playbackControls">
-                    <button id="shuffleBtn" class="icon-btn sm" title="シャッフル" aria-label="シャッフル">🔀</button>
-                    <button id="prevBtn" class="ctrl-btn sm" aria-label="前の曲">⏮</button>
-                    <button id="playBtn" class="ctrl-btn play-btn" aria-label="再生/一時停止">▶</button>
-                    <button id="nextBtn" class="ctrl-btn sm" aria-label="次の曲">⏭</button>
-                    <button id="repeatBtn" class="icon-btn sm" title="リピート" aria-label="リピート">🔁</button>
+                    <button id="shuffleBtn" class="icon-btn sm" title="シャッフル">🔀</button>
+                    <button id="prevBtn" class="ctrl-btn sm">⏮</button>
+                    <button id="playBtn" class="ctrl-btn play-btn">▶</button>
+                    <button id="nextBtn" class="ctrl-btn sm">⏭</button>
+                    <button id="repeatBtn" class="icon-btn sm" title="リピート">🔁</button>
                 </div>
 
                 <!-- Right: Mode & Export -->
@@ -86,7 +84,7 @@
                         <option value="7">Hexagon</option>
                         <option value="8">Mirror</option>
                     </select>
-                    <button id="exportBtn" class="icon-btn" title="動画書き出し" aria-label="動画を書き出す">🎬</button>
+                    <button id="exportBtn" class="icon-btn" title="動画書き出し">🎬</button>
                 </div>
             </div>
         </div>
@@ -96,16 +94,16 @@
             <div class="playlist-header">
                 <h3>プレイリスト</h3>
                 <div class="playlist-actions">
-                    <button id="clearPlaylistBtn" class="icon-btn sm" title="すべて削除" aria-label="プレイリストをすべて削除">🗑️</button>
+                    <button id="clearPlaylistBtn" class="icon-btn sm" title="すべて削除">🗑️</button>
                     <label class="file-btn">
                         📁 追加
                         <input type="file" id="fileInput" multiple accept="*/*" hidden>
                     </label>
-                    <button id="gDriveBtn" class="drive-btn" aria-label="Google Driveから追加">☁️ Drive</button>
+                    <button id="gDriveBtn" class="drive-btn">☁️ Drive</button>
                 </div>
             </div>
             <div class="playlist-search">
-                <input type="text" id="playlistSearchInput" placeholder="曲名で検索..." aria-label="プレイリスト検索">
+                <input type="text" id="playlistSearchInput" placeholder="曲名で検索...">
             </div>
             <div id="playlistItems" class="playlist-items">
                 <div class="playlist-empty">曲を追加してください</div>
@@ -115,8 +113,8 @@
 
     <!-- Persistent Controls (Always Visible) -->
     <div id="persistentControls">
-        <button id="toggleUIBtn" class="icon-btn" title="UI表示切替 (H)" aria-label="UI表示を切り替える">🔳</button>
-        <button id="fullscreenBtn" class="icon-btn" title="全画面表示" aria-label="全画面表示を切り替える">⛶</button>
+        <button id="toggleUIBtn" class="icon-btn" title="UI表示切替 (H)">🔳</button>
+        <button id="fullscreenBtn" class="icon-btn" title="全画面表示">⛶</button>
     </div>
 
     <!-- Settings Modal -->
