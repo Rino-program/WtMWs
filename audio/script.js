@@ -74,6 +74,17 @@ const state = {
 
 const EQ_FREQS = [60, 170, 350, 1000, 3000, 6000, 12000, 14000];
 
+// iPadOS 13+ は UA が Mac のように見える場合があるため補正
+const IS_IOS = (() => {
+    const ua = navigator.userAgent || '';
+    const isAppleMobile = /iPad|iPhone|iPod/.test(ua);
+    const isIPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+    return isAppleMobile || isIPadOS;
+})();
+
+// Safari(iOS/iPadOS)で非対応になりやすい拡張子（=「たまにエラー」になりやすい）
+const IOS_UNSUPPORTED_EXT = new Set(['ogg', 'opus', 'webm', 'mkv']);
+
 const COLOR_PRESETS = [
     { name: 'Cyber', color: '#00f2ff' },
     { name: 'Sunset', color: '#ff4e50' },
@@ -862,7 +873,37 @@ function togglePlay() {
     if (state.playlist.length === 0) return;
     if (state.currentIndex === -1) { playTrack(0); return; }
     initAudioContext();
-    state.isPlaying ? audio.pause() : audio.play().catch(console.error);
+    if (state.isPlaying) {
+        audio.pause();
+    } else {
+        attemptPlay({ allowAutoAdvance: false });
+    }
+}
+
+async function attemptPlay({ allowAutoAdvance } = { allowAutoAdvance: true }) {
+    try {
+        // iOS Safari は「ユーザー操作」の文脈を外れると NotAllowedError になりやすい。
+        // 可能な限り同期的に play() を呼び、失敗したらユーザーにタップを促す。
+        await audio.play();
+        return true;
+    } catch (e) {
+        const errName = e?.name || '';
+        console.warn('Playback failed:', e);
+
+        if (errName === 'NotAllowedError') {
+            state.isPlaying = false;
+            updatePlayBtn();
+            showOverlay('▶️ 再生するには再生ボタンをタップしてください', 3000);
+            return false;
+        }
+
+        showOverlay('⚠️ 再生に失敗しました');
+        if (allowAutoAdvance) {
+            // 失敗した場合は次の曲へ（無限ループ防止のため少し待つ）
+            setTimeout(nextTrack, 2000);
+        }
+        return false;
+    }
 }
 
 function toggleShuffle() {
@@ -915,10 +956,20 @@ function prevTrack() {
     playTrack(prevIdx);
 }
 
-function playTrack(index) {
+function playTrack(index, opts = {}) {
     if (index < 0 || index >= state.playlist.length) return;
     state.currentIndex = index;
     const track = state.playlist[index];
+
+    if (IS_IOS) {
+        const ext = (track.ext || '').toLowerCase();
+        if (IOS_UNSUPPORTED_EXT.has(ext)) {
+            els.statusText.textContent = `⚠️ 非対応形式: ${track.name}`;
+            showOverlay('⚠️ iPad(Safari)ではこの形式を再生できません', 3000);
+            if (state.settings.autoPlayNext) setTimeout(nextTrack, 1500);
+            return;
+        }
+    }
     els.statusText.textContent = `🎵 ${track.name}`;
     document.title = `${track.name} - Audio Visualizer`;
     renderPlaylist();
@@ -934,15 +985,14 @@ function playTrack(index) {
     audio.load();
     connectFileSource();
     updateVideoVisibility();
-    state.playTimeout = setTimeout(() => { 
-        audio.play().catch(e => {
-            console.warn("Playback failed:", e);
-            showOverlay('⚠️ 再生に失敗しました');
-            // 失敗した場合は次の曲へ（無限ループ防止のため少し待つ）
-            setTimeout(nextTrack, 2000);
-        }); 
-        state.playTimeout = null;
-    }, 100);
+
+    const autoplay = opts.autoplay !== false;
+    if (autoplay) {
+        // setTimeout でユーザー操作文脈が切れると iOS で再生が拒否されることがあるため、遅延せずに実行
+        attemptPlay({ allowAutoAdvance: true }).finally(() => {
+            state.playTimeout = null;
+        });
+    }
 }
 
 function seek() { if (state.inputSource === 'file') audio.currentTime = els.seekBar.value; }
@@ -964,9 +1014,19 @@ function updateProgress() {
 function updateTimeDisplay() { els.timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`; }
 function updatePlayBtn() { els.playBtn.textContent = state.isPlaying ? '⏸' : '▶'; }
 function handleAudioError(e) { 
-    console.error('Audio error:', e); 
+    const mediaErr = audio.error;
+    const code = mediaErr?.code;
+    console.error('Audio error:', { event: e, code, message: mediaErr?.message, src: audio.currentSrc }); 
     els.statusText.textContent = '再生エラー'; 
-    showOverlay('⚠️ オーディオエラーが発生しました');
+
+    const track = state.playlist[state.currentIndex];
+    const ext = (track?.ext || '').toLowerCase();
+    if (IS_IOS && ext === 'mp4') {
+        // mp4 はコンテナであり、中身の動画/音声コーデック次第で iOS が再生できない場合がある
+        showOverlay('⚠️ このMP4はiPad非対応のコーデックの可能性があります（H.264+AAC推奨）', 3500);
+    } else {
+        showOverlay('⚠️ オーディオエラーが発生しました');
+    }
     // エラー時は次の曲へ
     setTimeout(nextTrack, 3000);
 }
@@ -996,7 +1056,17 @@ function handleFiles(files) {
     showOverlay(`📥 ${accepted.length}個のファイルを取り込み中...`);
 
     accepted.forEach(item => {
-        state.playlist.push({ name: item.file.name, url: URL.createObjectURL(item.file), source: 'local', isVideo: item.isVideo });
+        const lower = (item.file.name || '').toLowerCase();
+        const ext = lower.includes('.') ? lower.split('.').pop() : '';
+        state.playlist.push({
+            name: item.file.name,
+            url: URL.createObjectURL(item.file),
+            source: 'local',
+            isVideo: item.isVideo,
+            ext,
+            mime: item.file.type || '',
+            size: typeof item.file.size === 'number' ? item.file.size : null
+        });
     });
     renderPlaylist();
     if (state.currentIndex === -1) playTrack(state.playlist.length - accepted.length);
@@ -1301,9 +1371,19 @@ async function fetchDriveFile(fileId, fileName) {
         const ext = fileName.toLowerCase().split('.').pop();
         const videoExt = new Set(['mp4', 'webm', 'mkv', 'mov']);
         const isVideo = videoExt.has(ext);
-        state.playlist.push({ name: fileName, url: URL.createObjectURL(blob), source: 'drive', isVideo: isVideo }); 
+        state.playlist.push({
+            name: fileName,
+            url: URL.createObjectURL(blob),
+            source: 'drive',
+            isVideo: isVideo,
+            ext,
+            mime: blob.type || '',
+            size: typeof blob.size === 'number' ? blob.size : null
+        }); 
         renderPlaylist(); 
-        if (state.currentIndex === -1) playTrack(state.playlist.length - 1); 
+        // Drive 経由は取得が非同期になり、iOS では自動再生が拒否されやすい。
+        // 先頭曲としてセットだけして、再生はユーザーが▶を押したタイミングに任せる。
+        if (state.currentIndex === -1) playTrack(state.playlist.length - 1, { autoplay: false }); 
         showOverlay(`✅ ${fileName} を追加しました`);
     } catch (e) {
         showOverlay('❌ エラーが発生しました');
