@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI計算機 - BMI Calculator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            padding: 20px;
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            text-decoration: none;
+            background: rgba(0,0,0,0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            z-index: 100;
+        }
+        .back-link:hover { background: rgba(0,0,0,0.3); }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .calculator {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 35px;
+            width: 100%;
+            max-width: 450px;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-row input {
+            flex: 1;
+            padding: 15px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            color: #333;
+            text-align: center;
+        }
+        
+        .input-row input:focus {
+            outline: 3px solid rgba(255,255,255,0.5);
+        }
+        
+        .input-row span {
+            display: flex;
+            align-items: center;
+            font-size: 1.2rem;
+            padding: 0 10px;
+        }
+        
+        .result-card {
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-top: 25px;
+        }
+        
+        .bmi-value {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .bmi-category {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            padding: 10px 25px;
+            border-radius: 25px;
+            display: inline-block;
+        }
+        
+        .category-underweight { background: #3498db; }
+        .category-normal { background: #27ae60; }
+        .category-overweight { background: #f39c12; }
+        .category-obese { background: #e74c3c; }
+        
+        .bmi-meter {
+            position: relative;
+            height: 20px;
+            background: linear-gradient(to right, #3498db 0%, #27ae60 25%, #f39c12 60%, #e74c3c 100%);
+            border-radius: 10px;
+            margin: 25px 0 10px;
+        }
+        
+        .bmi-pointer {
+            position: absolute;
+            top: -8px;
+            width: 8px;
+            height: 36px;
+            background: #fff;
+            border-radius: 4px;
+            transform: translateX(-50%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            transition: left 0.5s ease;
+        }
+        
+        .meter-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+        
+        .info-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .info-card {
+            background: rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .info-card .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .info-card .label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .reference {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 15px;
+        }
+        
+        .reference h3 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .reference-table {
+            width: 100%;
+            font-size: 0.85rem;
+        }
+        
+        .reference-table tr {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .reference-table td {
+            padding: 10px 5px;
+        }
+        
+        .reference-table td:first-child {
+            opacity: 0.8;
+        }
+        
+        .reference-table .color-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .tips {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .tips strong {
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    <h1>⚖️ BMI計算機</h1>
+    
+    <div class="calculator">
+        <div class="input-group">
+            <label>📏 身長</label>
+            <div class="input-row">
+                <input type="number" id="height" value="170" min="100" max="250" step="0.1">
+                <span>cm</span>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label>⚖️ 体重</label>
+            <div class="input-row">
+                <input type="number" id="weight" value="60" min="20" max="300" step="0.1">
+                <span>kg</span>
+            </div>
+        </div>
+        
+        <div class="result-card">
+            <div class="bmi-value" id="bmi-value">20.8</div>
+            <div class="bmi-category category-normal" id="bmi-category">普通体重</div>
+            
+            <div class="bmi-meter">
+                <div class="bmi-pointer" id="bmi-pointer" style="left: 35%"></div>
+            </div>
+            <div class="meter-labels">
+                <span>18.5</span>
+                <span>25</span>
+                <span>30</span>
+                <span>35+</span>
+            </div>
+        </div>
+        
+        <div class="info-cards">
+            <div class="info-card">
+                <div class="value" id="ideal-weight">-</div>
+                <div class="label">標準体重 (BMI 22)</div>
+            </div>
+            <div class="info-card">
+                <div class="value" id="weight-diff">-</div>
+                <div class="label">標準との差</div>
+            </div>
+            <div class="info-card">
+                <div class="value" id="min-weight">-</div>
+                <div class="label">最低体重</div>
+            </div>
+            <div class="info-card">
+                <div class="value" id="max-weight">-</div>
+                <div class="label">最高体重</div>
+            </div>
+        </div>
+        
+        <div class="reference">
+            <h3>📊 BMI分類表</h3>
+            <table class="reference-table">
+                <tr>
+                    <td><span class="color-dot" style="background:#3498db"></span>低体重</td>
+                    <td>18.5未満</td>
+                </tr>
+                <tr>
+                    <td><span class="color-dot" style="background:#27ae60"></span>普通体重</td>
+                    <td>18.5 〜 24.9</td>
+                </tr>
+                <tr>
+                    <td><span class="color-dot" style="background:#f39c12"></span>肥満（1度）</td>
+                    <td>25.0 〜 29.9</td>
+                </tr>
+                <tr>
+                    <td><span class="color-dot" style="background:#e74c3c"></span>肥満（2度以上）</td>
+                    <td>30.0以上</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="tips" id="tips">
+            <strong>💡 アドバイス:</strong> 計算結果を確認してください。
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            
+            if (!height || !weight || height <= 0 || weight <= 0) return;
+            
+            // BMI計算
+            const heightM = height / 100;
+            const bmi = weight / (heightM * heightM);
+            
+            // 表示
+            document.getElementById('bmi-value').textContent = bmi.toFixed(1);
+            
+            // カテゴリ判定
+            const categoryEl = document.getElementById('bmi-category');
+            let category, categoryClass, tip;
+            
+            if (bmi < 18.5) {
+                category = '低体重';
+                categoryClass = 'category-underweight';
+                tip = '体重が軽めです。バランスの良い食事で適正体重を目指しましょう。';
+            } else if (bmi < 25) {
+                category = '普通体重';
+                categoryClass = 'category-normal';
+                tip = '適正な体重です！このまま健康的な生活を続けましょう。';
+            } else if (bmi < 30) {
+                category = '肥満（1度）';
+                categoryClass = 'category-overweight';
+                tip = '少し体重が多めです。食事と運動のバランスを見直してみましょう。';
+            } else {
+                category = '肥満（2度以上）';
+                categoryClass = 'category-obese';
+                tip = '健康のため、生活習慣の改善を検討してください。専門家への相談もおすすめです。';
+            }
+            
+            categoryEl.textContent = category;
+            categoryEl.className = `bmi-category ${categoryClass}`;
+            
+            // ポインタ位置
+            let pointerPos = ((bmi - 15) / 25) * 100;
+            pointerPos = Math.max(0, Math.min(100, pointerPos));
+            document.getElementById('bmi-pointer').style.left = `${pointerPos}%`;
+            
+            // 各種体重計算
+            const idealWeight = 22 * heightM * heightM;
+            const minWeight = 18.5 * heightM * heightM;
+            const maxWeight = 25 * heightM * heightM;
+            const weightDiff = weight - idealWeight;
+            
+            document.getElementById('ideal-weight').textContent = idealWeight.toFixed(1) + ' kg';
+            document.getElementById('min-weight').textContent = minWeight.toFixed(1) + ' kg';
+            document.getElementById('max-weight').textContent = maxWeight.toFixed(1) + ' kg';
+            
+            const diffText = weightDiff >= 0 ? `+${weightDiff.toFixed(1)}` : weightDiff.toFixed(1);
+            document.getElementById('weight-diff').textContent = diffText + ' kg';
+            
+            // アドバイス
+            document.getElementById('tips').innerHTML = `<strong>💡 アドバイス:</strong> ${tip}`;
+        }
+        
+        // イベントリスナー
+        document.getElementById('height').addEventListener('input', calculate);
+        document.getElementById('weight').addEventListener('input', calculate);
+        
+        // 初期計算
+        calculate();
+    </script>
+</body>
+</html>

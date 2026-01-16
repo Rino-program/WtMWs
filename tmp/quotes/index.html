@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Quotes - 名言生成</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.back{position:fixed;top:15px;left:15px;color:#fff;text-decoration:none;font-size:1.3rem;z-index:100;opacity:0.7}
+h1{font-size:clamp(1.5rem,4vw,2rem);margin-bottom:30px;background:linear-gradient(90deg,#f093fb,#f5576c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.quote-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:30px;padding:50px 40px;max-width:700px;width:100%;text-align:center;position:relative;transition:all 0.5s}
+.quote-card::before{content:'"';position:absolute;top:20px;left:30px;font-size:5rem;color:rgba(255,255,255,0.1);font-family:Georgia,serif;line-height:1}
+.quote-text{font-size:clamp(1.3rem,3vw,1.8rem);line-height:1.8;margin-bottom:30px;font-style:italic;color:#eee;min-height:100px;display:flex;align-items:center;justify-content:center}
+.quote-author{font-size:1.1rem;color:#888;display:flex;align-items:center;justify-content:center;gap:10px}
+.quote-author::before{content:'—';color:#666}
+.category-badge{display:inline-block;padding:5px 15px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:20px;font-size:0.8rem;margin-top:20px}
+.controls{display:flex;gap:15px;margin-top:40px;flex-wrap:wrap;justify-content:center}
+.controls button{background:linear-gradient(135deg,#f093fb,#f5576c);border:none;color:#fff;padding:15px 30px;border-radius:30px;cursor:pointer;font-size:1rem;display:flex;align-items:center;gap:10px;transition:all 0.2s}
+.controls button:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(240,147,251,0.3)}
+.controls button:active{transform:translateY(0)}
+.controls button.secondary{background:rgba(255,255,255,0.1)}
+.categories{display:flex;gap:10px;margin-top:30px;flex-wrap:wrap;justify-content:center}
+.categories button{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#aaa;padding:10px 20px;border-radius:20px;cursor:pointer;font-size:0.85rem;transition:all 0.2s}
+.categories button:hover{background:rgba(255,255,255,0.15);color:#fff}
+.categories button.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:transparent}
+.favorites{margin-top:50px;width:100%;max-width:700px}
+.favorites h2{font-size:1rem;color:#888;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.favorites h2 span{font-size:0.8rem;color:#666}
+.favorites-list{display:grid;gap:15px}
+.fav-item{background:rgba(255,255,255,0.05);padding:20px;border-radius:15px;cursor:pointer;transition:all 0.2s;position:relative}
+.fav-item:hover{background:rgba(255,255,255,0.1);transform:translateX(5px)}
+.fav-item .quote{font-size:0.95rem;margin-bottom:10px;font-style:italic;color:#ddd}
+.fav-item .author{font-size:0.8rem;color:#888}
+.fav-item .remove{position:absolute;top:15px;right:15px;background:none;border:none;color:#666;cursor:pointer;font-size:1.2rem;opacity:0;transition:opacity 0.2s}
+.fav-item:hover .remove{opacity:1}
+.share-modal{position:fixed;inset:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:200}
+.share-modal.show{display:flex}
+.share-content{background:#1a1a2e;padding:30px;border-radius:20px;max-width:500px;width:90%;text-align:center}
+.share-content h3{margin-bottom:20px;color:#f093fb}
+.share-preview{background:#000;padding:30px;border-radius:15px;margin-bottom:20px;font-style:italic}
+.share-buttons{display:flex;gap:10px;justify-content:center}
+.share-buttons button{padding:12px 20px;border:none;border-radius:10px;cursor:pointer;font-size:0.9rem}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.9);padding:15px 30px;border-radius:10px;opacity:0;transition:opacity 0.3s;z-index:100}
+.toast.show{opacity:1}
+.daily-quote{margin-bottom:20px;padding:15px 25px;background:rgba(67,233,123,0.15);border:1px solid rgba(67,233,123,0.3);border-radius:15px;font-size:0.9rem}
+.daily-quote span{color:#43e97b}
+</style>
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<h1>💬 名言ジェネレーター</h1>
+<div class="daily-quote">
+<span>✨ 今日の名言</span> - 毎日1つの名言をお届け
+</div>
+<div class="quote-card" id="quoteCard">
+<div class="quote-text" id="quoteText">「千里の道も一歩から」</div>
+<div class="quote-author" id="quoteAuthor">老子</div>
+<div class="category-badge" id="categoryBadge">人生</div>
+</div>
+<div class="controls">
+<button onclick="newQuote()">🎲 ランダム名言</button>
+<button onclick="toggleFavorite()" id="favBtn" class="secondary">❤️ お気に入り</button>
+<button onclick="shareQuote()" class="secondary">📤 シェア</button>
+<button onclick="copyQuote()" class="secondary">📋 コピー</button>
+</div>
+<div class="categories">
+<button class="active" data-cat="all">すべて</button>
+<button data-cat="life">人生</button>
+<button data-cat="success">成功</button>
+<button data-cat="love">愛</button>
+<button data-cat="wisdom">知恵</button>
+<button data-cat="motivation">モチベーション</button>
+<button data-cat="humor">ユーモア</button>
+</div>
+<div class="favorites" id="favoritesSection">
+<h2>⭐ お気に入り <span id="favCount">0件</span></h2>
+<div class="favorites-list" id="favoritesList"></div>
+</div>
+<div class="share-modal" id="shareModal">
+<div class="share-content">
+<h3>📤 シェア</h3>
+<div class="share-preview" id="sharePreview"></div>
+<div class="share-buttons">
+<button style="background:#1DA1F2;color:#fff" onclick="shareTwitter()">Twitter</button>
+<button style="background:#25D366;color:#fff" onclick="shareLine()">LINE</button>
+<button style="background:#666;color:#fff" onclick="closeShare()">閉じる</button>
+</div>
+</div>
+</div>
+<div class="toast" id="toast">コピーしました！</div>
+<script>
+const quotes=[
+    {text:'千里の道も一歩から',author:'老子',cat:'wisdom'},
+    {text:'失敗は成功の母である',author:'トーマス・エジソン',cat:'success'},
+    {text:'人生で大切なのは、勝つことではなく、努力することである',author:'ピエール・ド・クーベルタン',cat:'life'},
+    {text:'愛とは、大きな愛情をもって小さなことをすることです',author:'マザー・テレサ',cat:'love'},
+    {text:'未来を予測する最良の方法は、それを創造することだ',author:'エイブラハム・リンカーン',cat:'motivation'},
+    {text:'継続は力なり',author:'格言',cat:'motivation'},
+    {text:'人を愛することは、その人を愛する理由がなくなっても愛し続けることである',author:'ヴィクトル・ユーゴー',cat:'love'},
+    {text:'知識は力である',author:'フランシス・ベーコン',cat:'wisdom'},
+    {text:'機会は準備された心にのみ訪れる',author:'ルイ・パスツール',cat:'success'},
+    {text:'人生とは自転車のようなものだ。倒れないためには走り続けなければならない',author:'アルベルト・アインシュタイン',cat:'life'},
+    {text:'夢見ることができれば、それは実現できる',author:'ウォルト・ディズニー',cat:'motivation'},
+    {text:'笑顔は最も短い距離で二人を結ぶ',author:'ヴィクトル・ボルジェ',cat:'humor'},
+    {text:'成功とは、熱意を失わずに失敗から失敗へと進む能力である',author:'ウィンストン・チャーチル',cat:'success'},
+    {text:'今日という日は、残りの人生の最初の日である',author:'チャールズ・ディードリッヒ',cat:'life'},
+    {text:'行動は言葉よりも雄弁である',author:'格言',cat:'wisdom'},
+    {text:'幸福とは香水のようなものだ。人に振りかけると自分にもかかる',author:'ラルフ・ワルド・エマーソン',cat:'life'},
+    {text:'想像力は知識より重要である',author:'アルベルト・アインシュタイン',cat:'wisdom'},
+    {text:'成功の秘訣は、目的を持って努力することである',author:'ベンジャミン・ディズレーリ',cat:'success'},
+    {text:'困難の中にこそ機会がある',author:'アルベルト・アインシュタイン',cat:'motivation'},
+    {text:'人生は短い。だから友よ、空騒ぎに時を費やすな',author:'シェイクスピア',cat:'life'}
+];
+
+let currentQuote=null;
+let currentCategory='all';
+let favorites=JSON.parse(localStorage.getItem('favoriteQuotes')||'[]');
+
+const categoryNames={all:'すべて',life:'人生',success:'成功',love:'愛',wisdom:'知恵',motivation:'モチベーション',humor:'ユーモア'};
+
+function getFilteredQuotes(){
+    if(currentCategory==='all')return quotes;
+    return quotes.filter(q=>q.cat===currentCategory);
+}
+
+function newQuote(){
+    const filtered=getFilteredQuotes();
+    const randomIndex=Math.floor(Math.random()*filtered.length);
+    currentQuote=filtered[randomIndex];
+    displayQuote(currentQuote);
+}
+
+function displayQuote(quote){
+    const card=document.getElementById('quoteCard');
+    card.style.opacity='0';
+    card.style.transform='translateY(20px)';
+    
+    setTimeout(()=>{
+        document.getElementById('quoteText').textContent=`「${quote.text}」`;
+        document.getElementById('quoteAuthor').textContent=quote.author;
+        document.getElementById('categoryBadge').textContent=categoryNames[quote.cat];
+        updateFavButton();
+        card.style.opacity='1';
+        card.style.transform='translateY(0)';
+    },200);
+}
+
+function toggleFavorite(){
+    if(!currentQuote)return;
+    const index=favorites.findIndex(f=>f.text===currentQuote.text);
+    if(index===-1){
+        favorites.push(currentQuote);
+    }else{
+        favorites.splice(index,1);
+    }
+    localStorage.setItem('favoriteQuotes',JSON.stringify(favorites));
+    updateFavButton();
+    renderFavorites();
+}
+
+function updateFavButton(){
+    if(!currentQuote)return;
+    const isFav=favorites.some(f=>f.text===currentQuote.text);
+    document.getElementById('favBtn').innerHTML=isFav?'💖 お気に入り済み':'❤️ お気に入り';
+}
+
+function removeFavorite(index){
+    favorites.splice(index,1);
+    localStorage.setItem('favoriteQuotes',JSON.stringify(favorites));
+    updateFavButton();
+    renderFavorites();
+}
+
+function renderFavorites(){
+    document.getElementById('favCount').textContent=favorites.length+'件';
+    document.getElementById('favoritesList').innerHTML=favorites.map((f,i)=>`
+        <div class="fav-item" onclick="displayQuote(favorites[${i}]);currentQuote=favorites[${i}]">
+            <div class="quote">「${f.text}」</div>
+            <div class="author">— ${f.author}</div>
+            <button class="remove" onclick="event.stopPropagation();removeFavorite(${i})">×</button>
+        </div>
+    `).join('');
+}
+
+function copyQuote(){
+    if(!currentQuote)return;
+    const text=`「${currentQuote.text}」 — ${currentQuote.author}`;
+    navigator.clipboard.writeText(text);
+    showToast();
+}
+
+function shareQuote(){
+    if(!currentQuote)return;
+    document.getElementById('sharePreview').innerHTML=`「${currentQuote.text}」<br><br>— ${currentQuote.author}`;
+    document.getElementById('shareModal').classList.add('show');
+}
+
+function closeShare(){
+    document.getElementById('shareModal').classList.remove('show');
+}
+
+function shareTwitter(){
+    const text=encodeURIComponent(`「${currentQuote.text}」 — ${currentQuote.author}`);
+    window.open(`https://twitter.com/intent/tweet?text=${text}`,'_blank');
+    closeShare();
+}
+
+function shareLine(){
+    const text=encodeURIComponent(`「${currentQuote.text}」 — ${currentQuote.author}`);
+    window.open(`https://social-plugins.line.me/lineit/share?text=${text}`,'_blank');
+    closeShare();
+}
+
+function showToast(){
+    const toast=document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'),2000);
+}
+
+document.querySelectorAll('.categories button').forEach(btn=>{
+    btn.onclick=function(){
+        document.querySelector('.categories .active').classList.remove('active');
+        this.classList.add('active');
+        currentCategory=this.dataset.cat;
+        newQuote();
+    };
+});
+
+document.getElementById('shareModal').onclick=function(e){
+    if(e.target===this)closeShare();
+};
+
+// 初期化
+newQuote();
+renderFavorites();
+
+// 今日の名言（日付ベースで固定）
+const today=new Date().toDateString();
+const dailyIndex=today.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%quotes.length;
+currentQuote=quotes[dailyIndex];
+displayQuote(currentQuote);
+</script>
+</body>
+</html>

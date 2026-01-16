@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音楽ビジュアライザー - Audio Visualizer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+        
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            text-decoration: none;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 25px;
+            z-index: 100;
+        }
+        .back-link:hover { background: rgba(255,255,255,0.2); }
+        
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            z-index: 100;
+        }
+        
+        .upload-area {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px 50px;
+            border-radius: 20px;
+            border: 2px dashed rgba(255,255,255,0.3);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #fff;
+        }
+        
+        .upload-area:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.5);
+        }
+        
+        .upload-area.playing {
+            border-style: solid;
+            border-color: #00ff88;
+        }
+        
+        .upload-area h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .upload-area p {
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+        
+        #file-input { display: none; }
+        
+        .playback-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0,0,0,0.5);
+            padding: 15px 25px;
+            border-radius: 50px;
+        }
+        
+        .play-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            border: none;
+            color: #000;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+        
+        .play-btn:hover { transform: scale(1.1); }
+        
+        .progress-bar {
+            width: 200px;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00cc66);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        
+        .time {
+            color: #fff;
+            font-size: 0.85rem;
+            font-family: monospace;
+        }
+        
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .volume-control span { color: #fff; font-size: 1.2rem; }
+        
+        .volume-slider {
+            width: 80px;
+            height: 6px;
+            -webkit-appearance: none;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #00ff88;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .viz-options {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            color: #fff;
+            z-index: 100;
+        }
+        
+        .viz-options h3 {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+        
+        .option-group {
+            margin-bottom: 15px;
+        }
+        
+        .option-group label {
+            display: block;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+            opacity: 0.7;
+        }
+        
+        .option-group select {
+            width: 100%;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            border-radius: 8px;
+        }
+        
+        .color-presets {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .color-preset {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .color-preset:hover { transform: scale(1.1); }
+        .color-preset.active { border-color: #fff; }
+        
+        .track-info {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #fff;
+            z-index: 50;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+        
+        .track-info h2 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0,255,136,0.5);
+        }
+        
+        .track-info p {
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+        
+        .no-audio {
+            color: rgba(255,255,255,0.5);
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        
+        .mic-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        
+        .mic-btn:hover { filter: brightness(1.1); }
+        .mic-btn.active { background: linear-gradient(135deg, #00ff88, #00cc66); }
+    </style>
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    
+    <canvas id="canvas"></canvas>
+    
+    <div class="track-info" id="track-info">
+        <h2>🎵 音楽ビジュアライザー</h2>
+        <p>音楽ファイルをアップロードまたはマイク入力で開始</p>
+    </div>
+    
+    <div class="viz-options">
+        <h3>🎨 ビジュアル設定</h3>
+        
+        <div class="option-group">
+            <label>表示モード</label>
+            <select id="viz-mode">
+                <option value="bars">バー</option>
+                <option value="wave">ウェーブ</option>
+                <option value="circle">サークル</option>
+                <option value="particles">パーティクル</option>
+                <option value="spectrum">スペクトラム</option>
+            </select>
+        </div>
+        
+        <div class="option-group">
+            <label>カラーテーマ</label>
+            <div class="color-presets">
+                <div class="color-preset active" data-colors='["#00ff88", "#00cc66"]' style="background: linear-gradient(135deg, #00ff88, #00cc66)"></div>
+                <div class="color-preset" data-colors='["#ff6b6b", "#ee5a5a"]' style="background: linear-gradient(135deg, #ff6b6b, #ee5a5a)"></div>
+                <div class="color-preset" data-colors='["#4facfe", "#00f2fe"]' style="background: linear-gradient(135deg, #4facfe, #00f2fe)"></div>
+                <div class="color-preset" data-colors='["#f093fb", "#f5576c"]' style="background: linear-gradient(135deg, #f093fb, #f5576c)"></div>
+                <div class="color-preset" data-colors='["#ffecd2", "#fcb69f"]' style="background: linear-gradient(135deg, #ffecd2, #fcb69f)"></div>
+                <div class="color-preset" data-colors='["#a8edea", "#fed6e3"]' style="background: linear-gradient(135deg, #a8edea, #fed6e3)"></div>
+            </div>
+        </div>
+        
+        <div class="option-group">
+            <label>感度</label>
+            <input type="range" id="sensitivity" min="0.5" max="3" step="0.1" value="1" class="volume-slider" style="width:100%">
+        </div>
+    </div>
+    
+    <div class="controls">
+        <div class="upload-area" id="upload-area">
+            <h3>🎵 音楽をドロップ または クリック</h3>
+            <p>MP3, WAV, OGG対応</p>
+            <input type="file" id="file-input" accept="audio/*">
+        </div>
+        
+        <button class="mic-btn" id="mic-btn">🎤 マイク入力</button>
+        
+        <div class="playback-controls" id="playback-controls" style="display: none;">
+            <button class="play-btn" id="play-btn">▶</button>
+            <span class="time" id="current-time">0:00</span>
+            <div class="progress-bar" id="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <span class="time" id="duration">0:00</span>
+            <div class="volume-control">
+                <span>🔊</span>
+                <input type="range" class="volume-slider" id="volume" min="0" max="1" step="0.1" value="1">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let audioContext, analyser, source, audio;
+        let isPlaying = false;
+        let isMicActive = false;
+        let vizMode = 'bars';
+        let colorTheme = ['#00ff88', '#00cc66'];
+        let sensitivity = 1;
+        let particles = [];
+        
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        
+        // オーディオコンテキスト初期化
+        function initAudio() {
+            if (audioContext) return;
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 512;
+            analyser.connect(audioContext.destination);
+        }
+        
+        // ファイルアップロード
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', e => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#00ff88';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = 'rgba(255,255,255,0.3)';
+        });
+        
+        uploadArea.addEventListener('drop', e => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file) loadAudioFile(file);
+        });
+        
+        fileInput.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) loadAudioFile(file);
+        });
+        
+        function loadAudioFile(file) {
+            initAudio();
+            
+            if (audio) {
+                audio.pause();
+                if (source) source.disconnect();
+            }
+            
+            audio = new Audio();
+            audio.src = URL.createObjectURL(file);
+            
+            audio.addEventListener('loadedmetadata', () => {
+                document.getElementById('duration').textContent = formatTime(audio.duration);
+                document.getElementById('playback-controls').style.display = 'flex';
+                document.getElementById('track-info').querySelector('h2').textContent = file.name.replace(/\.[^/.]+$/, '');
+            });
+            
+            audio.addEventListener('timeupdate', () => {
+                document.getElementById('current-time').textContent = formatTime(audio.currentTime);
+                const progress = (audio.currentTime / audio.duration) * 100;
+                document.getElementById('progress-fill').style.width = `${progress}%`;
+            });
+            
+            audio.addEventListener('ended', () => {
+                isPlaying = false;
+                document.getElementById('play-btn').textContent = '▶';
+            });
+            
+            source = audioContext.createMediaElementSource(audio);
+            source.connect(analyser);
+            
+            uploadArea.classList.add('playing');
+            audio.play();
+            isPlaying = true;
+            document.getElementById('play-btn').textContent = '⏸';
+            
+            if (isMicActive) stopMic();
+        }
+        
+        // マイク入力
+        let micStream, micSource;
+        
+        document.getElementById('mic-btn').addEventListener('click', async () => {
+            if (isMicActive) {
+                stopMic();
+            } else {
+                await startMic();
+            }
+        });
+        
+        async function startMic() {
+            try {
+                initAudio();
+                
+                micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                micSource = audioContext.createMediaStreamSource(micStream);
+                micSource.connect(analyser);
+                
+                isMicActive = true;
+                document.getElementById('mic-btn').classList.add('active');
+                document.getElementById('mic-btn').textContent = '🎤 マイク停止';
+                document.getElementById('track-info').querySelector('h2').textContent = '🎤 マイク入力中';
+                
+                if (audio) {
+                    audio.pause();
+                    isPlaying = false;
+                }
+            } catch (err) {
+                console.error('マイクアクセスエラー:', err);
+                alert('マイクにアクセスできませんでした');
+            }
+        }
+        
+        function stopMic() {
+            if (micStream) {
+                micStream.getTracks().forEach(track => track.stop());
+            }
+            if (micSource) {
+                micSource.disconnect();
+            }
+            isMicActive = false;
+            document.getElementById('mic-btn').classList.remove('active');
+            document.getElementById('mic-btn').textContent = '🎤 マイク入力';
+        }
+        
+        // 再生コントロール
+        document.getElementById('play-btn').addEventListener('click', () => {
+            if (!audio) return;
+            
+            if (isPlaying) {
+                audio.pause();
+                document.getElementById('play-btn').textContent = '▶';
+            } else {
+                audio.play();
+                document.getElementById('play-btn').textContent = '⏸';
+            }
+            isPlaying = !isPlaying;
+        });
+        
+        document.getElementById('progress-bar').addEventListener('click', e => {
+            if (!audio) return;
+            const rect = e.target.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = percent * audio.duration;
+        });
+        
+        document.getElementById('volume').addEventListener('input', e => {
+            if (audio) audio.volume = e.target.value;
+        });
+        
+        // ビジュアライザー設定
+        document.getElementById('viz-mode').addEventListener('change', e => {
+            vizMode = e.target.value;
+            particles = [];
+        });
+        
+        document.querySelectorAll('.color-preset').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
+                el.classList.add('active');
+                colorTheme = JSON.parse(el.dataset.colors);
+            });
+        });
+        
+        document.getElementById('sensitivity').addEventListener('input', e => {
+            sensitivity = parseFloat(e.target.value);
+        });
+        
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // ビジュアライザー描画
+        function draw() {
+            requestAnimationFrame(draw);
+            
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            if (!analyser) return;
+            
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyser.getByteFrequencyData(dataArray);
+            
+            switch (vizMode) {
+                case 'bars': drawBars(dataArray); break;
+                case 'wave': drawWave(dataArray); break;
+                case 'circle': drawCircle(dataArray); break;
+                case 'particles': drawParticles(dataArray); break;
+                case 'spectrum': drawSpectrum(dataArray); break;
+            }
+        }
+        
+        function drawBars(dataArray) {
+            const barCount = 64;
+            const barWidth = canvas.width / barCount;
+            const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+            gradient.addColorStop(0, colorTheme[0]);
+            gradient.addColorStop(1, colorTheme[1]);
+            
+            for (let i = 0; i < barCount; i++) {
+                const dataIndex = Math.floor(i * dataArray.length / barCount);
+                const value = dataArray[dataIndex] * sensitivity;
+                const height = (value / 255) * canvas.height * 0.8;
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(
+                    i * barWidth + 2,
+                    canvas.height - height,
+                    barWidth - 4,
+                    height
+                );
+                
+                // 反射
+                ctx.fillStyle = `rgba(${hexToRgb(colorTheme[0]).join(',')}, 0.2)`;
+                ctx.fillRect(
+                    i * barWidth + 2,
+                    canvas.height,
+                    barWidth - 4,
+                    height * 0.3
+                );
+            }
+        }
+        
+        function drawWave(dataArray) {
+            const timeData = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteTimeDomainData(timeData);
+            
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = colorTheme[0];
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = colorTheme[0];
+            
+            ctx.beginPath();
+            const sliceWidth = canvas.width / timeData.length;
+            let x = 0;
+            
+            for (let i = 0; i < timeData.length; i++) {
+                const v = timeData[i] / 128.0;
+                const y = (v * canvas.height / 2) * sensitivity;
+                
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+                
+                x += sliceWidth;
+            }
+            
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+        
+        function drawCircle(dataArray) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(canvas.width, canvas.height) * 0.25;
+            
+            const barCount = 180;
+            
+            for (let i = 0; i < barCount; i++) {
+                const dataIndex = Math.floor(i * dataArray.length / barCount);
+                const value = dataArray[dataIndex] * sensitivity;
+                const barHeight = (value / 255) * radius;
+                
+                const angle = (i / barCount) * Math.PI * 2;
+                const x1 = centerX + Math.cos(angle) * radius;
+                const y1 = centerY + Math.sin(angle) * radius;
+                const x2 = centerX + Math.cos(angle) * (radius + barHeight);
+                const y2 = centerY + Math.sin(angle) * (radius + barHeight);
+                
+                const hue = (i / barCount) * 360;
+                ctx.strokeStyle = `hsl(${hue}, 80%, 60%)`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+            
+            // 中央の円
+            const avgValue = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+            const pulseRadius = radius * 0.8 + (avgValue / 255) * 50 * sensitivity;
+            
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, pulseRadius);
+            gradient.addColorStop(0, colorTheme[1]);
+            gradient.addColorStop(1, 'transparent');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, pulseRadius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function drawParticles(dataArray) {
+            const avgValue = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+            
+            // パーティクル生成
+            if (avgValue > 50) {
+                for (let i = 0; i < Math.floor(avgValue / 30); i++) {
+                    particles.push({
+                        x: canvas.width / 2,
+                        y: canvas.height / 2,
+                        vx: (Math.random() - 0.5) * avgValue / 10 * sensitivity,
+                        vy: (Math.random() - 0.5) * avgValue / 10 * sensitivity,
+                        size: Math.random() * 5 + 2,
+                        life: 1,
+                        hue: Math.random() * 360
+                    });
+                }
+            }
+            
+            // パーティクル更新と描画
+            particles = particles.filter(p => p.life > 0);
+            
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.01;
+                p.size *= 0.99;
+                
+                ctx.fillStyle = `hsla(${p.hue}, 80%, 60%, ${p.life})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // 制限
+            if (particles.length > 1000) {
+                particles = particles.slice(-500);
+            }
+        }
+        
+        function drawSpectrum(dataArray) {
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+            gradient.addColorStop(0, 'red');
+            gradient.addColorStop(0.17, 'orange');
+            gradient.addColorStop(0.33, 'yellow');
+            gradient.addColorStop(0.5, 'green');
+            gradient.addColorStop(0.67, 'cyan');
+            gradient.addColorStop(0.83, 'blue');
+            gradient.addColorStop(1, 'violet');
+            
+            ctx.fillStyle = gradient;
+            
+            const barWidth = canvas.width / dataArray.length;
+            
+            for (let i = 0; i < dataArray.length; i++) {
+                const value = dataArray[i] * sensitivity;
+                const height = (value / 255) * canvas.height;
+                
+                ctx.globalAlpha = 0.8;
+                ctx.fillRect(i * barWidth, canvas.height - height, barWidth, height);
+            }
+            
+            ctx.globalAlpha = 1;
+        }
+        
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? [
+                parseInt(result[1], 16),
+                parseInt(result[2], 16),
+                parseInt(result[3], 16)
+            ] : [0, 0, 0];
+        }
+        
+        draw();
+    </script>
+</body>
+</html>

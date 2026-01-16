@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Weather Widget - 天気ウィジェット</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.back{position:fixed;top:15px;left:15px;color:#fff;text-decoration:none;font-size:1.3rem;z-index:100;opacity:0.7}
+h1{font-size:clamp(1.5rem,4vw,2rem);margin-bottom:30px;background:linear-gradient(90deg,#4facfe,#00f2fe);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.weather-card{background:linear-gradient(135deg,#667eea,#764ba2);border-radius:30px;padding:40px;max-width:400px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;overflow:hidden}
+.weather-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,transparent 70%);animation:rotate 20s linear infinite}
+@keyframes rotate{to{transform:rotate(360deg)}}
+.location{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px;position:relative;z-index:1}
+.location select{background:rgba(255,255,255,0.2);border:none;color:#fff;padding:8px 15px;border-radius:20px;font-size:0.9rem;cursor:pointer}
+.location select option{background:#333;color:#fff}
+.weather-icon{font-size:6rem;margin:20px 0;position:relative;z-index:1;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.temperature{font-size:5rem;font-weight:200;margin-bottom:10px;position:relative;z-index:1}
+.temperature span{font-size:2rem;vertical-align:top}
+.description{font-size:1.3rem;opacity:0.9;margin-bottom:25px;position:relative;z-index:1}
+.details{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;position:relative;z-index:1}
+.detail{background:rgba(255,255,255,0.15);padding:15px 10px;border-radius:15px}
+.detail-value{font-size:1.3rem;font-weight:bold;margin-bottom:5px}
+.detail-label{font-size:0.75rem;opacity:0.8}
+.forecast{margin-top:40px;width:100%;max-width:600px}
+.forecast h2{font-size:1.1rem;color:#888;margin-bottom:20px}
+.forecast-list{display:flex;gap:12px;overflow-x:auto;padding-bottom:10px}
+.forecast-item{background:rgba(255,255,255,0.05);padding:20px 15px;border-radius:15px;min-width:100px;text-align:center;flex-shrink:0}
+.forecast-item .day{font-size:0.85rem;color:#888;margin-bottom:10px}
+.forecast-item .icon{font-size:2rem;margin-bottom:10px}
+.forecast-item .temp{font-size:1.1rem}
+.forecast-item .temp-range{font-size:0.75rem;color:#888;margin-top:5px}
+.hourly{margin-top:30px;width:100%;max-width:600px}
+.hourly h2{font-size:1.1rem;color:#888;margin-bottom:20px}
+.hourly-list{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px}
+.hourly-item{background:rgba(255,255,255,0.05);padding:15px 12px;border-radius:12px;min-width:70px;text-align:center;flex-shrink:0}
+.hourly-item .time{font-size:0.75rem;color:#888;margin-bottom:8px}
+.hourly-item .icon{font-size:1.5rem;margin-bottom:8px}
+.hourly-item .temp{font-size:0.95rem}
+.info{margin-top:30px;font-size:0.8rem;color:#666;text-align:center}
+.animations{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;overflow:hidden;z-index:0}
+.raindrop,.snowflake,.sun-ray{position:absolute;opacity:0.6}
+.raindrop{width:2px;height:20px;background:linear-gradient(transparent,#4facfe);animation:rain 1s linear infinite}
+@keyframes rain{to{transform:translateY(100vh)}}
+.snowflake{color:#fff;animation:snow 5s linear infinite}
+@keyframes snow{to{transform:translateY(100vh) rotate(360deg)}}
+</style>
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<h1>🌤️ 天気ウィジェット</h1>
+<div class="weather-card" id="weatherCard">
+<div class="location">
+<span>📍</span>
+<select id="citySelect">
+<option value="tokyo">東京</option>
+<option value="osaka">大阪</option>
+<option value="nagoya">名古屋</option>
+<option value="sapporo">札幌</option>
+<option value="fukuoka">福岡</option>
+<option value="sendai">仙台</option>
+<option value="kyoto">京都</option>
+<option value="naha">那覇</option>
+</select>
+</div>
+<div class="weather-icon" id="weatherIcon">☀️</div>
+<div class="temperature"><span id="temp">25</span><span>°C</span></div>
+<div class="description" id="description">晴れ</div>
+<div class="details">
+<div class="detail">
+<div class="detail-value" id="humidity">65%</div>
+<div class="detail-label">湿度</div>
+</div>
+<div class="detail">
+<div class="detail-value" id="wind">5m/s</div>
+<div class="detail-label">風速</div>
+</div>
+<div class="detail">
+<div class="detail-value" id="uv">4</div>
+<div class="detail-label">UV指数</div>
+</div>
+</div>
+</div>
+<div class="hourly">
+<h2>⏰ 時間別予報</h2>
+<div class="hourly-list" id="hourlyList"></div>
+</div>
+<div class="forecast">
+<h2>📅 週間予報</h2>
+<div class="forecast-list" id="forecastList"></div>
+</div>
+<div class="info">※ デモ用のモック天気データです</div>
+<div class="animations" id="animations"></div>
+<script>
+const weatherData={
+    tokyo:{name:'東京',temp:25,humidity:65,wind:5,uv:4,desc:'晴れ',icon:'☀️',type:'sunny'},
+    osaka:{name:'大阪',temp:27,humidity:70,wind:4,uv:5,desc:'晴れ時々曇り',icon:'⛅',type:'cloudy'},
+    nagoya:{name:'名古屋',temp:26,humidity:68,wind:6,uv:4,desc:'曇り',icon:'☁️',type:'cloudy'},
+    sapporo:{name:'札幌',temp:18,humidity:75,wind:8,uv:2,desc:'雨',icon:'🌧️',type:'rainy'},
+    fukuoka:{name:'福岡',temp:28,humidity:72,wind:5,uv:6,desc:'晴れ',icon:'☀️',type:'sunny'},
+    sendai:{name:'仙台',temp:20,humidity:80,wind:7,uv:3,desc:'雨',icon:'🌧️',type:'rainy'},
+    kyoto:{name:'京都',temp:26,humidity:60,wind:3,uv:5,desc:'晴れ',icon:'☀️',type:'sunny'},
+    naha:{name:'那覇',temp:30,humidity:85,wind:6,uv:8,desc:'晴れ',icon:'🌞',type:'sunny'}
+};
+
+const weatherIcons=['☀️','⛅','☁️','🌧️','⛈️','🌨️','❄️','🌤️'];
+const days=['日','月','火','水','木','金','土'];
+
+function updateWeather(city){
+    const data=weatherData[city];
+    const card=document.getElementById('weatherCard');
+    
+    // 背景グラデーション変更
+    const gradients={
+        sunny:'linear-gradient(135deg, #f093fb, #f5576c)',
+        cloudy:'linear-gradient(135deg, #667eea, #764ba2)',
+        rainy:'linear-gradient(135deg, #4facfe, #00f2fe)',
+        snowy:'linear-gradient(135deg, #e0e0e0, #b0b0b0)'
+    };
+    card.style.background=gradients[data.type];
+    
+    document.getElementById('weatherIcon').textContent=data.icon;
+    document.getElementById('temp').textContent=data.temp;
+    document.getElementById('description').textContent=data.desc;
+    document.getElementById('humidity').textContent=data.humidity+'%';
+    document.getElementById('wind').textContent=data.wind+'m/s';
+    document.getElementById('uv').textContent=data.uv;
+    
+    updateAnimations(data.type);
+    generateHourlyForecast(data.temp);
+    generateWeeklyForecast(data.temp);
+}
+
+function generateHourlyForecast(baseTemp){
+    const now=new Date();
+    let html='';
+    for(let i=0;i<12;i++){
+        const hour=new Date(now.getTime()+i*3600000);
+        const temp=baseTemp+Math.floor(Math.random()*6-3);
+        const icon=weatherIcons[Math.floor(Math.random()*4)];
+        html+=`
+            <div class="hourly-item">
+                <div class="time">${hour.getHours()}:00</div>
+                <div class="icon">${icon}</div>
+                <div class="temp">${temp}°</div>
+            </div>
+        `;
+    }
+    document.getElementById('hourlyList').innerHTML=html;
+}
+
+function generateWeeklyForecast(baseTemp){
+    const now=new Date();
+    let html='';
+    for(let i=0;i<7;i++){
+        const date=new Date(now.getTime()+i*86400000);
+        const dayName=i===0?'今日':i===1?'明日':days[date.getDay()];
+        const high=baseTemp+Math.floor(Math.random()*5);
+        const low=baseTemp-Math.floor(Math.random()*5)-3;
+        const icon=weatherIcons[Math.floor(Math.random()*4)];
+        html+=`
+            <div class="forecast-item">
+                <div class="day">${dayName}</div>
+                <div class="icon">${icon}</div>
+                <div class="temp">${high}°</div>
+                <div class="temp-range">${low}°</div>
+            </div>
+        `;
+    }
+    document.getElementById('forecastList').innerHTML=html;
+}
+
+function updateAnimations(type){
+    const container=document.getElementById('animations');
+    container.innerHTML='';
+    
+    if(type==='rainy'){
+        for(let i=0;i<50;i++){
+            const drop=document.createElement('div');
+            drop.className='raindrop';
+            drop.style.left=Math.random()*100+'%';
+            drop.style.animationDelay=Math.random()*2+'s';
+            drop.style.animationDuration=(0.5+Math.random()*0.5)+'s';
+            container.appendChild(drop);
+        }
+    }else if(type==='snowy'){
+        for(let i=0;i<30;i++){
+            const flake=document.createElement('div');
+            flake.className='snowflake';
+            flake.textContent='❄';
+            flake.style.left=Math.random()*100+'%';
+            flake.style.fontSize=(0.5+Math.random()*1)+'rem';
+            flake.style.animationDelay=Math.random()*5+'s';
+            flake.style.animationDuration=(3+Math.random()*4)+'s';
+            container.appendChild(flake);
+        }
+    }
+}
+
+document.getElementById('citySelect').onchange=function(){
+    updateWeather(this.value);
+};
+
+updateWeather('tokyo');
+</script>
+</body>
+</html>
