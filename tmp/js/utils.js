@@ -8,7 +8,8 @@ const Storage = {
         try {
             const item = localStorage.getItem(key);
             return item ? JSON.parse(item) : defaultValue;
-        } catch {
+        } catch (error) {
+            console.warn(`Storage.get failed for key "${key}":`, error.message);
             return defaultValue;
         }
     },
@@ -17,7 +18,8 @@ const Storage = {
         try {
             localStorage.setItem(key, JSON.stringify(value));
             return true;
-        } catch {
+        } catch (error) {
+            console.warn(`Storage.set failed for key "${key}":`, error.message);
             return false;
         }
     },
@@ -75,13 +77,32 @@ const Modal = {
     create(content, options = {}) {
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay';
-        overlay.innerHTML = `
-            <div class="modal">
-                ${options.title ? `<h2 style="margin-bottom:1rem">${options.title}</h2>` : ''}
-                <div class="modal-content">${content}</div>
-                ${options.showClose !== false ? '<button class="btn btn-ghost" style="margin-top:1rem" onclick="Modal.close()">閉じる</button>' : ''}
-            </div>
-        `;
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        
+        if (options.title) {
+            const titleEl = document.createElement('h2');
+            titleEl.style.marginBottom = '1rem';
+            titleEl.textContent = options.title;
+            modal.appendChild(titleEl);
+        }
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'modal-content';
+        contentDiv.innerHTML = content;
+        modal.appendChild(contentDiv);
+        
+        if (options.showClose !== false) {
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'btn btn-ghost';
+            closeBtn.style.marginTop = '1rem';
+            closeBtn.textContent = '閉じる';
+            closeBtn.addEventListener('click', () => this.close());
+            modal.appendChild(closeBtn);
+        }
+        
+        overlay.appendChild(modal);
         
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) this.close();
@@ -102,14 +123,45 @@ const Modal = {
     },
     
     confirm(message, onConfirm, onCancel) {
-        const content = `
-            <p style="margin-bottom:1.5rem">${message}</p>
-            <div style="display:flex;gap:0.5rem;justify-content:flex-end">
-                <button class="btn btn-ghost" onclick="Modal.close();${onCancel ? onCancel.name + '()' : ''}">キャンセル</button>
-                <button class="btn btn-primary" onclick="Modal.close();${onConfirm.name}()">確認</button>
-            </div>
-        `;
-        return this.create(content, { showClose: false });
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        
+        const msgEl = document.createElement('p');
+        msgEl.style.marginBottom = '1.5rem';
+        msgEl.textContent = message;
+        modal.appendChild(msgEl);
+        
+        const btnContainer = document.createElement('div');
+        btnContainer.style.cssText = 'display:flex;gap:0.5rem;justify-content:flex-end';
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn btn-ghost';
+        cancelBtn.textContent = 'キャンセル';
+        cancelBtn.addEventListener('click', () => {
+            this.close();
+            if (onCancel) onCancel();
+        });
+        
+        const confirmBtn = document.createElement('button');
+        confirmBtn.className = 'btn btn-primary';
+        confirmBtn.textContent = '確認';
+        confirmBtn.addEventListener('click', () => {
+            this.close();
+            onConfirm();
+        });
+        
+        btnContainer.appendChild(cancelBtn);
+        btnContainer.appendChild(confirmBtn);
+        modal.appendChild(btnContainer);
+        overlay.appendChild(modal);
+        
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add('active'));
+        
+        return overlay;
     }
 };
 
