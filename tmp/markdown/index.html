@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マークダウンエディタ | Creative Lab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div style="display:flex;align-items:center;gap:20px">
+                <a href="../" class="back-link">← 戻る</a>
+                <h1>📝 マークダウンエディタ</h1>
+            </div>
+            <div class="toolbar">
+                <button class="tool-btn" onclick="insertMd('**', '**')" title="太字">B</button>
+                <button class="tool-btn" onclick="insertMd('*', '*')" title="斜体"><i>I</i></button>
+                <button class="tool-btn" onclick="insertMd('~~', '~~')" title="取消線"><s>S</s></button>
+                <button class="tool-btn" onclick="insertMd('`', '`')" title="コード">&lt;/&gt;</button>
+                <button class="tool-btn" onclick="insertMd('[', '](url)')" title="リンク">🔗</button>
+                <button class="tool-btn" onclick="insertMd('![alt](', ')')" title="画像">🖼️</button>
+                <button class="tool-btn" onclick="insertLine('# ')" title="見出し1">H1</button>
+                <button class="tool-btn" onclick="insertLine('## ')" title="見出し2">H2</button>
+                <button class="tool-btn" onclick="insertLine('- ')" title="リスト">•</button>
+                <button class="tool-btn" onclick="insertLine('1. ')" title="番号リスト">1.</button>
+                <button class="tool-btn" onclick="insertLine('> ')" title="引用">❝</button>
+                <button class="tool-btn" onclick="insertLine('- [ ] ')" title="タスク">☑</button>
+                <button class="tool-btn" onclick="insertCodeBlock()" title="コードブロック">```</button>
+                <button class="tool-btn" onclick="insertTable()" title="表">⊞</button>
+                <div class="export-menu">
+                    <button class="tool-btn" onclick="toggleExport()">💾 保存</button>
+                    <div class="export-dropdown" id="exportDropdown">
+                        <div class="export-item" onclick="exportMd()">📄 Markdown (.md)</div>
+                        <div class="export-item" onclick="exportHtml()">🌐 HTML (.html)</div>
+                        <div class="export-item" onclick="copyHtml()">📋 HTMLをコピー</div>
+                    </div>
+                </div>
+            </div>
+            <div class="view-toggle">
+                <button class="view-btn active" onclick="setView('both')">両方</button>
+                <button class="view-btn" onclick="setView('editor')">編集</button>
+                <button class="view-btn" onclick="setView('preview')">プレビュー</button>
+            </div>
+        </header>
+        <div class="main-area">
+            <div class="editor-pane" id="editorPane">
+                <div class="pane-header">
+                    <span>エディタ</span>
+                    <span class="stats" id="stats">0文字 / 0行</span>
+                </div>
+                <textarea class="editor" id="editor" placeholder="マークダウンを入力..."></textarea>
+            </div>
+            <div class="divider" id="divider"></div>
+            <div class="preview-pane" id="previewPane">
+                <div class="pane-header">
+                    <span>プレビュー</span>
+                    <span class="stats" id="readTime">約0分で読めます</span>
+                </div>
+                <div class="preview" id="preview"></div>
+            </div>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シンプルカレンダー</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    
+    <div class="container">
+        <h1>📅 シンプルカレンダー</h1>
+        
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <button id="prevMonth" class="nav-btn">◀</button>
+                <h2 id="currentMonth"></h2>
+                <button id="nextMonth" class="nav-btn">▶</button>
+            </div>
+            
+            <div class="calendar-grid">
+                <div class="weekday">日</div>
+                <div class="weekday">月</div>
+                <div class="weekday">火</div>
+                <div class="weekday">水</div>
+                <div class="weekday">木</div>
+                <div class="weekday">金</div>
+                <div class="weekday">土</div>
+                <div id="calendarDays" class="days-container"></div>
+            </div>
+        </div>
+        
+        <div class="events-container">
+            <h3>📋 イベント一覧</h3>
+            <div id="eventsList" class="events-list"></div>
+        </div>
+    </div>
+    
+    <!-- イベント追加モーダル -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3 id="modalTitle">イベント追加</h3>
+            <p id="selectedDate"></p>
+            <input type="text" id="eventInput" placeholder="イベント名を入力..." maxlength="50">
+            <div class="modal-buttons">
+                <button id="saveEvent" class="btn-save">保存</button>
+                <button id="cancelEvent" class="btn-cancel">キャンセル</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

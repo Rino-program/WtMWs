@@ -1,0 +1,305 @@
+/* Morse Code - モールス信号変換器 スタイル */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    min-height: 100vh;
+    padding: 20px;
+    touch-action: manipulation;
+}
+
+.back {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.2rem;
+    opacity: 0.7;
+    z-index: 100;
+}
+
+.back:hover {
+    opacity: 1;
+}
+
+.container {
+    max-width: 700px;
+    margin: 60px auto 30px;
+}
+
+h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 10px;
+    background: linear-gradient(90deg, #00d9ff, #00ff88);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subtitle {
+    text-align: center;
+    color: #888;
+    margin-bottom: 30px;
+}
+
+.mode-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tab {
+    flex: 1;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    color: #aaa;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+}
+
+.tab:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.tab.active {
+    background: linear-gradient(135deg, #00d9ff33, #00ff8833);
+    border-color: #00d9ff;
+    color: #fff;
+}
+
+.input-section, .output-section {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+textarea {
+    width: 100%;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1rem;
+    font-family: 'Consolas', monospace;
+    resize: vertical;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #00d9ff;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.primary-btn, .play-btn, .copy-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.primary-btn {
+    flex: 1;
+    background: linear-gradient(135deg, #00d9ff, #00ff88);
+    color: #000;
+    font-weight: bold;
+}
+
+.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 217, 255, 0.3);
+}
+
+.play-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+}
+
+.play-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+}
+
+.play-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.play-btn.playing {
+    background: linear-gradient(135deg, #f5576c, #f093fb);
+}
+
+.copy-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.copy-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.speed-control {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.speed-control label {
+    margin-bottom: 10px;
+}
+
+.speed-control input[type="range"] {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    -webkit-appearance: none;
+}
+
+.speed-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: linear-gradient(135deg, #00d9ff, #00ff88);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.output-box {
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    min-height: 80px;
+    font-family: 'Consolas', monospace;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    word-break: break-all;
+    color: #00ff88;
+}
+
+.visual-morse {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 30px;
+    min-height: 40px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
+.morse-dot, .morse-dash {
+    display: inline-block;
+    background: #00d9ff;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.morse-dot {
+    width: 12px;
+    height: 12px;
+}
+
+.morse-dash {
+    width: 36px;
+    height: 12px;
+}
+
+.morse-space {
+    width: 20px;
+}
+
+.morse-word-space {
+    width: 40px;
+}
+
+.morse-dot.active, .morse-dash.active {
+    background: #00ff88;
+    box-shadow: 0 0 15px #00ff88;
+}
+
+.reference {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.reference h3 {
+    margin-bottom: 15px;
+    color: #00d9ff;
+}
+
+.reference-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+}
+
+.ref-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.ref-char {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+.ref-morse {
+    font-size: 0.75rem;
+    color: #00ff88;
+    font-family: monospace;
+    margin-top: 4px;
+}
+
+@media (max-width: 600px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    .mode-tabs {
+        flex-direction: column;
+    }
+
+    .controls {
+        flex-wrap: wrap;
+    }
+
+    .primary-btn {
+        width: 100%;
+    }
+
+    .play-btn, .copy-btn {
+        flex: 1;
+    }
+}

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Reaction Test - 反射神経テスト</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<h1>⚡ 反射神経テスト</h1>
+<div class="modes">
+<button class="active" data-mode="simple">シンプル</button>
+<button data-mode="sequence">シーケンス</button>
+<button data-mode="color">色識別</button>
+</div>
+<div class="stats">
+<div class="stat"><div class="stat-val" id="best">-</div><div class="stat-label">ベスト</div></div>
+<div class="stat"><div class="stat-val" id="avg">-</div><div class="stat-label">平均</div></div>
+<div class="stat"><div class="stat-val" id="tries">0</div><div class="stat-label">試行回数</div></div>
+</div>
+<div class="game-area" id="gameArea">
+<div class="message" id="message">タップしてスタート<small>画面が緑になったらすぐタップ！</small></div>
+</div>
+<div class="history" id="historyPanel">
+<h3>直近の記録</h3>
+<div class="history-list" id="historyList"></div>
+</div>
+<div class="leaderboard">
+<h3>🏆 ベストタイム</h3>
+<div id="leaderboardList"></div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

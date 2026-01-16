@@ -4,28 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Neon Clock - ネオン時計</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',sans-serif;background:#0a0a0f;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
-.back{position:fixed;top:20px;left:20px;color:#fff;text-decoration:none;font-size:1.5rem;z-index:100;opacity:0.7;transition:opacity 0.3s}
-.back:hover{opacity:1}
-.clock-container{position:relative}
-.clock{position:relative;width:min(80vw,400px);height:min(80vw,400px)}
-.clock-face{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle,#111 0%,#0a0a0f 100%);box-shadow:0 0 50px rgba(79,172,254,0.3),inset 0 0 50px rgba(0,0,0,0.8);position:relative}
-.tick{position:absolute;width:2px;height:15px;background:#4facfe;left:50%;top:10px;transform-origin:bottom center;box-shadow:0 0 10px #4facfe}
-.tick.hour{height:25px;width:4px;background:#00f2fe}
-.center{position:absolute;width:16px;height:16px;background:radial-gradient(circle,#fff,#4facfe);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;box-shadow:0 0 20px #4facfe}
-.hand{position:absolute;bottom:50%;left:50%;transform-origin:bottom center;border-radius:4px}
-.hour-hand{width:6px;height:25%;background:linear-gradient(to top,#f093fb,#f5576c);box-shadow:0 0 15px #f5576c}
-.minute-hand{width:4px;height:35%;background:linear-gradient(to top,#4facfe,#00f2fe);box-shadow:0 0 15px #4facfe}
-.second-hand{width:2px;height:40%;background:linear-gradient(to top,#43e97b,#38f9d7);box-shadow:0 0 15px #43e97b}
-.digital{margin-top:40px;font-size:clamp(2rem,8vw,4rem);font-family:'Courier New',monospace;color:#4facfe;text-shadow:0 0 20px #4facfe,0 0 40px #4facfe;letter-spacing:8px}
-.date{margin-top:15px;font-size:1.2rem;color:#888;letter-spacing:3px}
-.particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1}
-.theme-btns{position:fixed;bottom:30px;display:flex;gap:10px}
-.theme-btns button{width:30px;height:30px;border-radius:50%;border:2px solid #fff;cursor:pointer;transition:transform 0.2s}
-.theme-btns button:hover{transform:scale(1.2)}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <a href="../" class="back">← 戻る</a>
@@ -47,72 +26,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a0f;min-height:100vh;displ
 <button style="background:linear-gradient(135deg,#43e97b,#38f9d7)" onclick="setTheme('green')"></button>
 <button style="background:linear-gradient(135deg,#fa709a,#fee140)" onclick="setTheme('sunset')"></button>
 </div>
-<script>
-const face=document.getElementById('face');
-const themes={
-blue:{primary:'#4facfe',secondary:'#00f2fe',accent:'#f093fb'},
-pink:{primary:'#f093fb',secondary:'#f5576c',accent:'#4facfe'},
-green:{primary:'#43e97b',secondary:'#38f9d7',accent:'#f5576c'},
-sunset:{primary:'#fa709a',secondary:'#fee140',accent:'#43e97b'}
-};
-let theme=themes.blue;
-
-// 目盛り作成
-for(let i=0;i<60;i++){
-const tick=document.createElement('div');
-tick.className='tick'+(i%5===0?' hour':'');
-tick.style.transform=`translateX(-50%) rotate(${i*6}deg)`;
-tick.style.transformOrigin=`center ${face.offsetWidth/2-10}px`;
-face.appendChild(tick);
-}
-
-function setTheme(name){
-theme=themes[name];
-document.documentElement.style.setProperty('--primary',theme.primary);
-document.querySelectorAll('.tick').forEach(t=>t.style.background=theme.primary);
-document.querySelector('.digital').style.color=theme.primary;
-document.querySelector('.digital').style.textShadow=`0 0 20px ${theme.primary},0 0 40px ${theme.primary}`;
-}
-
-function updateClock(){
-const now=new Date();
-const h=now.getHours()%12,m=now.getMinutes(),s=now.getSeconds(),ms=now.getMilliseconds();
-const hDeg=h*30+m*0.5;
-const mDeg=m*6+s*0.1;
-const sDeg=s*6+ms*0.006;
-document.getElementById('hour').style.transform=`translateX(-50%) rotate(${hDeg}deg)`;
-document.getElementById('minute').style.transform=`translateX(-50%) rotate(${mDeg}deg)`;
-document.getElementById('second').style.transform=`translateX(-50%) rotate(${sDeg}deg)`;
-const hh=String(now.getHours()).padStart(2,'0');
-const mm=String(m).padStart(2,'0');
-const ss=String(s).padStart(2,'0');
-document.getElementById('digital').textContent=`${hh}:${mm}:${ss}`;
-const days=['日','月','火','水','木','金','土'];
-document.getElementById('date').textContent=`${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} (${days[now.getDay()]})`;
-requestAnimationFrame(updateClock);
-}
-updateClock();
-
-// パーティクル背景
-const cv=document.getElementById('particles'),ctx=cv.getContext('2d');
-let W,H,pts=[];
-function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight}
-resize();window.onresize=resize;
-for(let i=0;i<50;i++)pts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-0.5)*0.5,vy:(Math.random()-0.5)*0.5,r:Math.random()*2+1});
-function drawParticles(){
-ctx.clearRect(0,0,W,H);
-pts.forEach(p=>{
-p.x+=p.vx;p.y+=p.vy;
-if(p.x<0||p.x>W)p.vx*=-1;
-if(p.y<0||p.y>H)p.vy*=-1;
-ctx.beginPath();
-ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-ctx.fillStyle=`rgba(79,172,254,0.5)`;
-ctx.fill();
-});
-requestAnimationFrame(drawParticles);
-}
-drawParticles();
-</script>
+<script src="script.js"></script>
 </body>
 </html>

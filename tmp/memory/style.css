@@ -1,0 +1,48 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:15px;touch-action:manipulation}
+.back{position:fixed;top:15px;left:15px;color:#fff;text-decoration:none;font-size:1.3rem;z-index:100;opacity:0.7}
+.back:hover{opacity:1}
+h1{font-size:clamp(1.3rem,4vw,1.8rem);margin:20px 0 15px;background:linear-gradient(90deg,#4facfe,#00f2fe);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.game-options{display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;justify-content:center}
+.game-options select{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:8px 15px;border-radius:8px;font-size:0.85rem}
+.stats{display:flex;gap:15px;margin-bottom:15px;flex-wrap:wrap;justify-content:center}
+.stat{background:rgba(255,255,255,0.08);padding:10px 18px;border-radius:10px;text-align:center;min-width:70px}
+.stat-val{font-size:1.4rem;color:#4facfe;font-weight:bold}
+.stat-label{font-size:0.7rem;color:#aaa}
+.combo-display{height:30px;margin-bottom:10px;font-size:1.2rem;color:#ffd700;text-align:center}
+.board{display:grid;gap:8px;max-width:500px;width:100%;perspective:1000px}
+.card{aspect-ratio:1;border-radius:12px;cursor:pointer;position:relative;transform-style:preserve-3d;transition:transform 0.5s cubic-bezier(0.4,0,0.2,1)}
+.card.flipped{transform:rotateY(180deg)}
+.card.matched{pointer-events:none}
+.card.matched .card-front{background:linear-gradient(135deg,#43e97b,#38f9d7);animation:matchPulse 0.5s ease}
+@keyframes matchPulse{50%{transform:rotateY(180deg) scale(1.1)}}
+.card-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.card-back{background:linear-gradient(135deg,#2d2d44,#1a1a2e);border:2px solid rgba(255,255,255,0.1)}
+.card-back::before{content:'?';font-size:clamp(1.5rem,5vw,2rem);color:rgba(255,255,255,0.3)}
+.card-front{background:linear-gradient(135deg,#667eea,#764ba2);transform:rotateY(180deg);font-size:clamp(1.5rem,6vw,2.5rem)}
+.hint-btn{position:fixed;bottom:20px;right:20px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#fa709a,#fee140);border:none;font-size:1.2rem;cursor:pointer;z-index:50;box-shadow:0 4px 15px rgba(0,0,0,0.3);transition:transform 0.2s}
+.hint-btn:active{transform:scale(0.95)}
+.hint-btn:disabled{opacity:0.5;cursor:not-allowed}
+.hint-count{position:absolute;top:-5px;right:-5px;background:#f5576c;color:#fff;width:20px;height:20px;border-radius:50%;font-size:0.7rem;display:flex;align-items:center;justify-content:center}
+.result{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.result.show{display:flex}
+.result h2{font-size:2rem;margin-bottom:20px;color:#4facfe}
+.result-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin-bottom:25px;max-width:350px;width:100%}
+.result-stat{background:rgba(255,255,255,0.08);padding:20px;border-radius:12px;text-align:center}
+.result-stat .val{font-size:1.8rem;color:#4facfe;font-weight:bold}
+.result-stat .label{color:#aaa;margin-top:8px;font-size:0.85rem}
+.result-stat.best{border:2px solid #ffd700}
+.result-stat.best .val{color:#ffd700}
+.result button{background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:#fff;padding:14px 35px;border-radius:10px;font-size:1rem;cursor:pointer;margin:5px}
+.result .secondary{background:rgba(255,255,255,0.1)}
+.stars{position:fixed;pointer-events:none;z-index:300}
+.star{position:absolute;font-size:2rem;animation:starFall 1s ease-out forwards}
+@keyframes starFall{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(100px) rotate(180deg)}}
+.leaderboard{margin-top:20px;width:100%;max-width:350px}
+.leaderboard h3{font-size:0.9rem;color:#888;margin-bottom:10px;text-align:center}
+.leaderboard-list{max-height:150px;overflow-y:auto}
+.leaderboard-item{display:flex;justify-content:space-between;padding:10px 15px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:5px;font-size:0.85rem}
+.leaderboard-item.highlight{background:rgba(79,172,254,0.2);border:1px solid #4facfe}
+.leaderboard-item .rank{color:#ffd700;font-weight:bold;width:30px}
+.leaderboard-item .size{color:#888}
+.leaderboard-item .score{color:#4facfe}

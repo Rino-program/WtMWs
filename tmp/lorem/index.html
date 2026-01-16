@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorem Ipsum生成 | Creative Lab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    <div class="container">
+        <header>
+            <h1>📜 Lorem Ipsum生成器</h1>
+            <p class="subtitle">デザインモックアップ用のダミーテキスト</p>
+        </header>
+
+        <div class="controls">
+            <div class="preset-btns">
+                <button class="preset-btn" onclick="setPreset(3,'paragraphs')">短い（3段落）</button>
+                <button class="preset-btn" onclick="setPreset(5,'paragraphs')">中程度（5段落）</button>
+                <button class="preset-btn" onclick="setPreset(10,'paragraphs')">長い（10段落）</button>
+                <button class="preset-btn" onclick="setPreset(100,'words')">100語</button>
+                <button class="preset-btn" onclick="setPreset(500,'words')">500語</button>
+                <button class="preset-btn" onclick="setPreset(5,'lists')">リスト5項目</button>
+            </div>
+            <div class="control-row">
+                <div class="control-group">
+                    <label>📝 生成タイプ</label>
+                    <select id="type">
+                        <option value="paragraphs">段落</option>
+                        <option value="sentences">文</option>
+                        <option value="words">単語</option>
+                        <option value="lists">リスト</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>🔢 数量</label>
+                    <input type="number" id="count" value="5" min="1" max="100">
+                </div>
+                <div class="control-group">
+                    <label>🌐 言語スタイル</label>
+                    <select id="style">
+                        <option value="latin">ラテン語（古典）</option>
+                        <option value="hipster">ヒップスター</option>
+                        <option value="japanese">日本語風</option>
+                        <option value="tech">テック用語</option>
+                    </select>
+                </div>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="startLorem" checked>
+                <label for="startLorem">「Lorem ipsum」で始める</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="addHeadings">
+                <label for="addHeadings">見出しを追加</label>
+            </div>
+            <div class="btn-row" style="margin-top:20px">
+                <button class="btn btn-primary" onclick="generate()">✨ 生成</button>
+                <button class="btn btn-secondary" onclick="copyText()">📋 コピー</button>
+                <button class="btn btn-secondary" onclick="copyHtml()">🌐 HTMLコピー</button>
+            </div>
+        </div>
+
+        <div class="output-panel">
+            <div class="output-header">
+                <h3>📄 生成結果</h3>
+                <span class="stats" id="stats">0語 / 0文字</span>
+            </div>
+            <div class="output-text" id="output">
+                <p>生成ボタンをクリックしてダミーテキストを作成してください。</p>
+            </div>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

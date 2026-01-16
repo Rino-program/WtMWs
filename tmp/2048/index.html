@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+    <title>2048 - パズルゲーム</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../" class="back">← 戻る</a>
+    <h1>2048</h1>
+    <div class="header">
+        <div class="score-box">
+            <div class="score-label">スコア</div>
+            <div class="score-val" id="score">0</div>
+        </div>
+        <div class="score-box">
+            <div class="score-label">ベスト</div>
+            <div class="score-val" id="best">0</div>
+        </div>
+        <div class="theme-switcher">
+            <button class="theme-btn active" data-theme="classic" title="クラシック"></button>
+            <button class="theme-btn" data-theme="ocean" title="オーシャン"></button>
+            <button class="theme-btn" data-theme="dark" title="ダーク"></button>
+        </div>
+    </div>
+    <div class="game-container">
+        <div class="board" id="board"></div>
+        <div class="overlay" id="overlay">
+            <h2 id="overlayTitle">ゲームオーバー</h2>
+            <div class="final-score" id="finalScore"></div>
+            <button class="btn" onclick="newGame()">もう一度</button>
+        </div>
+    </div>
+    <div class="controls">
+        <button class="btn" onclick="newGame()">🔄 新規ゲーム</button>
+        <button class="btn" onclick="undo()">↩ 戻す</button>
+    </div>
+    <p class="instructions">矢印キーまたはスワイプでタイルを動かします。同じ数字同士をぶつけて2048を目指そう！</p>
+    <div class="touch-hint">スワイプで操作</div>
+    <script src="script.js"></script>
+</body>
+</html>

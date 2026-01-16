@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Morse Code - モールス信号変換器</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<div class="container">
+    <h1>📡 モールス信号変換器</h1>
+    <p class="subtitle">テキストとモールス信号を相互変換 + 音声再生</p>
+    
+    <div class="mode-tabs">
+        <button class="tab active" data-mode="text-to-morse">テキスト → モールス</button>
+        <button class="tab" data-mode="morse-to-text">モールス → テキスト</button>
+    </div>
+    
+    <div class="input-section">
+        <label id="inputLabel">テキストを入力</label>
+        <textarea id="input" placeholder="Hello World" rows="4"></textarea>
+    </div>
+    
+    <div class="controls">
+        <button id="convertBtn" class="primary-btn">🔄 変換</button>
+        <button id="playBtn" class="play-btn" disabled>▶ 再生</button>
+        <button id="copyBtn" class="copy-btn">📋 コピー</button>
+    </div>
+    
+    <div class="speed-control">
+        <label>再生速度: <span id="speedValue">15</span> WPM</label>
+        <input type="range" id="speed" min="5" max="30" value="15">
+    </div>
+    
+    <div class="output-section">
+        <label>出力</label>
+        <div id="output" class="output-box"></div>
+    </div>
+    
+    <div class="visual-morse" id="visualMorse"></div>
+    
+    <div class="reference">
+        <h3>📖 モールス信号一覧</h3>
+        <div class="reference-grid" id="referenceGrid"></div>
+    </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

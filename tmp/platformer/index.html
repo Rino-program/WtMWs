@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Pixel Runner - プラットフォーマー</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- UI オーバーレイ -->
+        <div id="ui-overlay">
+            <div id="stats">
+                <span id="lives">❤️❤️❤️</span>
+                <span id="coins">🪙 0</span>
+                <span id="time">⏱️ 0:00</span>
+            </div>
+            <div id="level-display">Stage 1</div>
+        </div>
+        
+        <!-- メニュー画面 -->
+        <div id="menu-screen" class="screen">
+            <h1>🏃 Pixel Runner</h1>
+            <p>ゴールを目指してジャンプ！</p>
+            <button id="start-btn">▶️ ゲームスタート</button>
+            <button id="select-btn">📋 ステージ選択</button>
+            <div class="controls-info">
+                <p>⬅️➡️ 移動 | ⬆️ ジャンプ | Shift ダッシュ</p>
+            </div>
+        </div>
+        
+        <!-- ステージ選択画面 -->
+        <div id="select-screen" class="screen hidden">
+            <h2>📋 ステージ選択</h2>
+            <div id="stage-grid"></div>
+            <button id="back-btn">← 戻る</button>
+        </div>
+        
+        <!-- クリア画面 -->
+        <div id="clear-screen" class="screen hidden">
+            <h2>🎉 ステージクリア！</h2>
+            <div id="clear-stats">
+                <p>タイム: <span id="clear-time">0:00</span></p>
+                <p>コイン: <span id="clear-coins">0/0</span></p>
+                <p>ダメージ: <span id="clear-damage">0回</span></p>
+            </div>
+            <div id="stars">⭐⭐⭐</div>
+            <button id="next-btn">次のステージ ▶️</button>
+            <button id="retry-btn">🔄 リトライ</button>
+        </div>
+        
+        <!-- ゲームオーバー画面 -->
+        <div id="gameover-screen" class="screen hidden">
+            <h2>💀 ゲームオーバー</h2>
+            <button id="continue-btn">🔄 コンティニュー</button>
+            <button id="menu-btn">🏠 メニュー</button>
+        </div>
+        
+        <!-- モバイルコントロール -->
+        <div id="mobile-controls">
+            <div id="left-controls">
+                <button id="btn-left">◀</button>
+                <button id="btn-right">▶</button>
+            </div>
+            <div id="right-controls">
+                <button id="btn-jump">⬆️</button>
+                <button id="btn-dash">💨</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

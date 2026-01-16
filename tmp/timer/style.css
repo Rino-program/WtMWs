@@ -1,0 +1,37 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;touch-action:manipulation}
+.back{position:fixed;top:15px;left:15px;color:#fff;text-decoration:none;font-size:1.3rem;z-index:100;opacity:0.7}
+h1{font-size:clamp(1.5rem,4vw,2rem);margin-bottom:25px;background:linear-gradient(90deg,#43e97b,#38f9d7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tabs{display:flex;gap:10px;margin-bottom:30px}
+.tabs button{background:rgba(255,255,255,0.1);border:none;color:#fff;padding:12px 25px;border-radius:25px;cursor:pointer;font-size:1rem;transition:all 0.2s}
+.tabs button.active{background:linear-gradient(135deg,#43e97b,#38f9d7);color:#000}
+.panel{display:none;text-align:center;width:100%;max-width:500px}
+.panel.active{display:block}
+.time-display{font-size:clamp(3rem,12vw,6rem);font-weight:200;margin:30px 0;font-variant-numeric:tabular-nums;letter-spacing:-2px}
+.time-display.warning{color:#fa709a;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:0.7}}
+.ms{font-size:0.4em;color:#888}
+.controls{display:flex;gap:15px;justify-content:center;flex-wrap:wrap}
+.controls button{width:80px;height:80px;border-radius:50%;border:none;font-size:1.5rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;line-height:1}
+.controls button:active{transform:scale(0.95)}
+.btn-start{background:linear-gradient(135deg,#43e97b,#38f9d7);color:#000}
+.btn-stop{background:linear-gradient(135deg,#f5576c,#f093fb);color:#fff}
+.btn-reset{background:rgba(255,255,255,0.1);color:#fff}
+.btn-lap{background:rgba(79,172,254,0.3);color:#4facfe}
+.timer-presets{display:flex;gap:10px;margin-bottom:25px;flex-wrap:wrap;justify-content:center}
+.timer-presets button{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:10px 18px;border-radius:20px;cursor:pointer;font-size:0.9rem}
+.timer-presets button:hover{background:rgba(255,255,255,0.15)}
+.timer-custom{display:flex;gap:10px;justify-content:center;align-items:center;margin-bottom:20px}
+.timer-custom input{width:60px;padding:12px;text-align:center;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:#fff;font-size:1.2rem}
+.timer-custom span{color:#888;font-size:1.2rem}
+.laps{max-height:200px;overflow-y:auto;margin-top:25px;text-align:left}
+.lap{display:flex;justify-content:space-between;padding:10px 15px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:8px}
+.lap-num{color:#888}
+.lap-time{color:#4facfe}
+.lap-diff{color:#43e97b;font-size:0.85rem}
+.progress-ring{width:250px;height:250px;margin:0 auto 20px}
+.progress-ring circle{fill:none;stroke-width:8;stroke-linecap:round}
+.progress-ring .bg{stroke:rgba(255,255,255,0.1)}
+.progress-ring .progress{stroke:url(#gradient);transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 0.3s}
+.timer-display{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2.5rem;font-weight:200}
+.ring-container{position:relative;width:250px;height:250px;margin:0 auto 20px}

@@ -1,0 +1,197 @@
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let W,H,N,size,dens,densOld,velX,velY,velXOld,velYOld,curl;
+let visc=0.00001,diff=0.00001,force=8,colorMode='velocity';
+const iter=20,dt=0.05;
+let touches={};
+
+function resize(){
+W=cv.width=innerWidth;H=cv.height=innerHeight;
+N=Math.min(180,Math.floor(Math.min(W,H)/5));
+size=N+2;
+const len=size*size;
+dens=new Float32Array(len);densOld=new Float32Array(len);
+velX=new Float32Array(len);velY=new Float32Array(len);
+velXOld=new Float32Array(len);velYOld=new Float32Array(len);
+curl=new Float32Array(len);
+}
+resize();window.onresize=resize;
+
+document.getElementById('colorMode').onchange=function(){colorMode=this.value};
+document.getElementById('visc').oninput=function(){visc=+this.value};
+document.getElementById('diff').oninput=function(){diff=+this.value};
+document.getElementById('force').oninput=function(){force=+this.value};
+
+function clear_(){dens.fill(0);densOld.fill(0);velX.fill(0);velY.fill(0);velXOld.fill(0);velYOld.fill(0)}
+
+const IX=(x,y)=>x+y*size;
+
+function setBnd(b,x){
+for(let i=1;i<size-1;i++){
+x[IX(0,i)]=b===1?-x[IX(1,i)]:x[IX(1,i)];
+x[IX(size-1,i)]=b===1?-x[IX(size-2,i)]:x[IX(size-2,i)];
+x[IX(i,0)]=b===2?-x[IX(i,1)]:x[IX(i,1)];
+x[IX(i,size-1)]=b===2?-x[IX(i,size-2)]:x[IX(i,size-2)];
+}
+x[IX(0,0)]=0.5*(x[IX(1,0)]+x[IX(0,1)]);
+x[IX(0,size-1)]=0.5*(x[IX(1,size-1)]+x[IX(0,size-2)]);
+x[IX(size-1,0)]=0.5*(x[IX(size-2,0)]+x[IX(size-1,1)]);
+x[IX(size-1,size-1)]=0.5*(x[IX(size-2,size-1)]+x[IX(size-1,size-2)]);
+}
+
+function linSolve(b,x,x0,a,c){
+const cR=1/c;
+for(let k=0;k<iter;k++){
+for(let j=1;j<size-1;j++){
+for(let i=1;i<size-1;i++){
+x[IX(i,j)]=(x0[IX(i,j)]+a*(x[IX(i+1,j)]+x[IX(i-1,j)]+x[IX(i,j+1)]+x[IX(i,j-1)]))*cR;
+}}
+setBnd(b,x);
+}}
+
+function diffuse(b,x,x0,d){const a=dt*d*(N-2)*(N-2);linSolve(b,x,x0,a,1+6*a)}
+
+function advect(b,d,d0,vX,vY){
+const dt0=dt*N;
+for(let j=1;j<size-1;j++){
+for(let i=1;i<size-1;i++){
+let x=i-dt0*vX[IX(i,j)],y=j-dt0*vY[IX(i,j)];
+x=Math.max(0.5,Math.min(size-1.5,x));
+y=Math.max(0.5,Math.min(size-1.5,y));
+const i0=x|0,i1=i0+1,j0=y|0,j1=j0+1;
+const s1=x-i0,s0=1-s1,t1=y-j0,t0=1-t1;
+d[IX(i,j)]=s0*(t0*d0[IX(i0,j0)]+t1*d0[IX(i0,j1)])+s1*(t0*d0[IX(i1,j0)]+t1*d0[IX(i1,j1)]);
+}}
+setBnd(b,d);
+}
+
+function project(vX,vY,p,div){
+const h=1/N;
+for(let j=1;j<size-1;j++){
+for(let i=1;i<size-1;i++){
+div[IX(i,j)]=-0.5*h*(vX[IX(i+1,j)]-vX[IX(i-1,j)]+vY[IX(i,j+1)]-vY[IX(i,j-1)]);
+p[IX(i,j)]=0;
+}}
+setBnd(0,div);setBnd(0,p);
+linSolve(0,p,div,1,4);
+for(let j=1;j<size-1;j++){
+for(let i=1;i<size-1;i++){
+vX[IX(i,j)]-=0.5*N*(p[IX(i+1,j)]-p[IX(i-1,j)]);
+vY[IX(i,j)]-=0.5*N*(p[IX(i,j+1)]-p[IX(i,j-1)]);
+}}
+setBnd(1,vX);setBnd(2,vY);
+}
+
+function vorticity(){
+for(let j=1;j<size-1;j++){
+for(let i=1;i<size-1;i++){
+curl[IX(i,j)]=velX[IX(i,j+1)]-velX[IX(i,j-1)]-velY[IX(i+1,j)]+velY[IX(i-1,j)];
+}}
+const eps=0.5;
+for(let j=2;j<size-2;j++){
+for(let i=2;i<size-2;i++){
+const dx=Math.abs(curl[IX(i,j+1)])-Math.abs(curl[IX(i,j-1)]);
+const dy=Math.abs(curl[IX(i+1,j)])-Math.abs(curl[IX(i-1,j)]);
+const len=Math.sqrt(dx*dx+dy*dy)+1e-5;
+velX[IX(i,j)]+=eps*dt*(dy/len)*curl[IX(i,j)];
+velY[IX(i,j)]-=eps*dt*(dx/len)*curl[IX(i,j)];
+}}}
+
+function step(){
+[velX,velXOld]=[velXOld,velX];[velY,velYOld]=[velYOld,velY];
+diffuse(1,velX,velXOld,visc);diffuse(2,velY,velYOld,visc);
+project(velX,velY,velXOld,velYOld);
+[velX,velXOld]=[velXOld,velX];[velY,velYOld]=[velYOld,velY];
+advect(1,velX,velXOld,velXOld,velYOld);advect(2,velY,velYOld,velXOld,velYOld);
+project(velX,velY,velXOld,velYOld);
+vorticity();
+[dens,densOld]=[densOld,dens];
+diffuse(0,dens,densOld,diff);
+[dens,densOld]=[densOld,dens];
+advect(0,dens,densOld,velX,velY);
+for(let i=0;i<dens.length;i++)dens[i]*=0.995;
+}
+
+function hsl2rgb(h,s,l){
+const a=s*Math.min(l,1-l);
+const f=n=>{const k=(n+h/30)%12;return l-a*Math.max(-1,Math.min(k-3,9-k,1))};
+return[f(0)*255|0,f(8)*255|0,f(4)*255|0];
+}
+
+function render(){
+const img=ctx.createImageData(W,H);
+const cw=W/N,ch=H/N;
+for(let j=0;j<N;j++){
+for(let i=0;i<N;i++){
+const idx=IX(i+1,j+1);
+const d=Math.min(1,dens[idx]);
+const vx=velX[idx],vy=velY[idx];
+const speed=Math.sqrt(vx*vx+vy*vy);
+let r,g,b;
+if(colorMode==='velocity'){
+const h=(1-Math.min(1,speed*2))*240;
+[r,g,b]=hsl2rgb(h,1,Math.min(0.6,d*0.5+speed*0.3));
+}else if(colorMode==='rainbow'){
+[r,g,b]=hsl2rgb((1-d)*240,1,0.5+d*0.3);
+}else if(colorMode==='fire'){
+r=Math.min(255,d*500)|0;g=Math.max(0,d*300-50)|0;b=Math.max(0,d*100-100)|0;
+}else if(colorMode==='smoke'){
+const v=(d*200)|0;r=g=b=v;
+}else{
+const h=(Date.now()*0.03+d*180+i+j)%360;
+[r,g,b]=hsl2rgb(h,0.8,0.3+d*0.4);
+}
+const x0=i*cw|0,y0=j*ch|0,x1=((i+1)*cw)|0,y1=((j+1)*ch)|0;
+for(let py=y0;py<y1;py++){
+for(let px=x0;px<x1;px++){
+const p=(py*W+px)*4;
+img.data[p]=r;img.data[p+1]=g;img.data[p+2]=b;img.data[p+3]=255;
+}}}}
+ctx.putImageData(img,0,0);
+}
+
+function addForce(x,y,dx,dy){
+const i=(x/W*N+1)|0,j=(y/H*N+1)|0;
+if(i<1||i>=size-1||j<1||j>=size-1)return;
+const r=3;
+for(let di=-r;di<=r;di++){
+for(let dj=-r;dj<=r;dj++){
+const ii=i+di,jj=j+dj;
+if(ii<1||ii>=size-1||jj<1||jj>=size-1)continue;
+const dist=Math.sqrt(di*di+dj*dj);
+if(dist>r)continue;
+const f=(1-dist/r)*force;
+dens[IX(ii,jj)]+=0.3*f;
+velX[IX(ii,jj)]+=dx*f;
+velY[IX(ii,jj)]+=dy*f;
+}}}
+
+function handleStart(e){
+e.preventDefault();
+const ts=e.changedTouches||[{identifier:'mouse',clientX:e.clientX,clientY:e.clientY}];
+for(const t of ts)touches[t.identifier]={x:t.clientX,y:t.clientY};
+}
+function handleMove(e){
+e.preventDefault();
+const ts=e.changedTouches||[{identifier:'mouse',clientX:e.clientX,clientY:e.clientY}];
+for(const t of ts){
+const prev=touches[t.identifier];
+if(prev){
+addForce(t.clientX,t.clientY,(t.clientX-prev.x)*0.5,(t.clientY-prev.y)*0.5);
+touches[t.identifier]={x:t.clientX,y:t.clientY};
+}}}
+function handleEnd(e){
+const ts=e.changedTouches||[{identifier:'mouse'}];
+for(const t of ts)delete touches[t.identifier];
+}
+
+cv.addEventListener('mousedown',handleStart);
+cv.addEventListener('mousemove',e=>{if(touches.mouse)handleMove(e)});
+cv.addEventListener('mouseup',handleEnd);
+cv.addEventListener('mouseleave',handleEnd);
+cv.addEventListener('touchstart',handleStart,{passive:false});
+cv.addEventListener('touchmove',handleMove,{passive:false});
+cv.addEventListener('touchend',handleEnd);
+cv.addEventListener('touchcancel',handleEnd);
+
+function loop(){step();render();requestAnimationFrame(loop)}
+loop();

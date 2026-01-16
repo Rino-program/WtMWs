@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>漢字クイズ - Kanji Quiz</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<h1>📝 漢字クイズ</h1>
+<div class="modes">
+<button class="active" data-mode="reading">読み方</button>
+<button data-mode="meaning">意味</button>
+<button data-mode="writing">書き取り</button>
+</div>
+<div class="stats">
+<div class="stat"><div class="stat-val" id="score">0</div><div class="stat-label">スコア</div></div>
+<div class="stat"><div class="stat-val" id="streak">0</div><div class="stat-label">連続</div></div>
+<div class="stat"><div class="stat-val" id="accuracy">-%</div><div class="stat-label">正答率</div></div>
+</div>
+<div class="quiz-container" id="quizContainer">
+<div class="progress" id="progress"></div>
+<div class="question" id="question">
+<div class="kanji-display" id="kanjiDisplay">漢</div>
+<div class="hint" id="hint"></div>
+</div>
+<div class="choices" id="choices"></div>
+<div class="result" id="result">
+<div class="result-icon" id="resultIcon">✓</div>
+<div class="result-text" id="resultText"></div>
+<div class="explanation" id="explanation"></div>
+</div>
+<button class="btn hidden" id="nextBtn" onclick="nextQuestion()">次の問題</button>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

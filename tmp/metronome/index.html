@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メトロノーム</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    
+    <div class="container">
+        <h1>🎵 メトロノーム</h1>
+        
+        <!-- ビート可視化エリア -->
+        <div class="visualizer">
+            <div class="pendulum-container">
+                <div class="pendulum">
+                    <div class="pendulum-arm"></div>
+                    <div class="pendulum-bob"></div>
+                </div>
+            </div>
+            <div class="beat-indicators">
+                <div class="beat-dot" data-beat="1"></div>
+                <div class="beat-dot" data-beat="2"></div>
+                <div class="beat-dot" data-beat="3"></div>
+                <div class="beat-dot" data-beat="4"></div>
+            </div>
+        </div>
+        
+        <!-- BPM表示 -->
+        <div class="bpm-display">
+            <input type="number" id="bpm-input" min="20" max="300" value="120">
+            <span class="bpm-label">BPM</span>
+        </div>
+        
+        <!-- BPMスライダー -->
+        <div class="slider-container">
+            <span class="slider-label">20</span>
+            <input type="range" id="bpm-slider" min="20" max="300" value="120">
+            <span class="slider-label">300</span>
+        </div>
+        
+        <!-- コントロールボタン -->
+        <div class="controls">
+            <button id="start-btn" class="btn btn-primary">
+                <span class="play-icon">▶</span>
+                <span class="btn-text">開始</span>
+            </button>
+            <button id="tap-btn" class="btn btn-secondary">
+                <span class="tap-icon">👆</span>
+                <span class="btn-text">タップ</span>
+            </button>
+        </div>
+        
+        <!-- 設定パネル -->
+        <div class="settings">
+            <!-- 拍子選択 -->
+            <div class="setting-group">
+                <label>拍子</label>
+                <div class="time-signature-buttons">
+                    <button class="time-btn" data-beats="2" data-note="4">2/4</button>
+                    <button class="time-btn active" data-beats="4" data-note="4">4/4</button>
+                    <button class="time-btn" data-beats="3" data-note="4">3/4</button>
+                    <button class="time-btn" data-beats="6" data-note="8">6/8</button>
+                </div>
+            </div>
+            
+            <!-- 音色選択 -->
+            <div class="setting-group">
+                <label>音色</label>
+                <select id="sound-select">
+                    <option value="click">クリック</option>
+                    <option value="wood">ウッドブロック</option>
+                    <option value="beep">ビープ</option>
+                    <option value="drum">ドラム</option>
+                </select>
+            </div>
+            
+            <!-- 強拍アクセント -->
+            <div class="setting-group">
+                <label>
+                    <input type="checkbox" id="accent-checkbox" checked>
+                    強拍アクセント
+                </label>
+            </div>
+        </div>
+        
+        <!-- ショートカット説明 -->
+        <div class="shortcuts">
+            <p>キーボードショートカット: <kbd>Space</kbd> 開始/停止 | <kbd>T</kbd> タップテンポ</p>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

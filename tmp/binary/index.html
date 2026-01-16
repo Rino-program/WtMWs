@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2進数変換器 | Creative Lab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    <div class="container">
+        <header>
+            <h1>🔢 2進数変換器</h1>
+            <p class="subtitle">2進数・10進数・16進数・8進数を相互変換</p>
+        </header>
+
+        <div class="main-panel">
+            <div class="base-row">
+                <div class="base-label">
+                    <span>10進数</span>
+                    Decimal
+                </div>
+                <div class="base-input">
+                    <input type="text" id="dec" placeholder="例: 255" oninput="convertFrom('dec')">
+                </div>
+                <button class="copy-btn" onclick="copyValue('dec')">📋</button>
+            </div>
+
+            <div class="base-row">
+                <div class="base-label">
+                    <span>2進数</span>
+                    Binary
+                </div>
+                <div class="base-input">
+                    <input type="text" id="bin" placeholder="例: 11111111" oninput="convertFrom('bin')">
+                </div>
+                <button class="copy-btn" onclick="copyValue('bin')">📋</button>
+            </div>
+
+            <div class="base-row">
+                <div class="base-label">
+                    <span>16進数</span>
+                    Hex
+                </div>
+                <div class="base-input">
+                    <input type="text" id="hex" placeholder="例: FF" oninput="convertFrom('hex')">
+                </div>
+                <button class="copy-btn" onclick="copyValue('hex')">📋</button>
+            </div>
+
+            <div class="base-row">
+                <div class="base-label">
+                    <span>8進数</span>
+                    Octal
+                </div>
+                <div class="base-input">
+                    <input type="text" id="oct" placeholder="例: 377" oninput="convertFrom('oct')">
+                </div>
+                <button class="copy-btn" onclick="copyValue('oct')">📋</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="quick-values">
+                <h3>⚡ クイック値</h3>
+                <div class="quick-grid">
+                    <button class="quick-btn" onclick="setQuick(255)">255 (0xFF)</button>
+                    <button class="quick-btn" onclick="setQuick(256)">256 (2⁸)</button>
+                    <button class="quick-btn" onclick="setQuick(1024)">1024 (2¹⁰)</button>
+                    <button class="quick-btn" onclick="setQuick(65535)">65535 (0xFFFF)</button>
+                    <button class="quick-btn" onclick="setQuick(127)">127 (0x7F)</button>
+                    <button class="quick-btn" onclick="setQuick(128)">128 (2⁷)</button>
+                    <button class="quick-btn" onclick="setQuick(32767)">32767 (signed max)</button>
+                    <button class="quick-btn" onclick="setQuick(2147483647)">2³¹-1 (int max)</button>
+                </div>
+            </div>
+
+            <div class="bit-visual">
+                <h3>💡 ビット表示 (8ビット)</h3>
+                <div class="bit-display" id="bitDisplay"></div>
+            </div>
+
+            <div class="info-panel">
+                <h3>📊 詳細情報</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="value" id="bitCount">0</div>
+                        <div class="label">ビット数</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="value" id="byteCount">0</div>
+                        <div class="label">バイト数</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="value" id="oneCount">0</div>
+                        <div class="label">1の数</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="value" id="zeroCount">0</div>
+                        <div class="label">0の数</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="operations">
+                <div class="op-card" onclick="bitShiftLeft()">
+                    <h4>⬅️ 左シフト</h4>
+                    <p>×2 (1ビット左へ)</p>
+                    <div class="op-result" id="shiftLeftResult">-</div>
+                </div>
+                <div class="op-card" onclick="bitShiftRight()">
+                    <h4>➡️ 右シフト</h4>
+                    <p>÷2 (1ビット右へ)</p>
+                    <div class="op-result" id="shiftRightResult">-</div>
+                </div>
+                <div class="op-card" onclick="bitNot()">
+                    <h4>🔄 NOT</h4>
+                    <p>ビット反転 (8bit)</p>
+                    <div class="op-result" id="notResult">-</div>
+                </div>
+                <div class="op-card" onclick="twosComplement()">
+                    <h4>➖ 2の補数</h4>
+                    <p>負数表現 (8bit)</p>
+                    <div class="op-result" id="twosResult">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

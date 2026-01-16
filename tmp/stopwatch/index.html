@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ストップウォッチ - ラップ機能付き</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    
+    <div class="container">
+        <h1>ストップウォッチ</h1>
+        
+        <div class="display">
+            <span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span>.<span id="milliseconds">000</span>
+        </div>
+        
+        <div class="controls">
+            <button id="startStopBtn" class="btn btn-start">スタート</button>
+            <button id="lapBtn" class="btn btn-lap" disabled>ラップ</button>
+            <button id="resetBtn" class="btn btn-reset" disabled>リセット</button>
+        </div>
+        
+        <div class="lap-section">
+            <div class="lap-header">
+                <h2>ラップタイム</h2>
+                <div class="lap-actions">
+                    <button id="exportBtn" class="btn btn-export" disabled>CSV出力</button>
+                    <button id="clearHistoryBtn" class="btn btn-clear" disabled>履歴クリア</button>
+                </div>
+            </div>
+            
+            <div class="lap-legend">
+                <span class="legend-item best">🏆 ベスト</span>
+                <span class="legend-item worst">🐢 ワースト</span>
+            </div>
+            
+            <div id="lapList" class="lap-list">
+                <p class="no-laps">ラップタイムがありません</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

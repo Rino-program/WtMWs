@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文字数・単語数カウンター</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    
+    <div class="container">
+        <h1>📝 文字数・単語数カウンター</h1>
+        
+        <div class="main-content">
+            <div class="editor-section">
+                <textarea id="textInput" placeholder="ここにテキストを入力してください..."></textarea>
+                
+                <div class="search-replace">
+                    <h3>🔍 検索・置換</h3>
+                    <div class="search-inputs">
+                        <input type="text" id="searchText" placeholder="検索文字列">
+                        <input type="text" id="replaceText" placeholder="置換文字列">
+                    </div>
+                    <div class="search-buttons">
+                        <button id="highlightBtn">ハイライト</button>
+                        <button id="replaceBtn">置換</button>
+                        <button id="replaceAllBtn">すべて置換</button>
+                        <button id="clearHighlightBtn">クリア</button>
+                    </div>
+                    <div id="searchResult" class="search-result"></div>
+                </div>
+            </div>
+            
+            <div class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-value" id="charWithSpaces">0</div>
+                        <div class="stat-label">文字数（スペース含む）</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✏️</div>
+                        <div class="stat-value" id="charWithoutSpaces">0</div>
+                        <div class="stat-label">文字数（スペース除く）</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📝</div>
+                        <div class="stat-value" id="wordCount">0</div>
+                        <div class="stat-label">単語数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📄</div>
+                        <div class="stat-value" id="lineCount">0</div>
+                        <div class="stat-label">行数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📑</div>
+                        <div class="stat-value" id="paragraphCount">0</div>
+                        <div class="stat-label">段落数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-value" id="readingTime">0分</div>
+                        <div class="stat-label">読了時間</div>
+                    </div>
+                </div>
+                
+                <div class="word-ranking">
+                    <h3>🏆 頻出単語ランキング</h3>
+                    <div id="wordRanking" class="ranking-list">
+                        <p class="no-data">テキストを入力してください</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button id="copyBtn">📋 コピー</button>
+            <button id="clearBtn">🗑️ クリア</button>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

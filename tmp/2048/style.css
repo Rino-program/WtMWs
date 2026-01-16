@@ -1,0 +1,407 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ===== Theme Variables ===== */
+:root {
+    /* Classic Theme (default) */
+    --bg-gradient-1: #faf8ef;
+    --bg-gradient-2: #bbada0;
+    --text-color: #776e65;
+    --board-bg: #bbada0;
+    --cell-empty: rgba(238, 228, 218, 0.35);
+    --btn-bg: #8f7a66;
+    --btn-hover: #9f8b77;
+    --overlay-bg: rgba(238, 228, 218, 0.73);
+    --tile-2: #eee4da;
+    --tile-4: #eee1c9;
+    --tile-8: #f3b27a;
+    --tile-16: #f69664;
+    --tile-32: #f77c5f;
+    --tile-64: #f75f3b;
+    --tile-128: #edd073;
+    --tile-256: #edcc62;
+    --tile-512: #edc950;
+    --tile-1024: #edc53f;
+    --tile-2048: #edc22e;
+    --tile-text-dark: #776e65;
+    --tile-text-light: #fff;
+    --win-color: #edc22e;
+}
+
+/* Ocean Theme */
+[data-theme="ocean"] {
+    --bg-gradient-1: #e0f7fa;
+    --bg-gradient-2: #006064;
+    --text-color: #004d40;
+    --board-bg: #00838f;
+    --cell-empty: rgba(224, 247, 250, 0.35);
+    --btn-bg: #00695c;
+    --btn-hover: #00897b;
+    --overlay-bg: rgba(178, 235, 242, 0.85);
+    --tile-2: #e0f7fa;
+    --tile-4: #b2ebf2;
+    --tile-8: #4dd0e1;
+    --tile-16: #26c6da;
+    --tile-32: #00bcd4;
+    --tile-64: #00acc1;
+    --tile-128: #0097a7;
+    --tile-256: #00838f;
+    --tile-512: #006064;
+    --tile-1024: #004d40;
+    --tile-2048: #1de9b6;
+    --tile-text-dark: #004d40;
+    --tile-text-light: #fff;
+    --win-color: #1de9b6;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+    --bg-gradient-1: #1a1a2e;
+    --bg-gradient-2: #16213e;
+    --text-color: #e8e8e8;
+    --board-bg: #0f3460;
+    --cell-empty: rgba(255, 255, 255, 0.1);
+    --btn-bg: #533483;
+    --btn-hover: #7952b3;
+    --overlay-bg: rgba(26, 26, 46, 0.9);
+    --tile-2: #e1bee7;
+    --tile-4: #ce93d8;
+    --tile-8: #ab47bc;
+    --tile-16: #9c27b0;
+    --tile-32: #8e24aa;
+    --tile-64: #7b1fa2;
+    --tile-128: #f06292;
+    --tile-256: #ec407a;
+    --tile-512: #e91e63;
+    --tile-1024: #d81b60;
+    --tile-2048: #ff4081;
+    --tile-text-dark: #1a1a2e;
+    --tile-text-light: #fff;
+    --win-color: #ff4081;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, var(--bg-gradient-1), var(--bg-gradient-2));
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.back {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 1.3rem;
+    z-index: 100;
+    opacity: 0.7;
+    transition: color 0.3s ease;
+}
+
+.back:hover {
+    opacity: 1;
+}
+
+h1 {
+    font-size: clamp(2rem, 6vw, 3rem);
+    color: var(--text-color);
+    margin-bottom: 10px;
+    transition: color 0.3s ease;
+}
+
+.header {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.score-box {
+    background: var(--board-bg);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-align: center;
+    min-width: 100px;
+    transition: background 0.3s ease;
+}
+
+.score-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.score-val {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.game-container {
+    position: relative;
+    touch-action: none;
+}
+
+.board {
+    background: var(--board-bg);
+    border-radius: 10px;
+    padding: 15px;
+    display: grid;
+    gap: 15px;
+    touch-action: none;
+    transition: background 0.3s ease;
+}
+
+.cell {
+    width: 80px;
+    height: 80px;
+    background: var(--cell-empty);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: bold;
+    transition: all 0.15s ease, background-color 0.3s ease;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.cell[data-value="2"] {
+    background: var(--tile-2);
+    color: var(--tile-text-dark);
+}
+
+.cell[data-value="4"] {
+    background: var(--tile-4);
+    color: var(--tile-text-dark);
+}
+
+.cell[data-value="8"] {
+    background: var(--tile-8);
+    color: var(--tile-text-light);
+}
+
+.cell[data-value="16"] {
+    background: var(--tile-16);
+    color: var(--tile-text-light);
+}
+
+.cell[data-value="32"] {
+    background: var(--tile-32);
+    color: var(--tile-text-light);
+}
+
+.cell[data-value="64"] {
+    background: var(--tile-64);
+    color: var(--tile-text-light);
+}
+
+.cell[data-value="128"] {
+    background: var(--tile-128);
+    color: var(--tile-text-light);
+    font-size: 1.7rem;
+}
+
+.cell[data-value="256"] {
+    background: var(--tile-256);
+    color: var(--tile-text-light);
+    font-size: 1.7rem;
+}
+
+.cell[data-value="512"] {
+    background: var(--tile-512);
+    color: var(--tile-text-light);
+    font-size: 1.7rem;
+}
+
+.cell[data-value="1024"] {
+    background: var(--tile-1024);
+    color: var(--tile-text-light);
+    font-size: 1.4rem;
+}
+
+.cell[data-value="2048"] {
+    background: var(--tile-2048);
+    color: var(--tile-text-light);
+    font-size: 1.4rem;
+}
+
+.cell.new {
+    animation: pop 0.2s ease;
+}
+
+.cell.merged {
+    animation: pulse 0.2s ease;
+}
+
+@keyframes pop {
+    0% {
+        transform: scale(0);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse {
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.btn {
+    background: var(--btn-bg);
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn:active {
+    transform: scale(0.95);
+}
+
+.btn:hover {
+    background: var(--btn-hover);
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--overlay-bg);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    z-index: 10;
+    transition: background 0.3s ease;
+}
+
+.overlay.show {
+    display: flex;
+}
+
+.overlay h2 {
+    font-size: 2.5rem;
+    color: var(--text-color);
+    margin-bottom: 10px;
+    transition: color 0.3s ease;
+}
+
+.overlay .final-score {
+    font-size: 1.2rem;
+    color: var(--text-color);
+    margin-bottom: 20px;
+    transition: color 0.3s ease;
+}
+
+.overlay.win h2 {
+    color: var(--win-color);
+}
+
+.touch-hint {
+    position: fixed;
+    bottom: 20px;
+    color: var(--text-color);
+    font-size: 0.8rem;
+    opacity: 0.6;
+    transition: color 0.3s ease;
+}
+
+.instructions {
+    margin-top: 15px;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    text-align: center;
+    max-width: 350px;
+    line-height: 1.5;
+    transition: color 0.3s ease;
+}
+
+/* ===== Theme Switcher ===== */
+.theme-switcher {
+    display: flex;
+    gap: 8px;
+    margin-left: 10px;
+}
+
+.theme-btn {
+    width: 36px;
+    height: 36px;
+    border: 3px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-btn:hover {
+    transform: scale(1.1);
+}
+
+.theme-btn.active {
+    border-color: var(--text-color);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.theme-btn[data-theme="classic"] {
+    background: linear-gradient(135deg, #faf8ef 50%, #f3b27a 50%);
+}
+
+.theme-btn[data-theme="ocean"] {
+    background: linear-gradient(135deg, #e0f7fa 50%, #00bcd4 50%);
+}
+
+.theme-btn[data-theme="dark"] {
+    background: linear-gradient(135deg, #1a1a2e 50%, #ab47bc 50%);
+}
+
+@media (max-width: 420px) {
+    .cell {
+        width: 65px;
+        height: 65px;
+        font-size: 1.5rem;
+    }
+
+    .board {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .cell[data-value="128"],
+    .cell[data-value="256"],
+    .cell[data-value="512"] {
+        font-size: 1.3rem;
+    }
+
+    .cell[data-value="1024"],
+    .cell[data-value="2048"] {
+        font-size: 1.1rem;
+    }
+}

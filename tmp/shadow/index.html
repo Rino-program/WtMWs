@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Box Shadow Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    
+    <div class="container">
+        <h1>CSS Box Shadow Generator</h1>
+        
+        <div class="main-content">
+            <div class="preview-section">
+                <h2>プレビュー</h2>
+                <div class="preview-container">
+                    <div class="preview-box" id="previewBox"></div>
+                </div>
+            </div>
+            
+            <div class="controls-section">
+                <h2>シャドウ設定</h2>
+                
+                <div class="shadow-list" id="shadowList"></div>
+                
+                <button class="btn btn-add" id="addShadow">+ シャドウを追加</button>
+                
+                <div class="code-section">
+                    <h3>生成されたCSS</h3>
+                    <div class="code-container">
+                        <pre id="cssOutput"></pre>
+                        <button class="btn btn-copy" id="copyBtn">コピー</button>
+                    </div>
+                </div>
+                
+                <div class="presets-section">
+                    <h3>プリセット</h3>
+                    <div class="preset-buttons">
+                        <button class="btn btn-preset" data-preset="soft">ソフト</button>
+                        <button class="btn btn-preset" data-preset="hard">ハード</button>
+                        <button class="btn btn-preset" data-preset="glow">グロー</button>
+                        <button class="btn btn-preset" data-preset="inset">インセット</button>
+                        <button class="btn btn-preset" data-preset="layered">レイヤード</button>
+                        <button class="btn btn-preset" data-preset="neon">ネオン</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <template id="shadowTemplate">
+        <div class="shadow-item" data-index="">
+            <div class="shadow-header">
+                <span class="shadow-title">シャドウ <span class="shadow-number"></span></span>
+                <button class="btn btn-remove" title="削除">×</button>
+            </div>
+            <div class="shadow-controls">
+                <div class="control-row">
+                    <label>X オフセット</label>
+                    <input type="range" class="slider" data-prop="offsetX" min="-100" max="100" value="5">
+                    <span class="value-display" data-for="offsetX">5px</span>
+                </div>
+                <div class="control-row">
+                    <label>Y オフセット</label>
+                    <input type="range" class="slider" data-prop="offsetY" min="-100" max="100" value="5">
+                    <span class="value-display" data-for="offsetY">5px</span>
+                </div>
+                <div class="control-row">
+                    <label>ぼかし</label>
+                    <input type="range" class="slider" data-prop="blur" min="0" max="100" value="10">
+                    <span class="value-display" data-for="blur">10px</span>
+                </div>
+                <div class="control-row">
+                    <label>広がり</label>
+                    <input type="range" class="slider" data-prop="spread" min="-50" max="50" value="0">
+                    <span class="value-display" data-for="spread">0px</span>
+                </div>
+                <div class="control-row">
+                    <label>色</label>
+                    <input type="color" class="color-picker" data-prop="color" value="#667eea">
+                    <input type="range" class="slider opacity-slider" data-prop="opacity" min="0" max="100" value="50">
+                    <span class="value-display" data-for="opacity">50%</span>
+                </div>
+                <div class="control-row checkbox-row">
+                    <label>
+                        <input type="checkbox" class="inset-check" data-prop="inset">
+                        Inset（内側シャドウ）
+                    </label>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <script src="script.js"></script>
+</body>
+</html>

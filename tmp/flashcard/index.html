@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Flashcard - 単語帳</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<div class="header"><h1>📚 単語帳</h1></div>
+<div class="container">
+<div class="tabs">
+<button class="tab active" data-view="decks">デッキ一覧</button>
+<button class="tab" data-view="study">学習</button>
+</div>
+<div id="decksView">
+<div class="deck-list" id="deckList"></div>
+<button class="add-btn" onclick="openDeckModal()">+ 新しいデッキを作成</button>
+</div>
+<div id="studyView" class="hidden">
+<div class="study-stats">
+<span id="studyProgress">0/0 カード</span>
+<span id="studyScore">正解率: -%</span>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="card-container">
+<div class="flashcard" id="flashcard" onclick="flipCard()">
+<div class="card-face card-front">
+<div class="card-content" id="cardFront">-</div>
+<div class="card-hint">タップして裏面を見る</div>
+</div>
+<div class="card-face card-back">
+<div class="card-content" id="cardBack">-</div>
+</div>
+</div>
+</div>
+<div class="card-controls">
+<button class="control-btn dont-know" onclick="answerCard(false)">わからない</button>
+<button class="control-btn know" onclick="answerCard(true)">わかった</button>
+</div>
+</div>
+</div>
+<div class="modal" id="deckModal" onclick="event.target===this&&closeDeckModal()">
+<div class="modal-content">
+<div class="modal-title" id="deckModalTitle">新しいデッキ</div>
+<div class="form-group">
+<label>デッキ名</label>
+<input type="text" id="deckName" placeholder="例: 英単語 TOEIC">
+</div>
+<div class="form-group">
+<label>説明（任意）</label>
+<input type="text" id="deckDesc" placeholder="例: TOEIC頻出単語500">
+</div>
+<div id="cardSection" class="hidden">
+<div class="form-group">
+<label>カード一覧</label>
+<div class="card-list" id="cardList"></div>
+</div>
+<button class="add-btn" style="margin-top:10px" onclick="openCardModal()">+ カードを追加</button>
+</div>
+<div class="modal-actions">
+<button class="btn-cancel" onclick="closeDeckModal()">キャンセル</button>
+<button class="btn-save" onclick="saveDeck()">保存</button>
+</div>
+</div>
+</div>
+<div class="modal" id="cardModal" onclick="event.target===this&&closeCardModal()">
+<div class="modal-content">
+<div class="modal-title">カードを追加</div>
+<div class="form-group">
+<label>表面（問題）</label>
+<textarea id="cardFrontInput" placeholder="例: apple"></textarea>
+</div>
+<div class="form-group">
+<label>裏面（答え）</label>
+<textarea id="cardBackInput" placeholder="例: りんご"></textarea>
+</div>
+<div class="modal-actions">
+<button class="btn-cancel" onclick="closeCardModal()">キャンセル</button>
+<button class="btn-save" onclick="addCard()">追加</button>
+</div>
+</div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ハングマン - Hangman Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    
+    <div class="container">
+        <h1>🎯 ハングマン</h1>
+        
+        <div class="game-info">
+            <div class="score-board">
+                <div class="score-item">
+                    <span class="score-label">勝利</span>
+                    <span class="score-value" id="wins">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">敗北</span>
+                    <span class="score-value" id="losses">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">連勝</span>
+                    <span class="score-value" id="streak">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-selector">
+            <label for="category">カテゴリ:</label>
+            <select id="category">
+                <option value="all">すべて</option>
+                <option value="animals">🐾 動物</option>
+                <option value="food">🍕 食べ物</option>
+                <option value="countries">🌍 国</option>
+                <option value="sports">⚽ スポーツ</option>
+                <option value="colors">🎨 色</option>
+            </select>
+        </div>
+
+        <div class="game-area">
+            <div class="hangman-display">
+                <svg id="hangman-svg" viewBox="0 0 200 250">
+                    <!-- Gallows -->
+                    <line x1="20" y1="230" x2="100" y2="230" class="gallows"/>
+                    <line x1="60" y1="230" x2="60" y2="20" class="gallows"/>
+                    <line x1="60" y1="20" x2="140" y2="20" class="gallows"/>
+                    <line x1="140" y1="20" x2="140" y2="50" class="gallows"/>
+                    
+                    <!-- Head -->
+                    <circle cx="140" cy="70" r="20" class="body-part" id="head"/>
+                    <!-- Body -->
+                    <line x1="140" y1="90" x2="140" y2="150" class="body-part" id="body"/>
+                    <!-- Left Arm -->
+                    <line x1="140" y1="110" x2="110" y2="130" class="body-part" id="left-arm"/>
+                    <!-- Right Arm -->
+                    <line x1="140" y1="110" x2="170" y2="130" class="body-part" id="right-arm"/>
+                    <!-- Left Leg -->
+                    <line x1="140" y1="150" x2="110" y2="190" class="body-part" id="left-leg"/>
+                    <!-- Right Leg -->
+                    <line x1="140" y1="150" x2="170" y2="190" class="body-part" id="right-leg"/>
+                </svg>
+                
+                <div class="lives-display">
+                    <span class="lives-label">残りライフ:</span>
+                    <span class="lives-hearts" id="lives">❤️❤️❤️❤️❤️❤️</span>
+                </div>
+            </div>
+
+            <div class="word-section">
+                <div class="word-display" id="word-display"></div>
+                
+                <div class="hint-section">
+                    <button id="hint-btn" class="hint-btn">💡 ヒント</button>
+                    <div class="hint-text" id="hint-text"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="keyboard" id="keyboard"></div>
+
+        <div class="game-controls">
+            <button id="new-game-btn" class="control-btn">🔄 新しいゲーム</button>
+        </div>
+
+        <div class="message" id="message"></div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-icon" id="modal-icon"></div>
+            <h2 id="modal-title"></h2>
+            <p id="modal-message"></p>
+            <p class="modal-word">正解: <span id="modal-word"></span></p>
+            <button id="modal-btn" class="control-btn">次のゲーム</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

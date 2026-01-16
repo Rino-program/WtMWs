@@ -1,0 +1,58 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e);min-height:100vh;color:#fff;touch-action:manipulation}
+.container{display:flex;flex-direction:column;height:100vh}
+header{padding:15px 20px;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.back-link{color:#00d4ff;text-decoration:none;font-size:0.9rem}
+h1{font-size:1.2rem;background:linear-gradient(90deg,#00d4ff,#f093fb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.toolbar{display:flex;gap:5px;flex-wrap:wrap}
+.tool-btn{padding:8px 12px;background:rgba(255,255,255,0.1);border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:0.85rem;transition:all 0.2s}
+.tool-btn:hover{background:rgba(255,255,255,0.2)}
+.tool-btn.active{background:linear-gradient(135deg,#00d4ff,#7b2cbf)}
+.main-area{flex:1;display:flex;overflow:hidden}
+.editor-pane,.preview-pane{flex:1;display:flex;flex-direction:column;min-width:0}
+.pane-header{padding:10px 15px;background:rgba(255,255,255,0.05);font-size:0.85rem;color:rgba(255,255,255,0.6);display:flex;justify-content:space-between;align-items:center}
+.editor{flex:1;padding:20px;background:rgba(0,0,0,0.2);border:none;resize:none;color:#fff;font-family:'Consolas','Monaco',monospace;font-size:0.95rem;line-height:1.7;outline:none;overflow:auto}
+.editor::placeholder{color:rgba(255,255,255,0.3)}
+.preview{flex:1;padding:20px;background:rgba(255,255,255,0.02);overflow:auto;line-height:1.8}
+.divider{width:4px;background:rgba(255,255,255,0.1);cursor:col-resize;transition:background 0.2s}
+.divider:hover{background:rgba(0,212,255,0.5)}
+@media(max-width:768px){
+    .main-area{flex-direction:column}
+    .divider{width:100%;height:4px;cursor:row-resize}
+    .view-toggle{display:flex}
+}
+.view-toggle{display:none;gap:5px}
+.view-btn{padding:6px 12px;background:rgba(255,255,255,0.1);border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:0.8rem}
+.view-btn.active{background:linear-gradient(135deg,#00d4ff,#7b2cbf)}
+
+/* Markdown Preview Styles */
+.preview h1{font-size:2rem;margin:0.5em 0;padding-bottom:0.3em;border-bottom:2px solid rgba(255,255,255,0.1)}
+.preview h2{font-size:1.5rem;margin:1em 0 0.5em;padding-bottom:0.2em;border-bottom:1px solid rgba(255,255,255,0.1)}
+.preview h3{font-size:1.25rem;margin:1em 0 0.5em}
+.preview h4{font-size:1.1rem;margin:1em 0 0.5em}
+.preview p{margin:0.8em 0}
+.preview a{color:#00d4ff}
+.preview strong{color:#f093fb}
+.preview em{color:#00ff88}
+.preview code{background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-family:'Consolas',monospace;font-size:0.9em}
+.preview pre{background:rgba(0,0,0,0.4);padding:15px;border-radius:8px;overflow-x:auto;margin:1em 0}
+.preview pre code{background:none;padding:0}
+.preview blockquote{border-left:4px solid #7b2cbf;padding-left:15px;margin:1em 0;color:rgba(255,255,255,0.7);font-style:italic}
+.preview ul,.preview ol{margin:0.8em 0;padding-left:25px}
+.preview li{margin:0.3em 0}
+.preview hr{border:none;border-top:1px solid rgba(255,255,255,0.2);margin:1.5em 0}
+.preview table{border-collapse:collapse;width:100%;margin:1em 0}
+.preview th,.preview td{border:1px solid rgba(255,255,255,0.2);padding:10px;text-align:left}
+.preview th{background:rgba(255,255,255,0.1)}
+.preview img{max-width:100%;border-radius:8px}
+.preview .task-list-item{list-style:none;margin-left:-20px}
+.preview .task-list-item input{margin-right:8px}
+
+.stats{font-size:0.75rem;color:rgba(255,255,255,0.4)}
+.export-menu{position:relative}
+.export-dropdown{position:absolute;top:100%;right:0;background:rgba(30,30,50,0.98);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px;display:none;min-width:150px;z-index:100}
+.export-dropdown.show{display:block}
+.export-item{padding:8px 12px;cursor:pointer;border-radius:4px;font-size:0.85rem;transition:background 0.2s}
+.export-item:hover{background:rgba(255,255,255,0.1)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(0,212,255,0.9);padding:12px 25px;border-radius:25px;font-size:0.9rem;opacity:0;transition:all 0.3s;z-index:1000}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}

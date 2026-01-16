@@ -1,0 +1,55 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;min-height:100vh;padding-bottom:100px;touch-action:manipulation}
+.back{position:fixed;top:15px;left:15px;color:#fff;text-decoration:none;font-size:1.3rem;z-index:100;opacity:0.7}
+.back:hover{opacity:1}
+.header{text-align:center;padding:60px 20px 20px}
+h1{font-size:clamp(1.5rem,4vw,2rem);background:linear-gradient(90deg,#a18cd1,#fbc2eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.container{max-width:600px;margin:0 auto;padding:0 20px}
+.tabs{display:flex;gap:5px;margin-bottom:20px;background:rgba(0,0,0,0.2);padding:5px;border-radius:15px}
+.tab{flex:1;padding:12px;border:none;background:transparent;color:#888;border-radius:12px;cursor:pointer;font-size:0.9rem;transition:all 0.2s}
+.tab.active{background:linear-gradient(135deg,#a18cd1,#fbc2eb);color:#1a1a2e;font-weight:bold}
+.deck-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.deck-item{background:rgba(255,255,255,0.05);padding:18px;border-radius:15px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all 0.2s}
+.deck-item:hover{background:rgba(255,255,255,0.1)}
+.deck-info h3{font-size:1.1rem;margin-bottom:5px}
+.deck-info span{font-size:0.85rem;color:#888}
+.deck-actions{display:flex;gap:8px}
+.deck-btn{background:none;border:none;color:#888;cursor:pointer;font-size:1rem;padding:5px 10px;border-radius:8px}
+.deck-btn:hover{color:#fff;background:rgba(255,255,255,0.1)}
+.add-btn{width:100%;padding:15px;background:linear-gradient(135deg,#a18cd1,#fbc2eb);border:none;border-radius:12px;color:#1a1a2e;font-size:1rem;cursor:pointer;font-weight:bold}
+.card-container{perspective:1000px;margin:30px 0}
+.flashcard{width:100%;aspect-ratio:3/2;position:relative;transform-style:preserve-3d;transition:transform 0.6s;cursor:pointer}
+.flashcard.flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center}
+.card-front{background:linear-gradient(145deg,#2a2a4a,#1a1a3e);border:2px solid rgba(161,140,209,0.3)}
+.card-back{background:linear-gradient(145deg,#3a2a5a,#2a1a4e);border:2px solid rgba(251,194,235,0.3);transform:rotateY(180deg)}
+.card-content{font-size:clamp(1.5rem,5vw,2.5rem);margin-bottom:10px}
+.card-hint{font-size:0.9rem;color:#888}
+.card-controls{display:flex;gap:15px;justify-content:center;margin-top:20px}
+.control-btn{padding:15px 30px;border:none;border-radius:12px;font-size:1rem;cursor:pointer;transition:all 0.2s}
+.control-btn.know{background:rgba(46,204,113,0.2);color:#2ecc71;border:2px solid #2ecc71}
+.control-btn.dont-know{background:rgba(231,76,60,0.2);color:#e74c3c;border:2px solid #e74c3c}
+.control-btn:active{transform:scale(0.95)}
+.progress-bar{height:6px;background:rgba(255,255,255,0.1);border-radius:3px;margin-bottom:10px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#a18cd1,#fbc2eb);transition:width 0.3s}
+.study-stats{display:flex;justify-content:space-between;color:#888;font-size:0.85rem;margin-bottom:20px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+.modal.active{display:flex}
+.modal-content{background:#1a1a3e;padding:25px;border-radius:20px;width:min(90vw,450px);max-height:90vh;overflow-y:auto}
+.modal-title{font-size:1.3rem;margin-bottom:20px;color:#a18cd1}
+.form-group{margin-bottom:15px}
+.form-group label{display:block;font-size:0.85rem;color:#888;margin-bottom:5px}
+.form-group input,.form-group textarea{width:100%;padding:12px;border:none;border-radius:10px;background:rgba(255,255,255,0.1);color:#fff;font-size:1rem}
+.form-group textarea{min-height:100px;resize:vertical}
+.form-group input:focus,.form-group textarea:focus{outline:2px solid #a18cd1}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.modal-actions button{flex:1;padding:12px;border:none;border-radius:10px;font-size:1rem;cursor:pointer}
+.btn-cancel{background:rgba(255,255,255,0.1);color:#fff}
+.btn-save{background:linear-gradient(135deg,#a18cd1,#fbc2eb);color:#1a1a2e;font-weight:bold}
+.empty-state{text-align:center;padding:50px;color:#666}
+.card-list{display:flex;flex-direction:column;gap:10px;max-height:300px;overflow-y:auto}
+.card-item{background:rgba(255,255,255,0.05);padding:12px;border-radius:10px;display:flex;justify-content:space-between}
+.card-item-content{flex:1}
+.card-item-front{font-size:0.9rem}
+.card-item-back{font-size:0.8rem;color:#888}
+.hidden{display:none}

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64エンコーダー | Creative Lab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    <div class="container">
+        <header>
+            <h1>🔐 Base64エンコーダー</h1>
+            <p class="subtitle">テキスト・画像のBase64エンコード/デコード</p>
+        </header>
+
+        <div class="mode-tabs">
+            <button class="tab active" data-mode="text">📝 テキスト</button>
+            <button class="tab" data-mode="image">🖼️ 画像</button>
+            <button class="tab" data-mode="url">🔗 URL安全</button>
+        </div>
+
+        <div id="textMode">
+            <div class="main-wrapper">
+                <div class="main-area">
+                    <div class="panel">
+                        <h3>📥 入力（プレーンテキスト）</h3>
+                        <textarea id="inputText" placeholder="エンコードしたいテキストを入力..."></textarea>
+                        <div class="btn-row">
+                            <button class="btn btn-primary" onclick="encode()">エンコード →</button>
+                            <button class="btn btn-secondary" onclick="clearInput()">クリア</button>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h3>📤 出力（Base64）</h3>
+                        <textarea id="outputText" placeholder="エンコード結果がここに表示されます..." readonly></textarea>
+                        <div class="btn-row">
+                            <button class="btn btn-primary" onclick="decode()">← デコード</button>
+                            <button class="btn btn-secondary" onclick="copyOutput()">📋 コピー</button>
+                        </div>
+                    </div>
+                </div>
+                <button class="swap-btn" onclick="swapTexts()" title="入れ替え">⇄</button>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="inputLength">0</div>
+                    <div class="stat-label">入力文字数</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="outputLength">0</div>
+                    <div class="stat-label">出力文字数</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="sizeRatio">0%</div>
+                    <div class="stat-label">サイズ比</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="imageMode" style="display:none">
+            <div class="image-section">
+                <div class="dropzone" id="dropzone">
+                    <div class="dropzone-icon">📷</div>
+                    <p>画像をドラッグ＆ドロップ<br>またはクリックして選択</p>
+                    <input type="file" id="fileInput" accept="image/*">
+                </div>
+                <div class="preview-area" id="previewArea">
+                    <img id="previewImg" class="preview-img" alt="プレビュー">
+                    <div class="image-info" id="imageInfo"></div>
+                    <div class="btn-row" style="margin-top:15px">
+                        <button class="btn btn-primary" onclick="copyImageBase64()">📋 Base64をコピー</button>
+                        <button class="btn btn-secondary" onclick="downloadBase64()">💾 テキストで保存</button>
+                        <button class="btn btn-secondary" onclick="clearImage()">🗑️ クリア</button>
+                    </div>
+                </div>
+                <div class="panel" style="margin-top:20px">
+                    <h3>📤 Base64出力</h3>
+                    <textarea id="imageBase64" placeholder="画像のBase64がここに表示されます..." readonly style="height:150px"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div id="urlMode" style="display:none">
+            <div class="main-wrapper">
+                <div class="main-area">
+                    <div class="panel">
+                        <h3>📥 入力（プレーンテキスト）</h3>
+                        <textarea id="urlInputText" placeholder="URL安全にエンコードしたいテキストを入力..."></textarea>
+                        <div class="btn-row">
+                            <button class="btn btn-primary" onclick="urlEncode()">エンコード →</button>
+                            <button class="btn btn-secondary" onclick="document.getElementById('urlInputText').value=''">クリア</button>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h3>📤 出力（URL-Safe Base64）</h3>
+                        <textarea id="urlOutputText" placeholder="URL安全なBase64がここに表示されます..." readonly></textarea>
+                        <div class="btn-row">
+                            <button class="btn btn-primary" onclick="urlDecode()">← デコード</button>
+                            <button class="btn btn-secondary" onclick="copyUrlOutput()">📋 コピー</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p style="text-align:center;color:rgba(255,255,255,0.5);font-size:0.85rem;margin-top:15px">
+                URL-Safe: +→- /→_ パディング(=)削除
+            </p>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

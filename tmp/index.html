@@ -3,72 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Creative Lab - インタラクティブなWebデモ・ゲーム・ツールのコレクション。25+のアプリを無料で楽しめます。">
+    <meta name="description" content="Creative Lab - インタラクティブなWebデモ・ゲーム・ツールのコレクション。62+のアプリを無料で楽しめます。">
     <meta name="keywords" content="デモ,ゲーム,ツール,インタラクティブ,Web,Canvas,JavaScript">
     <meta name="theme-color" content="#0f0c29">
     <title>Creative Lab - インタラクティブデモ集</title>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);min-height:100vh;color:#fff;overflow-x:hidden}
-        .stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
-        .star{position:absolute;background:#fff;border-radius:50%;animation:twinkle var(--duration) ease-in-out infinite}
-        @keyframes twinkle{0%,100%{opacity:0.3}50%{opacity:1}}
-        header{text-align:center;padding:40px 20px 20px;position:relative;z-index:1}
-        h1{font-size:clamp(1.8rem,5vw,3rem);background:linear-gradient(90deg,#f093fb,#f5576c,#4facfe,#00f2fe);background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gradient 5s ease infinite}
-        @keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-        .subtitle{font-size:1rem;color:rgba(255,255,255,0.7);margin-top:8px}
-        .stats-bar{display:flex;justify-content:center;gap:30px;margin-top:15px;flex-wrap:wrap}
-        .stat-item{font-size:0.85rem;color:rgba(255,255,255,0.6)}
-        .stat-item strong{color:#4facfe}
-        .search-filter{max-width:800px;margin:25px auto 0;padding:0 20px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-        .search-box{flex:1;min-width:250px;position:relative}
-        .search-box input{width:100%;padding:12px 20px 12px 45px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:25px;color:#fff;font-size:0.95rem;outline:none;transition:all 0.3s}
-        .search-box input:focus{border-color:#4facfe;box-shadow:0 0 15px rgba(79,172,254,0.2)}
-        .search-box input::placeholder{color:rgba(255,255,255,0.4)}
-        .search-box::before{content:'🔍';position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:0.9rem}
-        .filter-btns{display:flex;gap:8px;flex-wrap:wrap}
-        .filter-btn{padding:10px 18px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;color:rgba(255,255,255,0.7);font-size:0.85rem;cursor:pointer;transition:all 0.2s}
-        .filter-btn:hover{background:rgba(255,255,255,0.1);color:#fff}
-        .filter-btn.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:transparent}
-        .container{max-width:1400px;margin:0 auto;padding:30px 20px;position:relative;z-index:1}
-        .section-title{font-size:1.2rem;color:rgba(255,255,255,0.8);margin-bottom:20px;display:flex;align-items:center;gap:10px}
-        .section-title::after{content:'';flex:1;height:1px;background:linear-gradient(to right,rgba(255,255,255,0.2),transparent)}
-        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
-        .card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:22px;transition:all 0.3s ease;position:relative;overflow:hidden;cursor:pointer}
-        .card::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,var(--c1,#f093fb),var(--c2,#f5576c));opacity:0;transition:opacity 0.3s;z-index:-1}
-        .card:hover{transform:translateY(-6px);box-shadow:0 12px 30px rgba(0,0,0,0.3)}
-        .card:hover::before{opacity:0.12}
-        .card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
-        .card-icon{font-size:2.2rem}
-        .card-badges{display:flex;gap:5px}
-        .badge{padding:3px 8px;border-radius:10px;font-size:0.65rem;font-weight:bold;text-transform:uppercase}
-        .badge-new{background:linear-gradient(135deg,#f5576c,#f093fb);color:#fff}
-        .badge-game{background:rgba(67,233,123,0.2);color:#43e97b}
-        .badge-tool{background:rgba(79,172,254,0.2);color:#4facfe}
-        .badge-art{background:rgba(240,147,251,0.2);color:#f093fb}
-        .card h2{font-size:1.15rem;margin-bottom:8px}
-        .card p{color:rgba(255,255,255,0.65);line-height:1.5;margin-bottom:12px;font-size:0.85rem}
-        .card-link{display:inline-flex;align-items:center;gap:5px;color:#4facfe;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.3s}
-        .card-link:hover{color:#00f2fe;gap:8px}
-        .card:nth-child(4n+1){--c1:#f093fb;--c2:#f5576c}
-        .card:nth-child(4n+2){--c1:#4facfe;--c2:#00f2fe}
-        .card:nth-child(4n+3){--c1:#43e97b;--c2:#38f9d7}
-        .card:nth-child(4n+4){--c1:#fa709a;--c2:#fee140}
-        footer{text-align:center;padding:30px 20px;color:rgba(255,255,255,0.5);position:relative;z-index:1;border-top:1px solid rgba(255,255,255,0.05);margin-top:30px}
-        footer a{color:#4facfe;text-decoration:none}
-        .scroll-top{position:fixed;bottom:30px;right:30px;width:50px;height:50px;background:linear-gradient(135deg,#667eea,#764ba2);border:none;border-radius:50%;color:#fff;font-size:1.2rem;cursor:pointer;opacity:0;visibility:hidden;transition:all 0.3s;z-index:100;box-shadow:0 4px 15px rgba(0,0,0,0.3)}
-        .scroll-top.visible{opacity:1;visibility:visible}
-        .scroll-top:hover{transform:translateY(-3px)}
-        @media(max-width:600px){.card{padding:18px}.grid{gap:15px}.search-filter{padding:0 15px}}
-    </style>
+    <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
     <div class="stars" id="stars"></div>
+    
+    <!-- ヘッダー -->
     <header>
-        <h1>✨ Creative Lab ✨</h1>
+        <div class="header-top">
+            <h1>✨ Creative Lab ✨</h1>
+            <div class="header-controls">
+                <button class="theme-toggle" id="themeToggle" title="テーマ切替">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button class="fav-filter-btn" id="favFilterBtn" title="お気に入りのみ表示">
+                    <span>⭐</span>
+                    <span class="fav-count" id="favCount">0</span>
+                </button>
+            </div>
+        </div>
         <p class="subtitle">インタラクティブなWebデモ・ゲーム・ツールのコレクション</p>
         <div class="stats-bar">
-            <span class="stat-item"><strong>35+</strong> アプリ</span>
+            <span class="stat-item"><strong id="appCount">67+</strong> アプリ</span>
             <span class="stat-item"><strong>100%</strong> 無料</span>
             <span class="stat-item"><strong>PC/スマホ</strong> 対応</span>
         </div>
@@ -78,26 +38,38 @@
             </div>
             <div class="filter-btns">
                 <button class="filter-btn active" data-filter="all">すべて</button>
-                <button class="filter-btn" data-filter="game">ゲーム</button>
-                <button class="filter-btn" data-filter="tool">ツール</button>
-                <button class="filter-btn" data-filter="art">アート</button>
+                <button class="filter-btn" data-filter="game">🎮 ゲーム</button>
+                <button class="filter-btn" data-filter="tool">🛠️ ツール</button>
+                <button class="filter-btn" data-filter="art">🎨 アート</button>
             </div>
+        </div>
+        <div class="sort-options">
+            <label>並び替え:</label>
+            <select id="sortSelect">
+                <option value="default">デフォルト</option>
+                <option value="name">名前順</option>
+                <option value="favorites">お気に入り優先</option>
+                <option value="recent">最近追加</option>
+            </select>
         </div>
     </header>
     
     <div class="container">
-        <h3 class="section-title">🎮 ゲーム</h3>
+        <!-- ゲームセクション -->
+        <h3 class="section-title" data-section="game">🎮 ゲーム</h3>
         <div class="grid" id="gamesGrid">
-            <div class="card" data-category="game" onclick="location.href='tetris/'">
+            <div class="card" data-category="game" data-name="テトリス" data-id="tetris" onclick="navigateTo('tetris/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('tetris')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🎮</span>
                     <div class="card-badges"><span class="badge badge-game">ゲーム</span></div>
                 </div>
                 <h2>テトリス</h2>
-                <p>クラシックなテトリスゲーム。ホールド機能・ゴースト表示・レベルアップ搭載。</p>
+                <p>クラシックなテトリスゲーム。ホールド・ゴースト・T-Spin対応。</p>
                 <a href="tetris/" class="card-link">プレイ →</a>
             </div>
-            <div class="card" data-category="game" onclick="location.href='chess/'">
+            <div class="card" data-category="game" data-name="チェス" data-id="chess" data-new="true" onclick="navigateTo('chess/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('chess')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">♔</span>
                     <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
@@ -106,7 +78,8 @@
                 <p>2人対戦チェスゲーム。キャスリング・プロモーション・チェックメイト検出対応。</p>
                 <a href="chess/" class="card-link">プレイ →</a>
             </div>
-            <div class="card" data-category="game" onclick="location.href='sudoku/'">
+            <div class="card" data-category="game" data-name="数独パズル" data-id="sudoku" data-new="true" onclick="navigateTo('sudoku/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('sudoku')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🔢</span>
                     <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
@@ -115,7 +88,8 @@
                 <p>4難易度の数独パズル。ヒント機能・タイマー・ミス制限付きで挑戦。</p>
                 <a href="sudoku/" class="card-link">解く →</a>
             </div>
-            <div class="card" data-category="game" onclick="location.href='minesweeper/'">
+            <div class="card" data-category="game" data-name="マインスイーパー" data-id="minesweeper" data-new="true" onclick="navigateTo('minesweeper/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('minesweeper')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">💣</span>
                     <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
@@ -124,7 +98,59 @@
                 <p>クラシックな地雷除去ゲーム。3難易度・タイマー・ベストタイム記録対応。</p>
                 <a href="minesweeper/" class="card-link">プレイ →</a>
             </div>
-            <div class="card" data-category="game" onclick="location.href='snake/'">
+            <!-- CYCLE14 高品質ゲーム -->
+            <div class="card" data-category="game" data-name="スペースインベーダー" data-id="invaders" data-new="true" onclick="navigateTo('invaders/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('invaders')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">👾</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
+                </div>
+                <h2>スペースインベーダー</h2>
+                <p>クラシック風シューティング！ウェーブ制・パワーアップ・パーティクル効果搭載。</p>
+                <a href="invaders/" class="card-link">プレイ →</a>
+            </div>
+            <div class="card" data-category="game" data-name="ブロック崩し" data-id="breakout" data-new="true" onclick="navigateTo('breakout/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('breakout')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🧱</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
+                </div>
+                <h2>ブロック崩し</h2>
+                <p>6ステージ・6種パワーアップ搭載！コンボでハイスコアを目指せ。</p>
+                <a href="breakout/" class="card-link">プレイ →</a>
+            </div>
+            <div class="card" data-category="game" data-name="フラッピーバード" data-id="flappy" data-new="true" onclick="navigateTo('flappy/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('flappy')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🐦</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
+                </div>
+                <h2>フラッピーバード</h2>
+                <p>タップでジャンプ！7種スキン・メダルシステム・昼夜モード搭載。</p>
+                <a href="flappy/" class="card-link">プレイ →</a>
+            </div>
+            <div class="card" data-category="game" data-name="パックマン" data-id="pacman" data-new="true" onclick="navigateTo('pacman/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('pacman')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🟡</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
+                </div>
+                <h2>パックマン</h2>
+                <p>4体のゴーストAI・3ステージパターン・ネオン風ビジュアル搭載。</p>
+                <a href="pacman/" class="card-link">プレイ →</a>
+            </div>
+            <div class="card" data-category="game" data-name="プラットフォーマー" data-id="platformer" data-new="true" onclick="navigateTo('platformer/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('platformer')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🏃</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
+                </div>
+                <h2>プラットフォーマー</h2>
+                <p>5ステージのアクション！二段ジャンプ・壁キック・ダッシュ搭載。</p>
+                <a href="platformer/" class="card-link">プレイ →</a>
+            </div>
+            <div class="card" data-category="game" data-name="スネークゲーム" data-id="snake" onclick="navigateTo('snake/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('snake')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🐍</span>
                     <div class="card-badges"><span class="badge badge-game">ゲーム</span></div>
@@ -133,7 +159,8 @@
                 <p>クラシックなスネークゲーム。スワイプ・キー操作対応。ハイスコアに挑戦！</p>
                 <a href="snake/" class="card-link">プレイ →</a>
             </div>
-            <div class="card" data-category="game" onclick="location.href='memory/'">
+            <div class="card" data-category="game" data-name="神経衰弱" data-id="memory" onclick="navigateTo('memory/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('memory')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🃏</span>
                     <div class="card-badges"><span class="badge badge-game">ゲーム</span></div>
@@ -142,7 +169,8 @@
                 <p>絵文字カードの神経衰弱ゲーム。4x4と6x6モードで記憶力を鍛えよう。</p>
                 <a href="memory/" class="card-link">遊ぶ →</a>
             </div>
-            <div class="card" data-category="game" onclick="location.href='typing/'">
+            <div class="card" data-category="game" data-name="タイピングゲーム" data-id="typing" onclick="navigateTo('typing/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('typing')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">⌨️</span>
                     <div class="card-badges"><span class="badge badge-game">ゲーム</span></div>
@@ -151,11 +179,103 @@
                 <p>WPM測定・コンボシステム搭載。4つのモードでタイピングスキルを磨こう。</p>
                 <a href="typing/" class="card-link">タイプする →</a>
             </div>
+            <div class="card" data-category="game" data-name="反射神経テスト" data-id="reaction" data-new="true" onclick="navigateTo('reaction/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('reaction')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">⚡</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
+                </div>
+                <h2>反射神経テスト</h2>
+                <p>シンプル・シーケンス・色識別の3モード。反射速度を測定しよう。</p>
+                <a href="reaction/" class="card-link">テストする →</a>
+            </div>
+            <div class="card" data-category="game" data-name="数字記憶ゲーム" data-id="nummemory" data-new="true" onclick="navigateTo('nummemory/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('nummemory')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🧠</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
+                </div>
+                <h2>数字記憶ゲーム</h2>
+                <p>表示された数字を記憶。クラシック・スピード・逆順モードで脳を鍛えよう。</p>
+                <a href="nummemory/" class="card-link">挑戦する →</a>
+            </div>
+            <div class="card" data-category="game" data-name="スライドパズル" data-id="slide" data-new="true" onclick="navigateTo('slide/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('slide')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🧩</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
+                </div>
+                <h2>スライドパズル</h2>
+                <p>3×3〜5×5のスライドパズル。最小手数を目指そう。画像モード対応。</p>
+                <a href="slide/" class="card-link">解く →</a>
+            </div>
+            <div class="card" data-category="game" data-name="2048" data-id="2048" data-new="true" onclick="navigateTo('2048/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('2048')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🔢</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
+                </div>
+                <h2>2048</h2>
+                <p>タイルをスライドして同じ数字を合体！2048を目指すパズルゲーム。</p>
+                <a href="2048/" class="card-link">プレイ →</a>
+            </div>
+            <div class="card" data-category="game" data-name="連打テスト" data-id="tapspeed" data-new="true" onclick="navigateTo('tapspeed/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('tapspeed')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🔥</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
+                </div>
+                <h2>連打テスト</h2>
+                <p>制限時間内に何回タップできる？CPS（1秒あたりのクリック数）を測定。</p>
+                <a href="tapspeed/" class="card-link">挑戦する →</a>
+            </div>
+            <div class="card" data-category="game" data-name="漢字クイズ" data-id="kanji" data-new="true" onclick="navigateTo('kanji/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('kanji')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">📝</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
+                </div>
+                <h2>漢字クイズ</h2>
+                <p>JLPT N5〜N3レベルの漢字クイズ。読み方・意味・書き取りの3モード。</p>
+                <a href="kanji/" class="card-link">学ぶ →</a>
+            </div>
+            <div class="card" data-category="game" data-name="ワードスクランブル" data-id="scramble" data-new="true" onclick="navigateTo('scramble/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('scramble')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🔤</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
+                </div>
+                <h2>ワードスクランブル</h2>
+                <p>シャッフルされた文字を並び替えて単語を当てよう。日本語・英語対応。</p>
+                <a href="scramble/" class="card-link">遊ぶ →</a>
+            </div>
+            <div class="card" data-category="game" data-name="ハングマン" data-id="hangman" data-new="true" onclick="navigateTo('hangman/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('hangman')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🎯</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
+                </div>
+                <h2>ハングマン</h2>
+                <p>古典的な単語当てゲーム。6カテゴリから出題。SVGアニメーション付き。</p>
+                <a href="hangman/" class="card-link">挑戦する →</a>
+            </div>
+            <div class="card" data-category="game" data-name="フラッシュカード" data-id="flashcard" data-new="true" onclick="navigateTo('flashcard/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('flashcard')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🗂️</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-game">ゲーム</span></div>
+                </div>
+                <h2>フラッシュカード</h2>
+                <p>暗記カードを作成・学習。スペース反復学習システムで効率的に記憶。</p>
+                <a href="flashcard/" class="card-link">学習する →</a>
+            </div>
         </div>
 
-        <h3 class="section-title" style="margin-top:40px">🛠️ ツール</h3>
+        <!-- ツールセクション -->
+        <h3 class="section-title" data-section="tool" style="margin-top:40px">🛠️ ツール</h3>
         <div class="grid" id="toolsGrid">
-            <div class="card" data-category="tool" onclick="location.href='password/'">
+            <div class="card" data-category="tool" data-name="パスワード生成器" data-id="password" data-new="true" onclick="navigateTo('password/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('password')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🔐</span>
                     <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-tool">ツール</span></div>
@@ -164,7 +284,8 @@
                 <p>安全なパスワードを生成。強度メーター・履歴・カスタマイズ対応。</p>
                 <a href="password/" class="card-link">生成する →</a>
             </div>
-            <div class="card" data-category="tool" onclick="location.href='converter/'">
+            <div class="card" data-category="tool" data-name="単位変換器" data-id="converter" data-new="true" onclick="navigateTo('converter/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('converter')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">📐</span>
                     <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-tool">ツール</span></div>
@@ -173,7 +294,8 @@
                 <p>長さ・重量・温度・データ・時間・面積の単位変換。6カテゴリ対応。</p>
                 <a href="converter/" class="card-link">変換する →</a>
             </div>
-            <div class="card" data-category="tool" onclick="location.href='counter/'">
+            <div class="card" data-category="tool" data-name="カウンター" data-id="counter" data-new="true" onclick="navigateTo('counter/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('counter')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🔢</span>
                     <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-tool">ツール</span></div>
@@ -182,7 +304,8 @@
                 <p>タップでカウント。目標設定・複数カウンター・履歴機能付き。</p>
                 <a href="counter/" class="card-link">数える →</a>
             </div>
-            <div class="card" data-category="tool" onclick="location.href='random/'">
+            <div class="card" data-category="tool" data-name="ランダム生成器" data-id="random" data-new="true" onclick="navigateTo('random/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('random')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🎲</span>
                     <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-tool">ツール</span></div>
@@ -191,7 +314,8 @@
                 <p>数字・サイコロ・コイン・色・リスト選択など8種類のランダム生成。</p>
                 <a href="random/" class="card-link">生成する →</a>
             </div>
-            <div class="card" data-category="tool" onclick="location.href='bmi/'">
+            <div class="card" data-category="tool" data-name="BMI計算機" data-id="bmi" data-new="true" onclick="navigateTo('bmi/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('bmi')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">⚖️</span>
                     <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-tool">ツール</span></div>
@@ -200,7 +324,8 @@
                 <p>BMI計算・カテゴリ判定・標準体重表示。アドバイス機能付き。</p>
                 <a href="bmi/" class="card-link">計算する →</a>
             </div>
-            <div class="card" data-category="tool" onclick="location.href='calculator/'">
+            <div class="card" data-category="tool" data-name="電卓" data-id="calculator" onclick="navigateTo('calculator/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('calculator')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🧮</span>
                     <div class="card-badges"><span class="badge badge-tool">ツール</span></div>
@@ -209,7 +334,8 @@
                 <p>関数電卓機能搭載。基本計算から三角関数・対数まで対応。履歴保存付き。</p>
                 <a href="calculator/" class="card-link">計算する →</a>
             </div>
-            <div class="card" data-category="tool" onclick="location.href='timer/'">
+            <div class="card" data-category="tool" data-name="タイマー＆ストップウォッチ" data-id="timer" onclick="navigateTo('timer/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('timer')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">⏱️</span>
                     <div class="card-badges"><span class="badge badge-tool">ツール</span></div>
@@ -218,7 +344,18 @@
                 <p>ストップウォッチとカウントダウンタイマー。ラップ機能・プリセット対応。</p>
                 <a href="timer/" class="card-link">計測する →</a>
             </div>
-            <div class="card" data-category="tool" onclick="location.href='pomodoro/'">
+            <div class="card" data-category="tool" data-name="ストップウォッチPro" data-id="stopwatch" data-new="true" onclick="navigateTo('stopwatch/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('stopwatch')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">⏲️</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-tool">ツール</span></div>
+                </div>
+                <h2>ストップウォッチPro</h2>
+                <p>ラップタイム記録・ベスト/ワースト表示・CSV出力対応の高機能タイマー。</p>
+                <a href="stopwatch/" class="card-link">計測する →</a>
+            </div>
+            <div class="card" data-category="tool" data-name="ポモドーロタイマー" data-id="pomodoro" onclick="navigateTo('pomodoro/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('pomodoro')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🍅</span>
                     <div class="card-badges"><span class="badge badge-tool">ツール</span></div>
@@ -227,7 +364,8 @@
                 <p>生産性向上のためのポモドーロテクニック。タスク管理・統計機能付き。</p>
                 <a href="pomodoro/" class="card-link">集中する →</a>
             </div>
-            <div class="card" data-category="tool" onclick="location.href='notes/'">
+            <div class="card" data-category="tool" data-name="メモ帳" data-id="notes" onclick="navigateTo('notes/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('notes')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">📝</span>
                     <div class="card-badges"><span class="badge badge-tool">ツール</span></div>
@@ -236,101 +374,173 @@
                 <p>マークダウン対応のシンプルなメモアプリ。タグ・検索・エクスポート機能。</p>
                 <a href="notes/" class="card-link">メモする →</a>
             </div>
-            <div class="card" data-category="tool" onclick="location.href='qrcode/'">
+            <div class="card" data-category="tool" data-name="習慣トラッカー" data-id="habit" data-new="true" onclick="navigateTo('habit/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('habit')" title="お気に入り">☆</button>
                 <div class="card-header">
-                    <span class="card-icon">📱</span>
-                    <div class="card-badges"><span class="badge badge-tool">ツール</span></div>
+                    <span class="card-icon">📋</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-tool">ツール</span></div>
                 </div>
-                <h2>QRコード生成</h2>
-                <p>テキスト・URL・WiFi・連絡先のQRコード生成。カスタマイズ・保存対応。</p>
-                <a href="qrcode/" class="card-link">生成する →</a>
+                <h2>習慣トラッカー</h2>
+                <p>習慣を登録・追跡。ストリーク・カレンダー・週間ビューで継続をサポート。</p>
+                <a href="habit/" class="card-link">始める →</a>
             </div>
-            <div class="card" data-category="tool" onclick="location.href='clock/'">
+            <div class="card" data-category="tool" data-name="時計" data-id="clock" onclick="navigateTo('clock/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('clock')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🕐</span>
                     <div class="card-badges"><span class="badge badge-tool">ツール</span></div>
                 </div>
-                <h2>ネオン時計</h2>
-                <p>美しいネオンスタイルのアナログ＆デジタル時計。4種類のカラーテーマ。</p>
+                <h2>時計</h2>
+                <p>美しいアナログ・デジタル時計。ダークモード・世界時計対応。</p>
                 <a href="clock/" class="card-link">見る →</a>
             </div>
-            <div class="card" data-category="tool" onclick="location.href='weather/'">
+            <div class="card" data-category="tool" data-name="QRコード生成器" data-id="qrcode" onclick="navigateTo('qrcode/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('qrcode')" title="お気に入り">☆</button>
                 <div class="card-header">
-                    <span class="card-icon">🌤️</span>
-                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-tool">ツール</span></div>
+                    <span class="card-icon">📱</span>
+                    <div class="card-badges"><span class="badge badge-tool">ツール</span></div>
                 </div>
-                <h2>天気ウィジェット</h2>
-                <p>美しいデザインの天気表示。週間予報・時間別予報・アニメーション付き。</p>
-                <a href="weather/" class="card-link">確認する →</a>
+                <h2>QRコード生成器</h2>
+                <p>URL・テキスト・Wi-Fi・連絡先など多様なQRコードを生成・カスタマイズ。</p>
+                <a href="qrcode/" class="card-link">生成する →</a>
             </div>
-            <div class="card" data-category="tool" onclick="location.href='quotes/'">
+            <div class="card" data-category="tool" data-name="名言ジェネレーター" data-id="quotes" onclick="navigateTo('quotes/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('quotes')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">💬</span>
-                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-tool">ツール</span></div>
+                    <div class="card-badges"><span class="badge badge-tool">ツール</span></div>
                 </div>
                 <h2>名言ジェネレーター</h2>
-                <p>ランダム名言を表示。カテゴリ別・お気に入り・シェア機能搭載。</p>
-                <a href="quotes/" class="card-link">読む →</a>
+                <p>世界の偉人の名言をランダム表示。お気に入り保存・カテゴリフィルター対応。</p>
+                <a href="quotes/" class="card-link">見る →</a>
+            </div>
+            <div class="card" data-category="tool" data-name="天気アプリ" data-id="weather" onclick="navigateTo('weather/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('weather')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🌤️</span>
+                    <div class="card-badges"><span class="badge badge-tool">ツール</span></div>
+                </div>
+                <h2>天気アプリ</h2>
+                <p>世界中の天気をリアルタイム表示。位置情報・検索・5日間予報対応。</p>
+                <a href="weather/" class="card-link">確認する →</a>
+            </div>
+            <div class="card" data-category="tool" data-name="モールス信号" data-id="morse" data-new="true" onclick="navigateTo('morse/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('morse')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">📡</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-tool">ツール</span></div>
+                </div>
+                <h2>モールス信号</h2>
+                <p>テキスト↔モールス信号の相互変換。音声再生・視覚表示対応。</p>
+                <a href="morse/" class="card-link">変換する →</a>
+            </div>
+            <div class="card" data-category="tool" data-name="文字数カウンター" data-id="wordcount" data-new="true" onclick="navigateTo('wordcount/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('wordcount')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">📊</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-tool">ツール</span></div>
+                </div>
+                <h2>文字数カウンター</h2>
+                <p>文字数・単語数・段落数をリアルタイムカウント。読了時間・頻出語分析付き。</p>
+                <a href="wordcount/" class="card-link">数える →</a>
+            </div>
+            <div class="card" data-category="tool" data-name="カレンダー" data-id="calendar" data-new="true" onclick="navigateTo('calendar/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('calendar')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">📅</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-tool">ツール</span></div>
+                </div>
+                <h2>カレンダー</h2>
+                <p>イベント管理・日本の祝日対応。月間/週間ビュー・リマインダー機能付き。</p>
+                <a href="calendar/" class="card-link">開く →</a>
+            </div>
+            <div class="card" data-category="tool" data-name="メトロノーム" data-id="metronome" data-new="true" onclick="navigateTo('metronome/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('metronome')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🎼</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-tool">ツール</span></div>
+                </div>
+                <h2>メトロノーム</h2>
+                <p>正確なBPM調整・タップテンポ機能。視覚的ビート表示・プリセット対応。</p>
+                <a href="metronome/" class="card-link">使う →</a>
             </div>
         </div>
 
-        <h3 class="section-title" style="margin-top:40px">🎨 アート＆シミュレーション</h3>
-        <div class="grid" id="artGrid">
-            <div class="card" data-category="art" onclick="location.href='particles/'">
+        <!-- アートセクション -->
+        <h3 class="section-title" data-section="art" style="margin-top:40px">🎨 アート・クリエイティブ</h3>
+        <div class="grid" id="artsGrid">
+            <div class="card" data-category="art" data-name="パーティクル" data-id="particles" onclick="navigateTo('particles/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('particles')" title="お気に入り">☆</button>
                 <div class="card-header">
-                    <span class="card-icon">🌌</span>
+                    <span class="card-icon">✨</span>
                     <div class="card-badges"><span class="badge badge-art">アート</span></div>
                 </div>
-                <h2>パーティクルギャラクシー</h2>
-                <p>マウスで操作できる幻想的なパーティクルシステム。5種類のモードで体験。</p>
-                <a href="particles/" class="card-link">体験する →</a>
+                <h2>パーティクル</h2>
+                <p>マウス追従パーティクル。花火・蛍・星・泡など8種類の美しいエフェクト。</p>
+                <a href="particles/" class="card-link">見る →</a>
             </div>
-            <div class="card" data-category="art" onclick="location.href='fractal/'">
-                <div class="card-header">
-                    <span class="card-icon">🌀</span>
-                    <div class="card-badges"><span class="badge badge-art">アート</span></div>
-                </div>
-                <h2>フラクタルエクスプローラー</h2>
-                <p>マンデルブロ・ジュリア等4種類のフラクタルを無限にズーム探索。</p>
-                <a href="fractal/" class="card-link">探索する →</a>
-            </div>
-            <div class="card" data-category="art" onclick="location.href='cube3d/'">
-                <div class="card-header">
-                    <span class="card-icon">🎲</span>
-                    <div class="card-badges"><span class="badge badge-art">アート</span></div>
-                </div>
-                <h2>3Dキューブワールド</h2>
-                <p>CSS 3Dで作られた立体空間。5種類の配置モードで回転・変形。</p>
-                <a href="cube3d/" class="card-link">見てみる →</a>
-            </div>
-            <div class="card" data-category="art" onclick="location.href='wave/'">
+            <div class="card" data-category="art" data-name="波シミュレーション" data-id="wave" onclick="navigateTo('wave/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('wave')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🌊</span>
                     <div class="card-badges"><span class="badge badge-art">アート</span></div>
                 </div>
-                <h2>波形シミュレーター</h2>
-                <p>水面のような波の干渉パターン。3つのモードで波紋・雨・干渉を体験。</p>
-                <a href="wave/" class="card-link">試してみる →</a>
+                <h2>波シミュレーション</h2>
+                <p>美しい波のアニメーション。カスタマイズ可能なパラメータで波を操ろう。</p>
+                <a href="wave/" class="card-link">見る →</a>
             </div>
-            <div class="card" data-category="art" onclick="location.href='fluid/'">
+            <div class="card" data-category="art" data-name="フラクタル" data-id="fractal" onclick="navigateTo('fractal/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('fractal')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🔷</span>
+                    <div class="card-badges"><span class="badge badge-art">アート</span></div>
+                </div>
+                <h2>フラクタル</h2>
+                <p>マンデルブロ集合など数学的なフラクタルを描画。ズーム・カラー変更対応。</p>
+                <a href="fractal/" class="card-link">探索する →</a>
+            </div>
+            <div class="card" data-category="art" data-name="流体シミュレーション" data-id="fluid" onclick="navigateTo('fluid/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('fluid')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">💧</span>
                     <div class="card-badges"><span class="badge badge-art">アート</span></div>
                 </div>
                 <h2>流体シミュレーション</h2>
-                <p>本格的な流体力学シミュレーション。渦度・粘性調整でリアルな流体を体験。</p>
+                <p>リアルタイム流体シミュレーション。マウスで流体を操作して遊ぼう。</p>
                 <a href="fluid/" class="card-link">触る →</a>
             </div>
-            <div class="card" data-category="art" onclick="location.href='life/'">
+            <div class="card" data-category="art" data-name="ライフゲーム" data-id="life" onclick="navigateTo('life/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('life')" title="お気に入り">☆</button>
                 <div class="card-header">
-                    <span class="card-icon">🧬</span>
+                    <span class="card-icon">🦠</span>
                     <div class="card-badges"><span class="badge badge-art">アート</span></div>
                 </div>
                 <h2>ライフゲーム</h2>
-                <p>コンウェイのライフゲーム。5種類のルールとプリセットで生命の進化を観察。</p>
-                <a href="life/" class="card-link">育てる →</a>
+                <p>コンウェイのライフゲーム。クリックでセルを配置・様々なパターンを観察。</p>
+                <a href="life/" class="card-link">観察する →</a>
             </div>
-            <div class="card" data-category="art" onclick="location.href='penrose/'">
+            <div class="card" data-category="art" data-name="3Dキューブ" data-id="cube3d" onclick="navigateTo('cube3d/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('cube3d')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🎲</span>
+                    <div class="card-badges"><span class="badge badge-art">アート</span></div>
+                </div>
+                <h2>3Dキューブ</h2>
+                <p>WebGLで描画された3Dキューブ。回転・カラー・エフェクトをカスタマイズ。</p>
+                <a href="cube3d/" class="card-link">回す →</a>
+            </div>
+            <div class="card" data-category="art" data-name="グラデーション生成器" data-id="gradient" onclick="navigateTo('gradient/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('gradient')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🌈</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-art">アート</span></div>
+                </div>
+                <h2>グラデーション生成器</h2>
+                <p>CSSグラデーションを視覚的に作成。プリセット・角度・複数色対応。</p>
+                <a href="gradient/" class="card-link">作成する →</a>
+            </div>
+            <div class="card" data-category="art" data-name="万華鏡" data-id="penrose" onclick="navigateTo('penrose/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('penrose')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🔮</span>
                     <div class="card-badges"><span class="badge badge-art">アート</span></div>
@@ -339,7 +549,8 @@
                 <p>美しい対称パターンを描く万華鏡。4つの描画モードで幻想的なアートを作成。</p>
                 <a href="penrose/" class="card-link">描く →</a>
             </div>
-            <div class="card" data-category="art" onclick="location.href='gravity/'">
+            <div class="card" data-category="art" data-name="グラビティボール" data-id="gravity" onclick="navigateTo('gravity/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('gravity')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🎱</span>
                     <div class="card-badges"><span class="badge badge-art">アート</span></div>
@@ -348,7 +559,8 @@
                 <p>物理シミュレーションで弾むボール。4種類のモードで重力・衝突を体験。</p>
                 <a href="gravity/" class="card-link">投げる →</a>
             </div>
-            <div class="card" data-category="art" onclick="location.href='matrix/'">
+            <div class="card" data-category="art" data-name="マトリックス" data-id="matrix" onclick="navigateTo('matrix/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('matrix')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">💚</span>
                     <div class="card-badges"><span class="badge badge-art">アート</span></div>
@@ -357,16 +569,18 @@
                 <p>映画「マトリックス」風のデジタルレイン。カタカナ・バイナリ・漢字から選択。</p>
                 <a href="matrix/" class="card-link">入る →</a>
             </div>
-            <div class="card" data-category="art" onclick="location.href='paint/'">
+            <div class="card" data-category="art" data-name="Paint Pro" data-id="paint" onclick="navigateTo('paint/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('paint')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🎨</span>
                     <div class="card-badges"><span class="badge badge-art">アート</span></div>
                 </div>
-                <h2>お絵かき</h2>
-                <p>シンプルなペイントツール。ペン・消しゴム・塗りつぶし機能搭載。</p>
+                <h2>Paint Pro（高機能版）</h2>
+                <p>高機能ペイントツール。レイヤー・多彩なブラシ・図形・履歴機能搭載。</p>
                 <a href="paint/" class="card-link">描く →</a>
             </div>
-            <div class="card" data-category="art" onclick="location.href='colorpicker/'">
+            <div class="card" data-category="art" data-name="カラーピッカー" data-id="colorpicker" data-new="true" onclick="navigateTo('colorpicker/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('colorpicker')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🎨</span>
                     <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-art">アート</span></div>
@@ -375,16 +589,18 @@
                 <p>HSL/RGB/HEX変換。カラーハーモニー・パレット生成・コピー機能付き。</p>
                 <a href="colorpicker/" class="card-link">選ぶ →</a>
             </div>
-            <div class="card" data-category="art" onclick="location.href='drawboard/'">
+            <div class="card" data-category="art" data-name="お絵かきボード" data-id="drawboard" onclick="navigateTo('drawboard/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('drawboard')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🖌️</span>
-                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-art">アート</span></div>
+                    <div class="card-badges"><span class="badge badge-art">アート</span></div>
                 </div>
-                <h2>お絵かきボード Pro</h2>
-                <p>レイヤー機能搭載のお絵かきツール。ブラシ・図形・塗りつぶし・元に戻す対応。</p>
+                <h2>お絵かきボード（シンプル版）</h2>
+                <p>シンプルなお絵かきツール。ブラシ・図形・塗りつぶし対応の初心者向け。</p>
                 <a href="drawboard/" class="card-link">描く →</a>
             </div>
-            <div class="card" data-category="art" onclick="location.href='visualizer/'">
+            <div class="card" data-category="art" data-name="音楽ビジュアライザー" data-id="visualizer" data-new="true" onclick="navigateTo('visualizer/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('visualizer')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🎵</span>
                     <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-art">アート</span></div>
@@ -393,7 +609,8 @@
                 <p>音楽に合わせた視覚エフェクト。5種類のモード・マイク入力・カラーテーマ対応。</p>
                 <a href="visualizer/" class="card-link">体験する →</a>
             </div>
-            <div class="card" data-category="art" onclick="location.href='piano/'">
+            <div class="card" data-category="art" data-name="ピアノ" data-id="piano" onclick="navigateTo('piano/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('piano')" title="お気に入り">☆</button>
                 <div class="card-header">
                     <span class="card-icon">🎹</span>
                     <div class="card-badges"><span class="badge badge-art">アート</span></div>
@@ -402,61 +619,49 @@
                 <p>Webオーディオで作られた鍵盤。4種類の音色・録音・再生機能搭載。</p>
                 <a href="piano/" class="card-link">演奏する →</a>
             </div>
+            <div class="card" data-category="art" data-name="ピクセルアート" data-id="pixel" data-new="true" onclick="navigateTo('pixel/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('pixel')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🎮</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-art">アート</span></div>
+                </div>
+                <h2>ピクセルアート</h2>
+                <p>ドット絵を描こう。8x8〜64x64グリッド・パレット・PNG出力対応。</p>
+                <a href="pixel/" class="card-link">描く →</a>
+            </div>
+            <div class="card" data-category="art" data-name="ASCIIアート" data-id="ascii" data-new="true" onclick="navigateTo('ascii/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('ascii')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">📝</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-art">アート</span></div>
+                </div>
+                <h2>ASCIIアート</h2>
+                <p>画像をASCIIアートに変換。複数のスタイル・解像度調整・コピー機能付き。</p>
+                <a href="ascii/" class="card-link">変換する →</a>
+            </div>
+            <div class="card" data-category="art" data-name="CSSシャドウ生成器" data-id="shadow" data-new="true" onclick="navigateTo('shadow/')">
+                <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('shadow')" title="お気に入り">☆</button>
+                <div class="card-header">
+                    <span class="card-icon">🖼️</span>
+                    <div class="card-badges"><span class="badge badge-new">NEW</span><span class="badge badge-art">アート</span></div>
+                </div>
+                <h2>CSSシャドウ生成器</h2>
+                <p>box-shadowを視覚的に作成。複数シャドウ・プリセット・コードコピー対応。</p>
+                <a href="shadow/" class="card-link">作成する →</a>
+            </div>
         </div>
     </div>
     
     <footer>
-        <p>Made with 💜 | <a href="https://github.com" target="_blank">GitHub</a> | 35+のインタラクティブアプリ</p>
+        <p>Made with 💜 | <a href="https://github.com" target="_blank">GitHub</a> | <span id="totalApps">62</span>+のインタラクティブアプリ</p>
         <p style="margin-top:10px;font-size:0.8rem">© 2024 Creative Lab - All Rights Reserved</p>
     </footer>
 
     <button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
-    <script>
-        // 星空背景
-        const starsContainer = document.getElementById('stars');
-        const frag = document.createDocumentFragment();
-        for (let i = 0; i < 80; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            star.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;width:${Math.random()*2+1}px;height:${Math.random()*2+1}px;--duration:${Math.random()*3+2}s;animation-delay:${Math.random()*3}s;`;
-            frag.appendChild(star);
-        }
-        starsContainer.appendChild(frag);
+    <!-- トースト通知 -->
+    <div class="toast" id="toast"></div>
 
-        // 検索機能
-        const searchInput = document.getElementById('searchInput');
-        searchInput.addEventListener('input', filterCards);
-
-        // フィルターボタン
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelector('.filter-btn.active').classList.remove('active');
-                this.classList.add('active');
-                filterCards();
-            });
-        });
-
-        function filterCards() {
-            const search = searchInput.value.toLowerCase();
-            const filter = document.querySelector('.filter-btn.active').dataset.filter;
-            
-            document.querySelectorAll('.card').forEach(card => {
-                const title = card.querySelector('h2').textContent.toLowerCase();
-                const desc = card.querySelector('p').textContent.toLowerCase();
-                const category = card.dataset.category;
-                
-                const matchSearch = title.includes(search) || desc.includes(search);
-                const matchFilter = filter === 'all' || category === filter;
-                
-                card.style.display = matchSearch && matchFilter ? 'block' : 'none';
-            });
-        }
-
-        // スクロールトップボタン
-        window.addEventListener('scroll', () => {
-            document.getElementById('scrollTop').classList.toggle('visible', window.scrollY > 300);
-        });
-    </script>
+    <script src="js/index.js"></script>
 </body>
 </html>

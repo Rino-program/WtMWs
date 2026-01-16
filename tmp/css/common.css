@@ -161,6 +161,32 @@ input[type="range"]::-webkit-slider-thumb {
     outline: none;
 }
 
+.select option {
+    background: var(--bg-dark-secondary);
+    color: var(--text-light);
+}
+
+.select option:checked {
+    background: var(--primary);
+    color: white;
+}
+
+/* HTMLのselect要素にも適用 */
+select {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-light);
+}
+
+select option {
+    background: var(--bg-dark-secondary);
+    color: var(--text-light);
+}
+
+select option:checked {
+    background: var(--primary);
+    color: white;
+}
+
 /* バッジ */
 .badge {
     display: inline-flex;

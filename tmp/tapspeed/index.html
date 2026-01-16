@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Tap Speed - 連打テスト</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<h1>🔥 連打テスト</h1>
+<div class="modes">
+<button class="active" data-time="5">5秒</button>
+<button data-time="10">10秒</button>
+<button data-time="30">30秒</button>
+<button data-time="60">1分</button>
+</div>
+<div class="stats">
+<div class="stat"><div class="stat-val" id="cps">0.0</div><div class="stat-label">CPS</div></div>
+<div class="stat"><div class="stat-val" id="best">0</div><div class="stat-label">ベスト</div></div>
+<div class="stat"><div class="stat-val" id="avgCps">0.0</div><div class="stat-label">平均CPS</div></div>
+</div>
+<div class="tap-area" id="tapArea">
+<div class="tap-count" id="tapCount">0</div>
+<div class="tap-message" id="tapMessage">タップしてスタート</div>
+</div>
+<div class="history">
+<h3>📊 過去の記録</h3>
+<div class="history-grid" id="historyGrid"></div>
+</div>
+<div class="leaderboard">
+<h3>🏆 ベストスコア</h3>
+<div id="leaderboardList"></div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

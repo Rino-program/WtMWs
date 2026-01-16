@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Slide Puzzle - スライドパズル</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<h1>🧩 スライドパズル</h1>
+<div class="controls">
+<button class="active" data-size="3">3×3</button>
+<button data-size="4">4×4</button>
+<button data-size="5">5×5</button>
+</div>
+<div class="stats">
+<div class="stat"><div class="stat-val" id="moves">0</div><div class="stat-label">移動回数</div></div>
+<div class="stat"><div class="stat-val" id="time">0:00</div><div class="stat-label">時間</div></div>
+<div class="stat"><div class="stat-val" id="best">-</div><div class="stat-label">ベスト</div></div>
+</div>
+<div class="game-container">
+<div class="puzzle" id="puzzle"></div>
+</div>
+<div class="actions">
+<button class="btn btn-secondary" onclick="shuffle()">シャッフル</button>
+<button class="btn btn-secondary" onclick="toggleMode()">🖼️ 画像モード</button>
+<button class="btn btn-secondary" onclick="showHint()">💡 ヒント</button>
+</div>
+<div class="preview">
+<div class="preview-title">完成形</div>
+<div class="preview-grid" id="previewGrid"></div>
+</div>
+<div class="leaderboard">
+<h3>🏆 ベスト記録</h3>
+<div id="leaderboardList"></div>
+</div>
+<div class="modal" id="winModal">
+<div class="modal-content">
+<div class="modal-title">🎉 完成！</div>
+<div class="modal-stats">
+<div class="stat"><div class="stat-val" id="finalMoves">0</div><div class="stat-label">移動回数</div></div>
+<div class="stat"><div class="stat-val" id="finalTime">0:00</div><div class="stat-label">時間</div></div>
+</div>
+<div class="actions">
+<button class="btn btn-primary" onclick="closeModal();shuffle()">もう一度</button>
+</div>
+</div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

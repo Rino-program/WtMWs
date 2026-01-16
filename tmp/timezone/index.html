@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>世界時計 | Creative Lab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    <div class="container">
+        <header>
+            <h1>🌍 世界時計</h1>
+            <p class="subtitle">タイムゾーン変換・複数都市の時刻表示</p>
+        </header>
+
+        <div class="local-time">
+            <h2>📍 現在地</h2>
+            <div class="time" id="localTime">--:--:--</div>
+            <div class="date" id="localDate">----年--月--日</div>
+            <div class="timezone" id="localTimezone">--</div>
+        </div>
+
+        <div class="converter">
+            <h3>⏰ 時刻変換</h3>
+            <div class="converter-grid">
+                <div class="converter-panel">
+                    <label>変換元</label>
+                    <select id="fromTz"></select>
+                    <input type="datetime-local" id="fromTime">
+                    <div class="converter-result" id="fromResult">--:--</div>
+                </div>
+                <div class="converter-arrow">→</div>
+                <div class="converter-panel">
+                    <label>変換先</label>
+                    <select id="toTz"></select>
+                    <div class="converter-result" id="toResult" style="font-size:1.8rem;margin-top:30px">--:--</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="clocks-grid" id="clocksGrid">
+            <div class="add-clock" onclick="openModal()">
+                <span>+</span>
+                <p>時計を追加</p>
+            </div>
+        </div>
+
+        <div class="quick-links">
+            <h3>🚀 クイック追加</h3>
+            <div class="quick-grid">
+                <button class="quick-btn" onclick="addQuickCity('America/New_York','ニューヨーク','アメリカ')">🗽 ニューヨーク</button>
+                <button class="quick-btn" onclick="addQuickCity('Europe/London','ロンドン','イギリス')">🇬🇧 ロンドン</button>
+                <button class="quick-btn" onclick="addQuickCity('Europe/Paris','パリ','フランス')">🇫🇷 パリ</button>
+                <button class="quick-btn" onclick="addQuickCity('Asia/Shanghai','上海','中国')">🇨🇳 上海</button>
+                <button class="quick-btn" onclick="addQuickCity('Asia/Singapore','シンガポール','シンガポール')">🇸🇬 シンガポール</button>
+                <button class="quick-btn" onclick="addQuickCity('Australia/Sydney','シドニー','オーストラリア')">🇦🇺 シドニー</button>
+                <button class="quick-btn" onclick="addQuickCity('Asia/Dubai','ドバイ','UAE')">🇦🇪 ドバイ</button>
+                <button class="quick-btn" onclick="addQuickCity('America/Los_Angeles','ロサンゼルス','アメリカ')">🌴 ロサンゼルス</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🌐 タイムゾーンを選択</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="search-box">
+                <input type="text" id="tzSearch" placeholder="都市名やタイムゾーンで検索...">
+            </div>
+            <div class="timezone-list" id="tzList"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

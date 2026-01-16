@@ -1,0 +1,272 @@
+/* Pixel Art Editor - ピクセルアートエディタ スタイル */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #2d1b69, #1a1a2e);
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.back {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.2rem;
+    opacity: 0.7;
+    z-index: 100;
+}
+
+.back:hover {
+    opacity: 1;
+}
+
+.app {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 100vh;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.toolbar {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border-radius: 15px;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+h1 {
+    font-size: 1.4rem;
+    background: linear-gradient(90deg, #f093fb, #f5576c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.tool-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tool {
+    width: 45px;
+    height: 45px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tool:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.tool.active {
+    background: linear-gradient(135deg, #f093fb33, #f5576c33);
+    border-color: #f093fb;
+}
+
+.color-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#colorPicker {
+    width: 100%;
+    height: 45px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 0;
+}
+
+#colorPicker::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+#colorPicker::-webkit-color-swatch {
+    border: none;
+    border-radius: 8px;
+}
+
+.color-presets {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+}
+
+.color-preset {
+    width: 100%;
+    aspect-ratio: 1;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.color-preset:hover {
+    transform: scale(1.1);
+}
+
+.color-preset.selected {
+    border-color: #fff;
+}
+
+.size-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.size-section label {
+    font-size: 0.85rem;
+    color: #aaa;
+}
+
+.size-section select {
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.actions button {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.actions button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.canvas-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    min-width: 300px;
+}
+
+#pixelCanvas {
+    background: #1a1a1a;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    cursor: crosshair;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    touch-action: none;
+}
+
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 15px;
+    border-radius: 20px;
+}
+
+.zoom-controls button {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.zoom-controls button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+#zoomLevel {
+    font-size: 0.9rem;
+    min-width: 50px;
+    text-align: center;
+}
+
+.preview-section {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.preview-section h3 {
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-bottom: 10px;
+}
+
+#previewCanvas {
+    background: repeating-conic-gradient(#444 0% 25%, #333 0% 50%) 50% / 10px 10px;
+    border-radius: 8px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+@media (max-width: 768px) {
+    .app {
+        flex-direction: column;
+        padding: 60px 15px 15px;
+    }
+
+    .toolbar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    h1 {
+        width: 100%;
+        text-align: center;
+    }
+
+    .actions {
+        flex-direction: row;
+    }
+
+    .canvas-container {
+        width: 100%;
+    }
+
+    .preview-section {
+        width: 100%;
+    }
+}

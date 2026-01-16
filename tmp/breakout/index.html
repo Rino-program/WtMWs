@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Breakout - ブロック崩し</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <div class="stat-item">
+                <span class="stat-label">SCORE</span>
+                <span class="stat-value" id="score">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">LEVEL</span>
+                <span class="stat-value" id="level">1</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">COMBO</span>
+                <span class="stat-value" id="combo">x1</span>
+            </div>
+            <div class="stat-item lives-container">
+                <span class="stat-label">LIVES</span>
+                <div class="lives" id="lives">
+                    <span class="life">❤</span>
+                    <span class="life">❤</span>
+                    <span class="life">❤</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas"></canvas>
+            
+            <div class="overlay" id="startOverlay">
+                <div class="overlay-content">
+                    <h1 class="game-title">BREAKOUT</h1>
+                    <p class="game-subtitle">ブロック崩し</p>
+                    <div class="high-score">
+                        <span>🏆 HIGH SCORE: </span>
+                        <span id="highScoreDisplay">0</span>
+                    </div>
+                    <button class="btn-start" id="startBtn">START GAME</button>
+                    <div class="controls-info">
+                        <p>🖱️ マウス / 📱 タッチ / ⌨️ ← → キー</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overlay hidden" id="pauseOverlay">
+                <div class="overlay-content">
+                    <h2>PAUSED</h2>
+                    <button class="btn-start" id="resumeBtn">RESUME</button>
+                </div>
+            </div>
+
+            <div class="overlay hidden" id="gameOverOverlay">
+                <div class="overlay-content">
+                    <h2 class="game-over-title">GAME OVER</h2>
+                    <div class="final-score">
+                        <p>FINAL SCORE</p>
+                        <span id="finalScore">0</span>
+                    </div>
+                    <div class="final-score">
+                        <p>LEVEL REACHED</p>
+                        <span id="finalLevel">1</span>
+                    </div>
+                    <button class="btn-start" id="restartBtn">PLAY AGAIN</button>
+                </div>
+            </div>
+
+            <div class="overlay hidden" id="levelClearOverlay">
+                <div class="overlay-content">
+                    <h2 class="level-clear-title">LEVEL CLEAR!</h2>
+                    <div class="level-bonus">
+                        <p>LEVEL BONUS</p>
+                        <span id="levelBonus">+1000</span>
+                    </div>
+                    <button class="btn-start" id="nextLevelBtn">NEXT LEVEL</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="powerup-indicators" id="powerupIndicators"></div>
+
+        <footer class="game-footer">
+            <button class="btn-icon" id="pauseBtn" title="一時停止">⏸️</button>
+            <button class="btn-icon" id="soundBtn" title="サウンド">🔊</button>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

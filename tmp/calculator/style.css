@@ -1,0 +1,121 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;touch-action:manipulation}
+.back{position:fixed;top:15px;left:15px;color:#fff;text-decoration:none;font-size:1.3rem;z-index:100;opacity:0.7}
+.back:hover{opacity:1}
+
+/* 電卓本体 */
+.calculator{background:rgba(20,20,40,0.95);border-radius:24px;padding:24px;box-shadow:0 25px 50px rgba(0,0,0,0.5);max-width:400px;width:100%;transition:max-width 0.3s}
+.calculator.scientific-mode{max-width:480px}
+h1{text-align:center;font-size:1.3rem;margin-bottom:15px;background:linear-gradient(90deg,#4facfe,#00f2fe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* モード切替 */
+.mode-switch{display:flex;gap:8px;margin-bottom:10px}
+.mode-switch button{flex:1;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#888;border-radius:10px;cursor:pointer;font-size:0.85rem;transition:all 0.2s}
+.mode-switch button:hover{background:rgba(255,255,255,0.1)}
+.mode-switch button.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:transparent}
+
+/* 角度モード */
+.angle-mode{display:none;gap:6px;margin-bottom:10px}
+.angle-mode.show{display:flex}
+.angle-mode button{flex:1;padding:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:#666;border-radius:8px;cursor:pointer;font-size:0.75rem;font-weight:600;transition:all 0.2s;letter-spacing:1px}
+.angle-mode button:hover{background:rgba(255,255,255,0.08)}
+.angle-mode button.active{background:rgba(255,193,7,0.2);color:#ffc107;border-color:rgba(255,193,7,0.4)}
+
+/* ディスプレイ */
+.display{background:rgba(0,0,0,0.4);border-radius:16px;padding:20px;margin-bottom:15px;position:relative}
+.expression{font-size:0.9rem;color:#888;min-height:28px;text-align:right;word-break:break-all;line-height:1.4;margin-bottom:5px}
+.result{font-size:2.8rem;color:#fff;text-align:right;font-weight:300;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.memory-indicator{position:absolute;top:8px;left:12px;font-size:0.7rem;color:#f093fb;font-weight:600;opacity:0;transition:opacity 0.2s}
+.memory-indicator.show{opacity:1}
+
+/* メモリボタン */
+.memory-buttons{display:none;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px}
+.memory-buttons.show{display:grid}
+.btn-memory{padding:10px 6px;background:rgba(240,147,251,0.1);color:#f093fb;border:none;border-radius:10px;font-size:0.75rem;cursor:pointer;transition:all 0.15s;font-weight:600}
+.btn-memory:hover{background:rgba(240,147,251,0.2)}
+.btn-memory:active{transform:scale(0.95)}
+
+/* 基本ボタングリッド */
+.buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.btn{padding:18px;border:none;border-radius:14px;font-size:1.3rem;cursor:pointer;transition:all 0.15s;font-weight:500}
+.btn:active{transform:scale(0.95)}
+
+/* 数字ボタン */
+.btn-num{background:rgba(255,255,255,0.08);color:#fff}
+.btn-num:hover{background:rgba(255,255,255,0.15)}
+
+/* 演算子ボタン */
+.btn-op{background:rgba(79,172,254,0.2);color:#4facfe}
+.btn-op:hover{background:rgba(79,172,254,0.3)}
+
+/* 関数ボタン */
+.btn-func{background:rgba(240,147,251,0.15);color:#f093fb;font-size:1.1rem}
+.btn-func:hover{background:rgba(240,147,251,0.25)}
+
+/* イコールボタン */
+.btn-eq{background:linear-gradient(135deg,#4facfe,#00f2fe);color:#000;font-weight:bold;grid-column:span 1}
+.btn-eq:hover{filter:brightness(1.1)}
+
+/* クリアボタン */
+.btn-clear{background:rgba(245,87,108,0.2);color:#f5576c}
+.btn-clear:hover{background:rgba(245,87,108,0.3)}
+
+/* 符号ボタン */
+.btn-sign{background:rgba(255,255,255,0.05);color:#aaa;font-size:1.1rem}
+.btn-sign:hover{background:rgba(255,255,255,0.1)}
+
+/* 関数電卓パネル */
+.scientific{display:none;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:12px}
+.scientific.show{display:grid}
+.scientific .btn{padding:12px 6px;font-size:0.8rem;font-weight:500}
+
+/* 三角関数ボタン */
+.btn-trig{background:rgba(102,126,234,0.2);color:#667eea}
+.btn-trig:hover{background:rgba(102,126,234,0.3)}
+
+/* 対数ボタン */
+.btn-log{background:rgba(76,175,80,0.2);color:#4caf50}
+.btn-log:hover{background:rgba(76,175,80,0.3)}
+
+/* 定数ボタン */
+.btn-const{background:rgba(255,193,7,0.2);color:#ffc107}
+.btn-const:hover{background:rgba(255,193,7,0.3)}
+
+/* 累乗ボタン */
+.btn-pow{background:rgba(255,152,0,0.2);color:#ff9800}
+.btn-pow:hover{background:rgba(255,152,0,0.3)}
+
+/* その他のボタン */
+.btn-other{background:rgba(156,39,176,0.2);color:#9c27b0}
+.btn-other:hover{background:rgba(156,39,176,0.3)}
+
+/* 括弧ボタン */
+.btn-bracket{background:rgba(0,188,212,0.2);color:#00bcd4}
+.btn-bracket:hover{background:rgba(0,188,212,0.3)}
+
+/* 履歴セクション */
+.history-section{margin-top:15px;border-top:1px solid rgba(255,255,255,0.1);padding-top:12px}
+.history-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:0.85rem;color:#888}
+.clear-history{background:none;border:none;color:#f5576c;cursor:pointer;font-size:0.75rem;padding:4px 8px;border-radius:4px;transition:background 0.2s}
+.clear-history:hover{background:rgba(245,87,108,0.1)}
+.history{max-height:150px;overflow-y:auto}
+.history::-webkit-scrollbar{width:4px}
+.history::-webkit-scrollbar-track{background:transparent}
+.history::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:2px}
+.history-item{padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all 0.2s}
+.history-item:hover{background:rgba(255,255,255,0.08);transform:translateX(4px)}
+.history-expr{display:block;color:#888;font-size:0.8rem;word-break:break-all;margin-bottom:4px}
+.history-result{display:block;color:#4facfe;font-size:1rem;font-weight:500;text-align:right}
+.history-empty{text-align:center;color:#555;font-size:0.8rem;padding:20px}
+
+/* レスポンシブ */
+@media(max-width:500px){
+    .calculator{padding:16px}
+    .calculator.scientific-mode{max-width:100%}
+    .scientific{grid-template-columns:repeat(4,1fr)}
+    .scientific .btn{padding:10px 4px;font-size:0.7rem}
+    .memory-buttons{grid-template-columns:repeat(5,1fr)}
+    .btn-memory{padding:8px 4px;font-size:0.7rem}
+    .result{font-size:2.2rem}
+    .btn{padding:14px;font-size:1.1rem}
+}

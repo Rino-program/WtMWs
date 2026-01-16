@@ -1,0 +1,51 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;touch-action:manipulation}
+.back{position:fixed;top:15px;left:15px;color:#fff;text-decoration:none;font-size:1.3rem;z-index:100;opacity:0.7}
+h1{font-size:clamp(1.5rem,4vw,2rem);margin-bottom:20px;background:linear-gradient(90deg,#f5576c,#f093fb);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.mode-tabs{display:flex;gap:8px;margin-bottom:25px}
+.mode-tabs button{background:rgba(255,255,255,0.08);border:none;color:#888;padding:12px 20px;border-radius:20px;cursor:pointer;font-size:0.9rem;transition:all 0.2s}
+.mode-tabs button.active{color:#fff}
+.mode-tabs button[data-mode="work"].active{background:linear-gradient(135deg,#f5576c,#f093fb)}
+.mode-tabs button[data-mode="short"].active{background:linear-gradient(135deg,#43e97b,#38f9d7)}
+.mode-tabs button[data-mode="long"].active{background:linear-gradient(135deg,#4facfe,#00f2fe)}
+.timer-container{position:relative;width:280px;height:280px;margin:20px 0}
+.timer-ring{width:100%;height:100%}
+.timer-ring circle{fill:none;stroke-width:8}
+.timer-ring .bg{stroke:rgba(255,255,255,0.1)}
+.timer-ring .progress{stroke-linecap:round;transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 0.5s,stroke 0.3s}
+.timer-ring .progress.work{stroke:#f5576c}
+.timer-ring .progress.short{stroke:#43e97b}
+.timer-ring .progress.long{stroke:#4facfe}
+.timer-display{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.timer-time{font-size:4rem;font-weight:200;letter-spacing:-2px}
+.timer-label{font-size:0.9rem;color:#888;margin-top:5px}
+.controls{display:flex;gap:15px;margin:25px 0}
+.controls button{width:70px;height:70px;border-radius:50%;border:none;font-size:1.5rem;cursor:pointer;transition:all 0.2s}
+.controls button:active{transform:scale(0.95)}
+.btn-start{background:linear-gradient(135deg,#f5576c,#f093fb);color:#fff}
+.btn-reset{background:rgba(255,255,255,0.1);color:#fff}
+.btn-skip{background:rgba(79,172,254,0.2);color:#4facfe}
+.stats{display:flex;gap:25px;margin-top:20px}
+.stat{text-align:center;padding:15px 25px;background:rgba(255,255,255,0.05);border-radius:15px}
+.stat-value{font-size:2rem;font-weight:bold;background:linear-gradient(90deg,#f5576c,#f093fb);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:0.8rem;color:#888;margin-top:5px}
+.settings{margin-top:30px;padding:20px;background:rgba(0,0,0,0.3);border-radius:15px;width:100%;max-width:400px}
+.settings h3{font-size:1rem;color:#888;margin-bottom:15px}
+.setting-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.setting-row label{color:#aaa;font-size:0.9rem}
+.setting-row input{width:80px;padding:8px;text-align:center;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:1rem}
+.setting-row input:focus{border-color:#f5576c;outline:none}
+.toggle{position:relative;width:50px;height:26px;background:rgba(255,255,255,0.1);border-radius:13px;cursor:pointer;transition:background 0.3s}
+.toggle.active{background:linear-gradient(135deg,#f5576c,#f093fb)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform 0.3s}
+.toggle.active::after{transform:translateX(24px)}
+.tasks{margin-top:25px;width:100%;max-width:400px}
+.tasks h3{font-size:1rem;color:#888;margin-bottom:15px}
+.task-input{display:flex;gap:10px;margin-bottom:15px}
+.task-input input{flex:1;padding:12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:0.95rem}
+.task-input button{padding:12px 20px;background:linear-gradient(135deg,#f5576c,#f093fb);border:none;border-radius:10px;color:#fff;cursor:pointer}
+.task-list{max-height:200px;overflow-y:auto}
+.task-item{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.05);border-radius:10px;margin-bottom:8px}
+.task-item input[type=checkbox]{width:20px;height:20px;accent-color:#f5576c}
+.task-item.done span{text-decoration:line-through;color:#666}
+.task-item button{margin-left:auto;background:none;border:none;color:#666;cursor:pointer;font-size:1.2rem}

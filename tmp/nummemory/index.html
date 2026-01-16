@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Number Memory - 数字記憶ゲーム</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<h1>🧠 数字記憶ゲーム</h1>
+<div class="modes">
+<button class="active" data-mode="classic">クラシック</button>
+<button data-mode="speed">スピード</button>
+<button data-mode="reverse">逆順</button>
+</div>
+<div class="stats">
+<div class="stat"><div class="stat-val" id="level">1</div><div class="stat-label">現在レベル</div></div>
+<div class="stat"><div class="stat-val" id="best">0</div><div class="stat-label">ベスト</div></div>
+<div class="stat"><div class="stat-val" id="streak">0</div><div class="stat-label">連続正解</div></div>
+</div>
+<div class="game-container">
+<div class="level-info">レベル <span id="levelDisplay">1</span> - <span id="digitsCount">3</span>桁の数字</div>
+<div class="number-display" id="numberDisplay">-</div>
+<div class="message" id="message">スタートを押して開始</div>
+<div class="progress-bar hidden" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="input-area hidden" id="inputArea">
+<input type="text" class="number-input" id="numberInput" inputmode="numeric" maxlength="20" placeholder="数字を入力" readonly>
+<div class="numpad">
+<button onclick="inputDigit('1')">1</button>
+<button onclick="inputDigit('2')">2</button>
+<button onclick="inputDigit('3')">3</button>
+<button onclick="inputDigit('4')">4</button>
+<button onclick="inputDigit('5')">5</button>
+<button onclick="inputDigit('6')">6</button>
+<button onclick="inputDigit('7')">7</button>
+<button onclick="inputDigit('8')">8</button>
+<button onclick="inputDigit('9')">9</button>
+<button class="backspace" onclick="backspace()">⌫</button>
+<button onclick="inputDigit('0')">0</button>
+<button class="submit" onclick="submitAnswer()">OK</button>
+</div>
+</div>
+<div class="result hidden" id="result">
+<div class="result-icon" id="resultIcon">✓</div>
+<div id="resultText"></div>
+<div class="comparison" id="comparison"></div>
+</div>
+<button class="btn" id="startBtn" onclick="startGame()">スタート</button>
+</div>
+<div class="history">
+<h3>📊 過去の記録</h3>
+<div class="history-grid" id="historyGrid"></div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

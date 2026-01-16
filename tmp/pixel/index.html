@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Pixel Art Editor - ピクセルアートエディタ</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<div class="app">
+    <div class="toolbar">
+        <h1>🎨 ピクセルアート</h1>
+        <div class="tool-group">
+            <button class="tool active" data-tool="pen" title="ペン">✏️</button>
+            <button class="tool" data-tool="eraser" title="消しゴム">🧹</button>
+            <button class="tool" data-tool="fill" title="塗りつぶし">🪣</button>
+            <button class="tool" data-tool="eyedropper" title="スポイト">💧</button>
+        </div>
+        <div class="color-section">
+            <input type="color" id="colorPicker" value="#ff0000">
+            <div class="color-presets" id="colorPresets"></div>
+        </div>
+        <div class="size-section">
+            <label>キャンバス: <span id="sizeValue">16</span>×<span id="sizeValue2">16</span></label>
+            <select id="canvasSize">
+                <option value="8">8×8</option>
+                <option value="16" selected>16×16</option>
+                <option value="32">32×32</option>
+                <option value="64">64×64</option>
+            </select>
+        </div>
+        <div class="actions">
+            <button id="clearBtn">🗑️ クリア</button>
+            <button id="saveBtn">💾 保存</button>
+            <button id="undoBtn">↩️ 戻す</button>
+        </div>
+    </div>
+    <div class="canvas-container">
+        <canvas id="pixelCanvas"></canvas>
+        <div class="zoom-controls">
+            <button id="zoomOut">−</button>
+            <span id="zoomLevel">100%</span>
+            <button id="zoomIn">+</button>
+        </div>
+    </div>
+    <div class="preview-section">
+        <h3>プレビュー</h3>
+        <canvas id="previewCanvas"></canvas>
+    </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🚀 Space Invaders - Creative Lab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <a href="../" class="back-btn">← 戻る</a>
+            <h1>🚀 Space Invaders</h1>
+        </header>
+        
+        <div class="game-info">
+            <div class="info-item">
+                <span class="label">SCORE</span>
+                <span class="value" id="score">0</span>
+            </div>
+            <div class="info-item">
+                <span class="label">WAVE</span>
+                <span class="value" id="wave">1</span>
+            </div>
+            <div class="info-item">
+                <span class="label">LIVES</span>
+                <span class="value" id="lives">❤️❤️❤️</span>
+            </div>
+            <div class="info-item">
+                <span class="label">HIGH</span>
+                <span class="value" id="highScore">0</span>
+            </div>
+        </div>
+        
+        <div class="canvas-wrapper">
+            <canvas id="game"></canvas>
+            <div class="overlay" id="overlay">
+                <div class="overlay-content">
+                    <h2 id="overlayTitle">🚀 SPACE INVADERS</h2>
+                    <p id="overlaySubtitle">地球を侵略者から守れ！</p>
+                    <div class="controls-info">
+                        <div class="control">
+                            <span class="key">← →</span>
+                            <span>移動</span>
+                        </div>
+                        <div class="control">
+                            <span class="key">SPACE</span>
+                            <span>発射</span>
+                        </div>
+                        <div class="control">
+                            <span class="key">P</span>
+                            <span>ポーズ</span>
+                        </div>
+                    </div>
+                    <button class="start-btn" id="startBtn">スタート</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="touch-controls">
+            <button class="touch-btn" id="leftBtn">◀</button>
+            <button class="touch-btn fire" id="fireBtn">🔥</button>
+            <button class="touch-btn" id="rightBtn">▶</button>
+        </div>
+        
+        <div class="power-ups-legend">
+            <h4>パワーアップ</h4>
+            <div class="legend-items">
+                <span class="legend-item"><span class="pu-icon rapid">⚡</span> 連射</span>
+                <span class="legend-item"><span class="pu-icon shield">🛡️</span> シールド</span>
+                <span class="legend-item"><span class="pu-icon multi">✦</span> 3方向</span>
+                <span class="legend-item"><span class="pu-icon bomb">💣</span> 爆弾</span>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

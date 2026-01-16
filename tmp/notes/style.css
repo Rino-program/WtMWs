@@ -1,0 +1,47 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;min-height:100vh;touch-action:manipulation}
+.back{position:fixed;top:15px;left:15px;color:#fff;text-decoration:none;font-size:1.3rem;z-index:100;opacity:0.7}
+.app{display:flex;height:100vh}
+.sidebar{width:280px;background:rgba(0,0,0,0.4);padding:20px;display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,0.1)}
+.sidebar h1{font-size:1.3rem;margin-bottom:20px;margin-top:30px;background:linear-gradient(90deg,#f093fb,#f5576c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.new-note-btn{background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:#fff;padding:12px;border-radius:10px;cursor:pointer;font-size:0.95rem;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:8px}
+.search{position:relative;margin-bottom:20px}
+.search input{width:100%;padding:12px 12px 12px 40px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:0.9rem}
+.search input::placeholder{color:#666}
+.search::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:0.9rem}
+.notes-list{flex:1;overflow-y:auto}
+.note-item{padding:15px;background:rgba(255,255,255,0.05);border-radius:10px;margin-bottom:10px;cursor:pointer;transition:all 0.2s;border-left:3px solid transparent}
+.note-item:hover{background:rgba(255,255,255,0.1)}
+.note-item.active{border-left-color:#667eea;background:rgba(102,126,234,0.15)}
+.note-item h3{font-size:0.95rem;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.note-item p{font-size:0.8rem;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.note-item .note-meta{display:flex;justify-content:space-between;margin-top:8px;font-size:0.7rem;color:#666}
+.note-item .delete-btn{opacity:0;background:none;border:none;color:#f5576c;cursor:pointer;font-size:1rem;transition:opacity 0.2s}
+.note-item:hover .delete-btn{opacity:1}
+.editor{flex:1;display:flex;flex-direction:column;padding:20px}
+.editor-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:15px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:15px}
+.editor-header input{background:transparent;border:none;color:#fff;font-size:1.5rem;font-weight:bold;width:100%;outline:none}
+.editor-header input::placeholder{color:#444}
+.editor-actions{display:flex;gap:10px}
+.editor-actions button{background:rgba(255,255,255,0.08);border:none;color:#aaa;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:0.85rem}
+.editor-actions button:hover{background:rgba(255,255,255,0.15);color:#fff}
+.editor-toolbar{display:flex;gap:5px;margin-bottom:15px;flex-wrap:wrap}
+.editor-toolbar button{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#aaa;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:0.85rem}
+.editor-toolbar button:hover{background:rgba(255,255,255,0.1);color:#fff}
+.editor-toolbar button.active{background:rgba(102,126,234,0.3);color:#667eea;border-color:#667eea}
+.editor-content{flex:1;overflow-y:auto}
+.editor-content textarea{width:100%;height:100%;background:transparent;border:none;color:#ddd;font-size:1rem;line-height:1.8;resize:none;outline:none;font-family:'Segoe UI',sans-serif}
+.editor-content textarea::placeholder{color:#444}
+.tags{display:flex;gap:8px;margin-top:15px;flex-wrap:wrap}
+.tag{background:rgba(102,126,234,0.2);color:#667eea;padding:4px 12px;border-radius:15px;font-size:0.75rem;display:flex;align-items:center;gap:5px}
+.tag button{background:none;border:none;color:#667eea;cursor:pointer;font-size:0.9rem}
+.add-tag{background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.2);color:#666;padding:4px 12px;border-radius:15px;font-size:0.75rem;cursor:pointer}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#666}
+.empty-state .icon{font-size:4rem;margin-bottom:20px;opacity:0.5}
+.empty-state p{font-size:1rem}
+.stats{padding:15px;border-top:1px solid rgba(255,255,255,0.1);margin-top:auto}
+.stats p{font-size:0.75rem;color:#666}
+@media(max-width:768px){
+.sidebar{width:100%;position:fixed;bottom:0;height:auto;max-height:50vh;border-radius:20px 20px 0 0;z-index:50}
+.editor{padding:60px 20px 200px}
+}

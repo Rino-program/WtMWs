@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正規表現テスター | Creative Lab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    <div class="container">
+        <header>
+            <h1>🔍 正規表現テスター</h1>
+            <p class="subtitle">リアルタイムマッチ・グループ抽出・置換テスト</p>
+        </header>
+
+        <div class="regex-input">
+            <div class="regex-row">
+                <span class="regex-delimiter">/</span>
+                <input type="text" class="regex-field" id="regexPattern" placeholder="正規表現パターン" value="(\w+)@(\w+)\.(\w+)">
+                <span class="regex-delimiter">/</span>
+                <input type="text" class="regex-field flags-input" id="regexFlags" placeholder="gi" value="gi">
+            </div>
+            <div class="error-msg" id="errorMsg"></div>
+        </div>
+
+        <div class="main-grid">
+            <div class="panel">
+                <h3>📝 テスト文字列</h3>
+                <div class="test-area" id="testArea" contenteditable="true">テスト用のメールアドレス:
+user@example.com
+admin@test.org
+contact@company.co.jp
+
+電話番号: 090-1234-5678
+日付: 2024-01-15</div>
+                <div class="replace-section">
+                    <div class="replace-row">
+                        <input type="text" class="replace-input" id="replacePattern" placeholder="置換文字列 (例: $1@replaced.$3)">
+                        <button class="btn btn-primary" onclick="performReplace()">置換</button>
+                    </div>
+                    <div class="replace-result" id="replaceResult"></div>
+                </div>
+            </div>
+            <div class="panel matches-panel">
+                <h3>✨ マッチ結果 <span id="matchCount" style="font-size:0.85rem;color:rgba(255,255,255,0.6)">0件</span></h3>
+                <div id="matchesList"></div>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat">
+                <div class="stat-value" id="totalMatches">0</div>
+                <div class="stat-label">マッチ数</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="totalGroups">0</div>
+                <div class="stat-label">グループ数</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="execTime">0ms</div>
+                <div class="stat-label">実行時間</div>
+            </div>
+        </div>
+
+        <div class="presets">
+            <h3>📚 よく使うパターン</h3>
+            <div class="preset-grid">
+                <button class="preset-btn" onclick="setPreset('[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}', 'gi')">
+                    <div class="preset-name">📧 メールアドレス</div>
+                    <div class="preset-pattern">[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}</div>
+                </button>
+                <button class="preset-btn" onclick="setPreset('0[0-9]{1,4}-[0-9]{1,4}-[0-9]{4}', 'g')">
+                    <div class="preset-name">📞 電話番号（日本）</div>
+                    <div class="preset-pattern">0[0-9]{1,4}-[0-9]{1,4}-[0-9]{4}</div>
+                </button>
+                <button class="preset-btn" onclick="setPreset('\\d{3}-\\d{4}', 'g')">
+                    <div class="preset-name">📮 郵便番号</div>
+                    <div class="preset-pattern">\d{3}-\d{4}</div>
+                </button>
+                <button class="preset-btn" onclick="setPreset('https?://[\\w!?/+\\-_~;.,*&@#$%()=]+', 'gi')">
+                    <div class="preset-name">🔗 URL</div>
+                    <div class="preset-pattern">https?://[\w!?/+\-_~;.,*&@#$%()=]+</div>
+                </button>
+                <button class="preset-btn" onclick="setPreset('\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}', 'g')">
+                    <div class="preset-name">📅 日付 (YYYY-MM-DD)</div>
+                    <div class="preset-pattern">\d{4}[-/]\d{1,2}[-/]\d{1,2}</div>
+                </button>
+                <button class="preset-btn" onclick="setPreset('<[^>]+>', 'g')">
+                    <div class="preset-name">🏷️ HTMLタグ</div>
+                    <div class="preset-pattern">&lt;[^&gt;]+&gt;</div>
+                </button>
+                <button class="preset-btn" onclick="setPreset('#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})', 'gi')">
+                    <div class="preset-name">🎨 HEXカラー</div>
+                    <div class="preset-pattern">#([0-9A-Fa-f]{6}|{3})</div>
+                </button>
+                <button class="preset-btn" onclick="setPreset('[\\u3040-\\u309F]+', 'g')">
+                    <div class="preset-name">🇯🇵 ひらがな</div>
+                    <div class="preset-pattern">[\u3040-\u309F]+</div>
+                </button>
+            </div>
+        </div>
+
+        <div class="cheatsheet">
+            <h3>📖 チートシート</h3>
+            <div class="cheat-grid">
+                <div class="cheat-section">
+                    <h4>文字クラス</h4>
+                    <div class="cheat-item"><code>.</code><span>任意の1文字</span></div>
+                    <div class="cheat-item"><code>\d</code><span>数字 [0-9]</span></div>
+                    <div class="cheat-item"><code>\w</code><span>単語文字 [a-zA-Z0-9_]</span></div>
+                    <div class="cheat-item"><code>\s</code><span>空白文字</span></div>
+                    <div class="cheat-item"><code>[abc]</code><span>a,b,cのいずれか</span></div>
+                    <div class="cheat-item"><code>[^abc]</code><span>a,b,c以外</span></div>
+                </div>
+                <div class="cheat-section">
+                    <h4>量指定子</h4>
+                    <div class="cheat-item"><code>*</code><span>0回以上</span></div>
+                    <div class="cheat-item"><code>+</code><span>1回以上</span></div>
+                    <div class="cheat-item"><code>?</code><span>0回または1回</span></div>
+                    <div class="cheat-item"><code>{n}</code><span>n回</span></div>
+                    <div class="cheat-item"><code>{n,m}</code><span>n〜m回</span></div>
+                    <div class="cheat-item"><code>{n,}</code><span>n回以上</span></div>
+                </div>
+                <div class="cheat-section">
+                    <h4>アンカー・グループ</h4>
+                    <div class="cheat-item"><code>^</code><span>行頭</span></div>
+                    <div class="cheat-item"><code>$</code><span>行末</span></div>
+                    <div class="cheat-item"><code>\b</code><span>単語境界</span></div>
+                    <div class="cheat-item"><code>(abc)</code><span>キャプチャグループ</span></div>
+                    <div class="cheat-item"><code>(?:abc)</code><span>非キャプチャ</span></div>
+                    <div class="cheat-item"><code>a|b</code><span>aまたはb</span></div>
+                </div>
+                <div class="cheat-section">
+                    <h4>フラグ</h4>
+                    <div class="cheat-item"><code>g</code><span>グローバル検索</span></div>
+                    <div class="cheat-item"><code>i</code><span>大小文字無視</span></div>
+                    <div class="cheat-item"><code>m</code><span>複数行モード</span></div>
+                    <div class="cheat-item"><code>s</code><span>.が改行にも</span></div>
+                    <div class="cheat-item"><code>u</code><span>Unicode</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

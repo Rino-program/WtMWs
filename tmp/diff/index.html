@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テキスト差分比較 | Creative Lab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    <div class="container">
+        <header>
+            <h1>📊 テキスト差分比較</h1>
+            <p class="subtitle">2つのテキストの違いを視覚的に比較</p>
+        </header>
+
+        <div class="toolbar">
+            <button class="btn btn-primary" onclick="compare()">🔍 比較する</button>
+            <button class="btn btn-secondary" onclick="swapTexts()">⇄ 入れ替え</button>
+            <button class="btn btn-secondary" onclick="clearAll()">🗑️ クリア</button>
+            <button class="btn btn-secondary" onclick="loadSample()">📝 サンプル</button>
+        </div>
+
+        <div class="input-grid">
+            <div class="input-panel">
+                <h3>📄 オリジナル <span class="badge badge-old">OLD</span></h3>
+                <textarea id="oldText" placeholder="元のテキストを入力..."></textarea>
+            </div>
+            <div class="input-panel">
+                <h3>📄 変更後 <span class="badge badge-new">NEW</span></h3>
+                <textarea id="newText" placeholder="新しいテキストを入力..."></textarea>
+            </div>
+        </div>
+
+        <div class="stats-bar" id="statsBar" style="display:none">
+            <div class="stat">
+                <div class="stat-value add" id="addCount">0</div>
+                <div class="stat-label">追加行</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value remove" id="removeCount">0</div>
+                <div class="stat-label">削除行</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value change" id="changeCount">0</div>
+                <div class="stat-label">変更行</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="sameCount" style="color:#888">0</div>
+                <div class="stat-label">同一行</div>
+            </div>
+        </div>
+
+        <div class="result-panel" id="resultPanel" style="display:none">
+            <h3>
+                <span>差分結果</span>
+                <div class="view-tabs">
+                    <button class="view-tab active" onclick="setView('unified')">統合</button>
+                    <button class="view-tab" onclick="setView('side')">並列</button>
+                    <button class="view-tab" onclick="setView('inline')">インライン</button>
+                </div>
+            </h3>
+            <div id="diffResult"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

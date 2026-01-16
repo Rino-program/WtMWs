@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCIIアート生成器</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    
+    <div class="container">
+        <h1>ASCIIアート生成器</h1>
+        <p class="subtitle">画像をASCIIアートに変換</p>
+        
+        <div class="upload-section">
+            <label for="image-input" class="upload-btn">
+                <span class="upload-icon">📁</span>
+                <span>画像を選択</span>
+            </label>
+            <input type="file" id="image-input" accept="image/*" hidden>
+            <p class="file-name" id="file-name">ファイルが選択されていません</p>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="width-slider">
+                    <span class="label-text">幅</span>
+                    <span class="label-value" id="width-value">100</span>
+                </label>
+                <input type="range" id="width-slider" min="20" max="200" value="100">
+            </div>
+            
+            <div class="control-group">
+                <label for="density-slider">
+                    <span class="label-text">詳細度</span>
+                    <span class="label-value" id="density-value">標準</span>
+                </label>
+                <input type="range" id="density-slider" min="1" max="4" value="2">
+            </div>
+            
+            <div class="control-group toggle-group">
+                <span class="label-text">カラーモード</span>
+                <div class="toggle-wrapper">
+                    <button class="toggle-btn" id="mono-btn">モノクロ</button>
+                    <button class="toggle-btn active" id="color-btn">カラー</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="preview-section">
+            <canvas id="preview-canvas" hidden></canvas>
+            <div class="ascii-container" id="ascii-container">
+                <pre id="ascii-output">ここにASCIIアートが表示されます</pre>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button class="action-btn" id="copy-btn" disabled>
+                <span class="btn-icon">📋</span>
+                <span>コピー</span>
+            </button>
+            <button class="action-btn" id="download-btn" disabled>
+                <span class="btn-icon">💾</span>
+                <span>ダウンロード</span>
+            </button>
+        </div>
+        
+        <div class="toast" id="toast">コピーしました！</div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

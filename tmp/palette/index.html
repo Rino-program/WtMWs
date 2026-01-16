@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Color Palette - カラーパレット生成</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<div class="header"><h1>🎨 カラーパレット生成</h1></div>
+<div class="container">
+<div class="options">
+<div class="option">
+<label>ベース色:</label>
+<input type="color" id="baseColor" value="#667eea">
+</div>
+<div class="option">
+<label>調和:</label>
+<select id="harmony">
+<option value="random">ランダム</option>
+<option value="analogous">類似色</option>
+<option value="complementary">補色</option>
+<option value="triadic">三色配色</option>
+<option value="tetradic">四色配色</option>
+<option value="split">分裂補色</option>
+<option value="monochromatic">モノクロ</option>
+</select>
+</div>
+<div class="option">
+<label>色数:</label>
+<select id="colorCount">
+<option value="3">3色</option>
+<option value="4">4色</option>
+<option value="5" selected>5色</option>
+<option value="6">6色</option>
+<option value="7">7色</option>
+</select>
+</div>
+</div>
+<div class="harmony-info" id="harmonyInfo">スペースキーで新しいパレットを生成</div>
+<div class="controls">
+<button class="btn btn-primary" onclick="generatePalette()">🎲 生成</button>
+<button class="btn btn-secondary" onclick="savePalette()">💾 保存</button>
+<button class="btn btn-secondary" onclick="copyAll()">📋 コピー</button>
+</div>
+<div class="palette" id="palette"></div>
+<div class="export-panel">
+<h3>エクスポート</h3>
+<div class="export-tabs">
+<button class="export-tab active" data-format="css">CSS</button>
+<button class="export-tab" data-format="scss">SCSS</button>
+<button class="export-tab" data-format="json">JSON</button>
+<button class="export-tab" data-format="array">Array</button>
+</div>
+<div class="export-code" id="exportCode"></div>
+</div>
+<div class="saved-palettes">
+<h3>保存したパレット</h3>
+<div class="saved-list" id="savedList"></div>
+</div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

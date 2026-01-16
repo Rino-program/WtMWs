@@ -1,0 +1,47 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;min-height:100vh;padding:60px 20px 20px;touch-action:manipulation}
+.back{position:fixed;top:15px;left:15px;color:#fff;text-decoration:none;font-size:1.3rem;z-index:100;opacity:0.7}
+h1{text-align:center;font-size:clamp(1.5rem,4vw,2rem);margin-bottom:25px;background:linear-gradient(90deg,#f093fb,#f5576c,#fee140,#43e97b,#4facfe);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradient 5s ease infinite}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.container{max-width:900px;margin:0 auto}
+.picker-section{display:grid;grid-template-columns:1fr 1fr;gap:25px;margin-bottom:25px}
+@media(max-width:700px){.picker-section{grid-template-columns:1fr}}
+.color-preview{height:200px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:bold;text-shadow:0 2px 10px rgba(0,0,0,0.3);box-shadow:0 10px 40px rgba(0,0,0,0.3);transition:background 0.3s}
+.sliders{background:rgba(0,0,0,0.3);padding:25px;border-radius:20px}
+.slider-group{margin-bottom:20px}
+.slider-group:last-child{margin-bottom:0}
+.slider-group label{display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.9rem;color:#aaa}
+.slider-group input[type=range]{width:100%;height:12px;border-radius:6px;-webkit-appearance:none;cursor:pointer}
+.slider-group input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,0.3);cursor:pointer}
+#hueSlider{background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)}
+#satSlider{background:linear-gradient(to right,#888,currentColor)}
+#lightSlider{background:linear-gradient(to right,#000,currentColor,#fff)}
+.values{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:25px}
+.value-box{background:rgba(0,0,0,0.3);padding:15px;border-radius:12px;text-align:center}
+.value-box label{display:block;font-size:0.75rem;color:#888;margin-bottom:5px;text-transform:uppercase}
+.value-box input{width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:10px;color:#fff;font-size:1rem;text-align:center;font-family:monospace}
+.value-box input:focus{border-color:#4facfe;outline:none}
+.copy-btn{background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85rem;margin-top:8px;transition:transform 0.2s}
+.copy-btn:active{transform:scale(0.95)}
+.palette-section{margin-bottom:25px}
+.palette-section h2{font-size:1.1rem;color:#888;margin-bottom:15px}
+.palette{display:flex;gap:10px;flex-wrap:wrap}
+.palette-color{width:60px;height:60px;border-radius:12px;cursor:pointer;transition:transform 0.2s;box-shadow:0 4px 15px rgba(0,0,0,0.3)}
+.palette-color:hover{transform:scale(1.1)}
+.generated-section h2{font-size:1.1rem;color:#888;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center}
+.generated-section h2 button{background:rgba(255,255,255,0.1);border:none;color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85rem}
+.generated{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:12px}
+.generated-color{height:80px;border-radius:12px;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.2);transition:transform 0.2s}
+.generated-color:hover{transform:translateY(-4px)}
+.generated-color span{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);padding:6px;font-size:0.7rem;font-family:monospace;text-align:center;opacity:0;transition:opacity 0.2s}
+.generated-color:hover span{opacity:1}
+.harmony-section{margin-top:25px}
+.harmony-section h2{font-size:1.1rem;color:#888;margin-bottom:15px}
+.harmony-types{display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap}
+.harmony-types button{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#aaa;padding:10px 18px;border-radius:10px;cursor:pointer;font-size:0.85rem;transition:all 0.2s}
+.harmony-types button.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:transparent}
+.harmony-colors{display:flex;gap:12px;flex-wrap:wrap}
+.harmony-color{width:100px;height:100px;border-radius:15px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;font-size:0.75rem;font-family:monospace;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.3);transition:transform 0.2s}
+.harmony-color:hover{transform:scale(1.05)}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.9);padding:15px 25px;border-radius:10px;opacity:0;transition:opacity 0.3s;z-index:100}
+.toast.show{opacity:1}

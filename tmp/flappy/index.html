@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Flappy Bird</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- スタート画面 -->
+        <div id="startScreen" class="overlay">
+            <div class="title">Flappy Bird</div>
+            <div class="bird-preview"></div>
+            <div class="instructions">
+                <span class="key">SPACE</span> / <span class="key">CLICK</span> / <span class="key">TAP</span>
+                <br>でジャンプ
+            </div>
+            <button class="btn play-btn" id="startBtn">▶ PLAY</button>
+            <button class="btn skin-btn" id="skinBtn">🎨 スキン</button>
+            <button class="btn theme-btn" id="themeBtn">🌙 夜モード</button>
+        </div>
+        
+        <!-- スキン選択画面 -->
+        <div id="skinScreen" class="overlay hidden">
+            <div class="skin-title">スキン選択</div>
+            <div class="skin-grid" id="skinGrid"></div>
+            <button class="btn back-btn" id="skinBackBtn">← 戻る</button>
+        </div>
+        
+        <!-- ゲームオーバー画面 -->
+        <div id="gameOverScreen" class="overlay hidden">
+            <div class="game-over-title">GAME OVER</div>
+            <div class="score-panel">
+                <div class="medal-container" id="medalContainer"></div>
+                <div class="score-row">
+                    <span>SCORE</span>
+                    <span id="finalScore">0</span>
+                </div>
+                <div class="score-row">
+                    <span>BEST</span>
+                    <span id="bestScore">0</span>
+                </div>
+            </div>
+            <div class="new-record hidden" id="newRecord">🎉 NEW RECORD!</div>
+            <button class="btn play-btn" id="retryBtn">↻ RETRY</button>
+            <button class="btn menu-btn" id="menuBtn">🏠 MENU</button>
+        </div>
+        
+        <!-- スコア表示 -->
+        <div id="scoreDisplay" class="score-display hidden">0</div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

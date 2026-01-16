@@ -1,0 +1,157 @@
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [], mouse = {x:null,y:null};
+let settings = {count:400, gravity:0.5, hue:0, trail:0.05, mode:'attract'};
+
+const resize = () => { W = canvas.width = innerWidth; H = canvas.height = innerHeight; };
+
+class Particle {
+    constructor(x, y, vx, vy) {
+        this.x = x ?? Math.random() * W;
+        this.y = y ?? Math.random() * H;
+        this.vx = vx ?? (Math.random() - 0.5) * 2;
+        this.vy = vy ?? (Math.random() - 0.5) * 2;
+        this.size = Math.random() * 2.5 + 1;
+        this.hueOffset = Math.random() * 60;
+    }
+    update() {
+        if (mouse.x !== null) {
+            const dx = mouse.x - this.x, dy = mouse.y - this.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < 200 && dist > 1) {
+                const f = (200 - dist) / 200 * settings.gravity * 0.5;
+                const nx = dx / dist, ny = dy / dist;
+                switch(settings.mode) {
+                    case 'repel': this.vx -= nx * f; this.vy -= ny * f; break;
+                    case 'orbit': this.vx += ny * f * 0.8; this.vy -= nx * f * 0.8; break;
+                    case 'swarm':
+                        const target = particles[(particles.indexOf(this) + 1) % particles.length];
+                        this.vx += (target.x - this.x) * 0.001;
+                        this.vy += (target.y - this.y) * 0.001;
+                        this.vx += nx * f * 0.3; this.vy += ny * f * 0.3; break;
+                    default: this.vx += nx * f; this.vy += ny * f;
+                }
+            }
+        }
+        this.vx *= 0.98; this.vy *= 0.98;
+        this.x += this.vx; this.y += this.vy;
+        if (this.x < 0 || this.x > W) this.vx *= -0.8;
+        if (this.y < 0 || this.y > H) this.vy *= -0.8;
+        this.x = Math.max(0, Math.min(W, this.x));
+        this.y = Math.max(0, Math.min(H, this.y));
+    }
+    draw() {
+        const speed = Math.hypot(this.vx, this.vy);
+        const hue = (settings.hue + this.hueOffset + speed * 10) % 360;
+        const alpha = Math.min(1, 0.5 + speed * 0.15);
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${hue},80%,60%,${alpha})`;
+        ctx.fill();
+    }
+}
+
+const initParticles = () => { particles = Array.from({length: settings.count}, () => new Particle()); };
+
+const drawConnections = () => {
+    if (particles.length > 600) return;
+    const cellSize = 80, cells = new Map();
+    particles.forEach((p, i) => {
+        const key = `${(p.x/cellSize)|0},${(p.y/cellSize)|0}`;
+        if (!cells.has(key)) cells.set(key, []);
+        cells.get(key).push(i);
+    });
+    ctx.lineWidth = 0.5;
+    cells.forEach((indices, key) => {
+        const [cx, cy] = key.split(',').map(Number);
+        const neighbors = [];
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                const nkey = `${cx+dx},${cy+dy}`;
+                if (cells.has(nkey)) neighbors.push(...cells.get(nkey));
+            }
+        }
+        for (let i = 0; i < indices.length; i++) {
+            const p1 = particles[indices[i]];
+            for (let j = 0; j < neighbors.length; j++) {
+                if (neighbors[j] <= indices[i]) continue;
+                const p2 = particles[neighbors[j]];
+                const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                if (dist < 80) {
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.strokeStyle = `hsla(${settings.hue},70%,50%,${(1-dist/80)*0.25})`;
+                    ctx.stroke();
+                }
+            }
+        }
+    });
+};
+
+const animate = () => {
+    ctx.fillStyle = `rgba(0,0,0,${settings.trail})`;
+    ctx.fillRect(0, 0, W, H);
+    drawConnections();
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animate);
+};
+
+const explode = () => {
+    if (settings.mode === 'firework') {
+        const cx = W/2, cy = H/2;
+        particles.forEach(p => {
+            const angle = Math.random() * Math.PI * 2;
+            const force = Math.random() * 20 + 10;
+            p.x = cx; p.y = cy;
+            p.vx = Math.cos(angle) * force;
+            p.vy = Math.sin(angle) * force;
+        });
+    } else {
+        particles.forEach(p => {
+            const angle = Math.random() * Math.PI * 2;
+            const force = Math.random() * 15 + 5;
+            p.vx = Math.cos(angle) * force;
+            p.vy = Math.sin(angle) * force;
+        });
+    }
+};
+
+addEventListener('resize', resize, {passive:true});
+canvas.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; }, {passive:true});
+canvas.addEventListener('mouseleave', () => { mouse.x = mouse.y = null; });
+canvas.addEventListener('touchmove', e => { e.preventDefault(); mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; }, {passive:false});
+canvas.addEventListener('touchend', () => { mouse.x = mouse.y = null; });
+const addParticles = (x, y) => {
+    for (let i = 0; i < 15; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const force = Math.random() * 4 + 2;
+        particles.push(new Particle(x, y, Math.cos(angle)*force, Math.sin(angle)*force));
+    }
+    if (particles.length > 1500) particles.splice(0, 15);
+};
+canvas.addEventListener('click', e => addParticles(e.clientX, e.clientY));
+canvas.addEventListener('touchstart', e => { e.preventDefault(); addParticles(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
+
+document.getElementById('mode').addEventListener('change', e => settings.mode = e.target.value);
+document.getElementById('particleCount').addEventListener('input', e => {
+    settings.count = +e.target.value;
+    document.getElementById('countVal').textContent = settings.count;
+    initParticles();
+});
+document.getElementById('gravity').addEventListener('input', e => {
+    settings.gravity = +e.target.value;
+    document.getElementById('gravVal').textContent = settings.gravity;
+});
+document.getElementById('hue').addEventListener('input', e => {
+    settings.hue = +e.target.value;
+    document.getElementById('hueVal').textContent = settings.hue;
+});
+document.getElementById('trail').addEventListener('input', e => {
+    settings.trail = +e.target.value;
+    document.getElementById('trailVal').textContent = settings.trail;
+});
+document.getElementById('reset').addEventListener('click', initParticles);
+document.getElementById('explode').addEventListener('click', explode);
+
+resize(); initParticles(); animate();

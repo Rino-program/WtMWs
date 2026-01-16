@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSSグラデーション生成 | Creative Lab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../" class="back-link">← 戻る</a>
+    <div class="container">
+        <header>
+            <h1>🌈 CSSグラデーション生成器</h1>
+            <p class="subtitle">美しいグラデーションをワンクリックで</p>
+        </header>
+
+        <div class="main-grid">
+            <div class="preview-panel">
+                <div class="preview-box" id="preview"></div>
+                <div class="code-output">
+                    <h3>📋 CSSコード</h3>
+                    <div class="code-box">
+                        <button class="copy-btn" onclick="copyCode()">コピー</button>
+                        <code id="codeOutput">background: linear-gradient(135deg, #ff6b6b, #ffd93d);</code>
+                    </div>
+                </div>
+                <div class="preview-variants">
+                    <div class="variant" id="var0" onclick="setVariant(0)"></div>
+                    <div class="variant" id="var1" onclick="setVariant(1)"></div>
+                    <div class="variant" id="var2" onclick="setVariant(2)"></div>
+                </div>
+            </div>
+
+            <div class="controls-panel">
+                <div class="control-section">
+                    <h3>🎨 グラデーションタイプ</h3>
+                    <div class="type-buttons">
+                        <button class="type-btn active" data-type="linear">リニア</button>
+                        <button class="type-btn" data-type="radial">ラジアル</button>
+                        <button class="type-btn" data-type="conic">コニック</button>
+                    </div>
+                    <div class="radial-options" id="radialOptions" style="display:none">
+                        <button class="radial-opt active" data-shape="circle">円形</button>
+                        <button class="radial-opt" data-shape="ellipse">楕円</button>
+                        <button class="radial-opt" data-pos="center">中央</button>
+                        <button class="radial-opt" data-pos="top">上</button>
+                        <button class="radial-opt" data-pos="bottom">下</button>
+                        <button class="radial-opt" data-pos="left">左</button>
+                    </div>
+                </div>
+
+                <div class="control-section" id="angleSection">
+                    <h3>📐 角度</h3>
+                    <div class="angle-control">
+                        <div class="angle-dial" id="angleDial"></div>
+                        <div class="angle-input">
+                            <input type="range" id="angleRange" min="0" max="360" value="135">
+                        </div>
+                        <span class="angle-value" id="angleValue">135°</span>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>🎨 カラーストップ</h3>
+                    <div class="color-stops" id="colorStops"></div>
+                    <button class="add-stop-btn" onclick="addColorStop()">+ カラーを追加</button>
+                </div>
+
+                <div class="presets">
+                    <h3>✨ プリセット</h3>
+                    <div class="preset-grid" id="presetGrid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

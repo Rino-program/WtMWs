@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>パックマン</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <div class="score-display">
+                <span class="label">SCORE</span>
+                <span id="score" class="value">0</span>
+            </div>
+            <div class="level-display">
+                <span class="label">LEVEL</span>
+                <span id="level" class="value">1</span>
+            </div>
+            <div class="highscore-display">
+                <span class="label">HIGH SCORE</span>
+                <span id="highscore" class="value">0</span>
+            </div>
+        </header>
+
+        <div class="lives-display">
+            <span class="label">LIVES:</span>
+            <div id="lives" class="lives-icons"></div>
+        </div>
+
+        <div class="game-wrapper">
+            <canvas id="gameCanvas"></canvas>
+            
+            <div id="overlay" class="overlay">
+                <div class="overlay-content">
+                    <h1 id="overlay-title">PAC-MAN</h1>
+                    <p id="overlay-message">Press SPACE or Tap to Start</p>
+                    <div id="final-score" class="final-score"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mobile-controls" id="mobileControls">
+            <button class="control-btn up" data-direction="up">▲</button>
+            <div class="control-row">
+                <button class="control-btn left" data-direction="left">◀</button>
+                <button class="control-btn right" data-direction="right">▶</button>
+            </div>
+            <button class="control-btn down" data-direction="down">▼</button>
+        </div>
+
+        <div class="instructions">
+            <p>🎮 矢印キー / WASD / スワイプで移動</p>
+            <p>⚡ パワーエサでゴーストを追いかけよう！</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
