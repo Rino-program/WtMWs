@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Piano - ピアノ</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.back{position:fixed;top:15px;left:15px;color:#fff;text-decoration:none;font-size:1.3rem;z-index:100;opacity:0.7}
+h1{font-size:clamp(1.5rem,4vw,2rem);margin-bottom:20px;background:linear-gradient(90deg,#f093fb,#f5576c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.controls{display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;align-items:center}
+.controls label{font-size:0.9rem;color:#aaa;display:flex;align-items:center;gap:8px}
+.controls select,.controls input[type=range]{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:8px 12px;border-radius:8px}
+.controls input[type=range]{width:100px}
+.piano{display:flex;position:relative;user-select:none;-webkit-user-select:none;touch-action:none}
+.key{display:flex;align-items:flex-end;justify-content:center;padding-bottom:15px;font-size:0.75rem;cursor:pointer;transition:all 0.05s}
+.white{width:clamp(35px,8vw,60px);height:clamp(150px,35vw,220px);background:linear-gradient(180deg,#f5f5f5,#e0e0e0);border:1px solid #ccc;border-radius:0 0 6px 6px;color:#666;z-index:1}
+.white:active,.white.active{background:linear-gradient(180deg,#ddd,#ccc);transform:translateY(2px)}
+.black{width:clamp(25px,5vw,40px);height:clamp(90px,22vw,140px);background:linear-gradient(180deg,#333,#111);border-radius:0 0 4px 4px;margin-left:clamp(-14px,-3vw,-22px);margin-right:clamp(-14px,-3vw,-22px);color:#888;z-index:2}
+.black:active,.black.active{background:linear-gradient(180deg,#444,#222)}
+.recording{animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(240,147,251,0.7)}50%{box-shadow:0 0 0 10px rgba(240,147,251,0)}}
+.record-controls{display:flex;gap:10px;margin-top:20px}
+.record-controls button{background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.3);color:#fff;padding:10px 20px;border-radius:25px;cursor:pointer;font-size:0.9rem;transition:all 0.2s}
+.record-controls button:hover{background:rgba(255,255,255,0.2)}
+.record-controls button.active{background:linear-gradient(135deg,#f093fb,#f5576c);border-color:transparent}
+.record-controls button:disabled{opacity:0.5;cursor:not-allowed}
+.visualizer{width:100%;max-width:800px;height:60px;margin-top:20px;background:rgba(0,0,0,0.3);border-radius:10px;overflow:hidden}
+#visualizer{width:100%;height:100%}
+.info{margin-top:15px;font-size:0.8rem;color:#666;text-align:center}
+</style>
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<h1>🎹 ピアノ</h1>
+<div class="controls">
+<label>音色<select id="waveType">
+<option value="sine">サイン波</option>
+<option value="triangle">三角波</option>
+<option value="square">矩形波</option>
+<option value="sawtooth">ノコギリ波</option>
+</select></label>
+<label>オクターブ<select id="octave">
+<option value="3">C3</option>
+<option value="4" selected>C4</option>
+<option value="5">C5</option>
+<option value="6">C6</option>
+</select></label>
+<label>音量<input type="range" id="volume" min="0" max="1" step="0.1" value="0.5"></label>
+</div>
+<div class="piano" id="piano"></div>
+<div class="record-controls">
+<button id="recordBtn">🔴 録音</button>
+<button id="playBtn" disabled>▶ 再生</button>
+<button id="clearBtn" disabled>🗑 クリア</button>
+</div>
+<div class="visualizer"><canvas id="visualizer"></canvas></div>
+<div class="info">キーボード: A-K(白鍵), W-U(黒鍵) | タップで演奏</div>
+<script>
+const piano=document.getElementById('piano');
+const visualizer=document.getElementById('visualizer');
+const vCtx=visualizer.getContext('2d');
+let audioCtx,analyser,gainNode;
+let waveType='sine',octave=4,volume=0.5;
+let recording=false,recordedNotes=[],recordStart=0,playbackTimeout=null;
+const notes=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const keyMap={a:'C',w:'C#',s:'D',e:'D#',d:'E',f:'F',t:'F#',g:'G',y:'G#',h:'A',u:'A#',j:'B',k:'C+'};
+const frequencies={};
+notes.forEach((note,i)=>{
+    for(let o=0;o<9;o++){
+        frequencies[note+o]=440*Math.pow(2,(o-4)+(i-9)/12);
+    }
+});
+
+function initAudio(){
+    if(audioCtx)return;
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    analyser=audioCtx.createAnalyser();
+    analyser.fftSize=256;
+    gainNode=audioCtx.createGain();
+    gainNode.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    drawVisualizer();
+}
+
+function playNote(note,oct=octave){
+    initAudio();
+    const freq=frequencies[note+oct];
+    if(!freq)return;
+    const osc=audioCtx.createOscillator();
+    const env=audioCtx.createGain();
+    osc.type=waveType;
+    osc.frequency.value=freq;
+    osc.connect(env);
+    env.connect(gainNode);
+    gainNode.gain.value=volume;
+    env.gain.setValueAtTime(volume,audioCtx.currentTime);
+    env.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+1.5);
+    osc.start();
+    osc.stop(audioCtx.currentTime+1.5);
+    if(recording){
+        recordedNotes.push({note,oct,time:Date.now()-recordStart});
+    }
+}
+
+function createPiano(){
+    piano.innerHTML='';
+    const keys=[
+        {note:'C',black:false},{note:'C#',black:true},
+        {note:'D',black:false},{note:'D#',black:true},
+        {note:'E',black:false},
+        {note:'F',black:false},{note:'F#',black:true},
+        {note:'G',black:false},{note:'G#',black:true},
+        {note:'A',black:false},{note:'A#',black:true},
+        {note:'B',black:false},
+        {note:'C',black:false,nextOct:true}
+    ];
+    keys.forEach((k,i)=>{
+        const key=document.createElement('div');
+        key.className=`key ${k.black?'black':'white'}`;
+        key.dataset.note=k.note;
+        key.dataset.nextOct=k.nextOct||false;
+        key.innerHTML=k.black?'':'<span>'+(Object.keys(keyMap).find(x=>keyMap[x]===(k.nextOct?'C+':k.note))||'')+'</span>';
+        key.onmousedown=key.ontouchstart=(e)=>{
+            e.preventDefault();
+            const oct=k.nextOct?octave+1:octave;
+            playNote(k.note,oct);
+            key.classList.add('active');
+        };
+        key.onmouseup=key.ontouchend=key.onmouseleave=()=>key.classList.remove('active');
+        piano.appendChild(key);
+    });
+}
+
+function drawVisualizer(){
+    if(!analyser)return requestAnimationFrame(drawVisualizer);
+    const bufferLength=analyser.frequencyBinCount;
+    const dataArray=new Uint8Array(bufferLength);
+    function draw(){
+        requestAnimationFrame(draw);
+        analyser.getByteFrequencyData(dataArray);
+        vCtx.fillStyle='rgba(26,26,46,0.3)';
+        vCtx.fillRect(0,0,visualizer.width,visualizer.height);
+        const barWidth=(visualizer.width/bufferLength)*2.5;
+        let x=0;
+        for(let i=0;i<bufferLength;i++){
+            const barHeight=(dataArray[i]/255)*visualizer.height;
+            const hue=i/bufferLength*360;
+            vCtx.fillStyle=`hsl(${hue},70%,60%)`;
+            vCtx.fillRect(x,visualizer.height-barHeight,barWidth-1,barHeight);
+            x+=barWidth;
+        }
+    }
+    draw();
+}
+
+function resizeVisualizer(){
+    visualizer.width=visualizer.parentElement.clientWidth;
+    visualizer.height=60;
+}
+
+document.getElementById('waveType').onchange=e=>waveType=e.target.value;
+document.getElementById('octave').onchange=e=>{octave=+e.target.value;createPiano()};
+document.getElementById('volume').oninput=e=>volume=+e.target.value;
+
+document.getElementById('recordBtn').onclick=function(){
+    if(recording){
+        recording=false;
+        this.textContent='🔴 録音';
+        this.classList.remove('active','recording');
+        document.getElementById('playBtn').disabled=recordedNotes.length===0;
+        document.getElementById('clearBtn').disabled=recordedNotes.length===0;
+    }else{
+        recording=true;
+        recordedNotes=[];
+        recordStart=Date.now();
+        this.textContent='⏹ 停止';
+        this.classList.add('active','recording');
+        document.getElementById('playBtn').disabled=true;
+        document.getElementById('clearBtn').disabled=true;
+    }
+};
+
+document.getElementById('playBtn').onclick=function(){
+    if(recordedNotes.length===0)return;
+    this.disabled=true;
+    recordedNotes.forEach(n=>{
+        setTimeout(()=>{
+            playNote(n.note,n.oct);
+            const key=[...document.querySelectorAll('.key')].find(k=>
+                k.dataset.note===n.note&&((n.oct>octave)===(k.dataset.nextOct==='true'))
+            );
+            if(key){
+                key.classList.add('active');
+                setTimeout(()=>key.classList.remove('active'),200);
+            }
+        },n.time);
+    });
+    const totalTime=Math.max(...recordedNotes.map(n=>n.time))+500;
+    setTimeout(()=>this.disabled=false,totalTime);
+};
+
+document.getElementById('clearBtn').onclick=function(){
+    recordedNotes=[];
+    document.getElementById('playBtn').disabled=true;
+    this.disabled=true;
+};
+
+document.addEventListener('keydown',e=>{
+    if(e.repeat)return;
+    const noteKey=keyMap[e.key.toLowerCase()];
+    if(noteKey){
+        const isNextOct=noteKey==='C+';
+        const note=isNextOct?'C':noteKey;
+        const oct=isNextOct?octave+1:octave;
+        playNote(note,oct);
+        const key=[...document.querySelectorAll('.key')].find(k=>
+            k.dataset.note===note&&(k.dataset.nextOct==='true')==isNextOct
+        );
+        if(key)key.classList.add('active');
+    }
+});
+
+document.addEventListener('keyup',e=>{
+    const noteKey=keyMap[e.key.toLowerCase()];
+    if(noteKey){
+        const isNextOct=noteKey==='C+';
+        const note=isNextOct?'C':noteKey;
+        const key=[...document.querySelectorAll('.key')].find(k=>
+            k.dataset.note===note&&(k.dataset.nextOct==='true')==isNextOct
+        );
+        if(key)key.classList.remove('active');
+    }
+});
+
+window.onresize=resizeVisualizer;
+resizeVisualizer();
+createPiano();
+</script>
+</body>
+</html>

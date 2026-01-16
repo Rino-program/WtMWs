@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Calculator - 電卓</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.back{position:fixed;top:15px;left:15px;color:#fff;text-decoration:none;font-size:1.3rem;z-index:100;opacity:0.7}
+.calculator{background:rgba(20,20,40,0.95);border-radius:24px;padding:24px;box-shadow:0 25px 50px rgba(0,0,0,0.5);max-width:360px;width:100%}
+h1{text-align:center;font-size:1.3rem;margin-bottom:20px;background:linear-gradient(90deg,#4facfe,#00f2fe);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.display{background:rgba(0,0,0,0.4);border-radius:16px;padding:20px;margin-bottom:20px}
+.expression{font-size:0.9rem;color:#888;min-height:24px;text-align:right;word-break:break-all}
+.result{font-size:2.5rem;color:#fff;text-align:right;font-weight:300;overflow:hidden;text-overflow:ellipsis}
+.mode-switch{display:flex;gap:8px;margin-bottom:15px}
+.mode-switch button{flex:1;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#888;border-radius:10px;cursor:pointer;font-size:0.8rem;transition:all 0.2s}
+.mode-switch button.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:transparent}
+.buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.btn{padding:18px;border:none;border-radius:14px;font-size:1.3rem;cursor:pointer;transition:all 0.15s;font-weight:500}
+.btn:active{transform:scale(0.95)}
+.btn-num{background:rgba(255,255,255,0.08);color:#fff}
+.btn-num:hover{background:rgba(255,255,255,0.15)}
+.btn-op{background:rgba(79,172,254,0.2);color:#4facfe}
+.btn-op:hover{background:rgba(79,172,254,0.3)}
+.btn-func{background:rgba(240,147,251,0.15);color:#f093fb;font-size:1rem}
+.btn-func:hover{background:rgba(240,147,251,0.25)}
+.btn-eq{background:linear-gradient(135deg,#4facfe,#00f2fe);color:#000;font-weight:bold}
+.btn-eq:hover{filter:brightness(1.1)}
+.btn-clear{background:rgba(245,87,108,0.2);color:#f5576c}
+.btn-clear:hover{background:rgba(245,87,108,0.3)}
+.btn-zero{grid-column:span 2}
+.scientific{display:none;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:15px}
+.scientific.show{display:grid}
+.scientific .btn{padding:12px 8px;font-size:0.85rem}
+.history{margin-top:15px;max-height:150px;overflow-y:auto}
+.history-item{padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:6px;font-size:0.85rem;cursor:pointer;transition:background 0.2s}
+.history-item:hover{background:rgba(255,255,255,0.08)}
+.history-expr{color:#888}
+.history-result{color:#4facfe;float:right}
+</style>
+</head>
+<body>
+<a href="../" class="back">← 戻る</a>
+<div class="calculator">
+<h1>🔢 電卓</h1>
+<div class="mode-switch">
+<button class="active" data-mode="basic">基本</button>
+<button data-mode="scientific">関数</button>
+</div>
+<div class="display">
+<div class="expression" id="expression"></div>
+<div class="result" id="result">0</div>
+</div>
+<div class="scientific" id="scientific">
+<button class="btn btn-func" data-func="sin">sin</button>
+<button class="btn btn-func" data-func="cos">cos</button>
+<button class="btn btn-func" data-func="tan">tan</button>
+<button class="btn btn-func" data-func="log">log</button>
+<button class="btn btn-func" data-func="ln">ln</button>
+<button class="btn btn-func" data-func="sqrt">√</button>
+<button class="btn btn-func" data-func="pow2">x²</button>
+<button class="btn btn-func" data-func="pow3">x³</button>
+<button class="btn btn-func" data-func="exp">eˣ</button>
+<button class="btn btn-func" data-func="pi">π</button>
+<button class="btn btn-func" data-func="abs">|x|</button>
+<button class="btn btn-func" data-func="inv">1/x</button>
+<button class="btn btn-func" data-func="fact">n!</button>
+<button class="btn btn-func" data-func="pow">xʸ</button>
+<button class="btn btn-func" data-func="e">e</button>
+</div>
+<div class="buttons">
+<button class="btn btn-clear" id="clear">C</button>
+<button class="btn btn-func" data-op="backspace">⌫</button>
+<button class="btn btn-func" data-op="percent">%</button>
+<button class="btn btn-op" data-op="/">÷</button>
+<button class="btn btn-num" data-num="7">7</button>
+<button class="btn btn-num" data-num="8">8</button>
+<button class="btn btn-num" data-num="9">9</button>
+<button class="btn btn-op" data-op="*">×</button>
+<button class="btn btn-num" data-num="4">4</button>
+<button class="btn btn-num" data-num="5">5</button>
+<button class="btn btn-num" data-num="6">6</button>
+<button class="btn btn-op" data-op="-">−</button>
+<button class="btn btn-num" data-num="1">1</button>
+<button class="btn btn-num" data-num="2">2</button>
+<button class="btn btn-num" data-num="3">3</button>
+<button class="btn btn-op" data-op="+">+</button>
+<button class="btn btn-num btn-zero" data-num="0">0</button>
+<button class="btn btn-num" data-num=".">.</button>
+<button class="btn btn-eq" id="equals">=</button>
+</div>
+<div class="history" id="history"></div>
+</div>
+<script>
+let expression='',result='0',history=[],waitingForOperand=false;
+const exprEl=document.getElementById('expression');
+const resultEl=document.getElementById('result');
+const historyEl=document.getElementById('history');
+
+function updateDisplay(){
+    exprEl.textContent=expression;
+    resultEl.textContent=formatNumber(result);
+}
+
+function formatNumber(num){
+    if(num==='Error')return num;
+    const n=parseFloat(num);
+    if(isNaN(n))return '0';
+    if(Math.abs(n)>1e12||Math.abs(n)<1e-10&&n!==0){
+        return n.toExponential(6);
+    }
+    return n.toLocaleString('en-US',{maximumFractionDigits:10});
+}
+
+function inputNumber(num){
+    if(waitingForOperand){
+        result=num;
+        waitingForOperand=false;
+    }else{
+        result=result==='0'&&num!=='.'?num:result+num;
+    }
+    if(result.split('.').length>2)result=result.slice(0,-1);
+    updateDisplay();
+}
+
+function inputOperator(op){
+    if(op==='backspace'){
+        result=result.length>1?result.slice(0,-1):'0';
+        updateDisplay();
+        return;
+    }
+    if(op==='percent'){
+        result=String(parseFloat(result)/100);
+        updateDisplay();
+        return;
+    }
+    expression=result+' '+op+' ';
+    waitingForOperand=true;
+    updateDisplay();
+}
+
+function calculate(){
+    if(!expression)return;
+    try{
+        const expr=expression+result;
+        const sanitized=expr.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');
+        const calculated=Function('"use strict";return ('+sanitized+')')();
+        if(!isFinite(calculated))throw new Error();
+        addHistory(expr,calculated);
+        result=String(calculated);
+        expression='';
+        waitingForOperand=true;
+    }catch{
+        result='Error';
+        expression='';
+    }
+    updateDisplay();
+}
+
+function applyFunction(func){
+    const n=parseFloat(result);
+    let r;
+    switch(func){
+        case'sin':r=Math.sin(n*Math.PI/180);break;
+        case'cos':r=Math.cos(n*Math.PI/180);break;
+        case'tan':r=Math.tan(n*Math.PI/180);break;
+        case'log':r=Math.log10(n);break;
+        case'ln':r=Math.log(n);break;
+        case'sqrt':r=Math.sqrt(n);break;
+        case'pow2':r=n*n;break;
+        case'pow3':r=n*n*n;break;
+        case'exp':r=Math.exp(n);break;
+        case'pi':r=Math.PI;break;
+        case'e':r=Math.E;break;
+        case'abs':r=Math.abs(n);break;
+        case'inv':r=1/n;break;
+        case'fact':r=factorial(Math.floor(n));break;
+        case'pow':expression=result+'^';waitingForOperand=true;updateDisplay();return;
+        default:return;
+    }
+    if(!isFinite(r)){result='Error'}
+    else{result=String(r)}
+    updateDisplay();
+}
+
+function factorial(n){
+    if(n<0||n>170)return Infinity;
+    if(n<=1)return 1;
+    let r=1;for(let i=2;i<=n;i++)r*=i;
+    return r;
+}
+
+function clear(){
+    expression='';
+    result='0';
+    waitingForOperand=false;
+    updateDisplay();
+}
+
+function addHistory(expr,res){
+    history.unshift({expr,res});
+    if(history.length>10)history.pop();
+    renderHistory();
+}
+
+function renderHistory(){
+    historyEl.innerHTML=history.map((h,i)=>`
+        <div class="history-item" onclick="loadHistory(${i})">
+            <span class="history-expr">${h.expr}</span>
+            <span class="history-result">= ${formatNumber(String(h.res))}</span>
+        </div>
+    `).join('');
+}
+
+function loadHistory(i){
+    result=String(history[i].res);
+    expression='';
+    updateDisplay();
+}
+
+document.querySelectorAll('[data-num]').forEach(btn=>{
+    btn.onclick=()=>inputNumber(btn.dataset.num);
+});
+
+document.querySelectorAll('[data-op]').forEach(btn=>{
+    btn.onclick=()=>inputOperator(btn.dataset.op);
+});
+
+document.querySelectorAll('[data-func]').forEach(btn=>{
+    btn.onclick=()=>applyFunction(btn.dataset.func);
+});
+
+document.getElementById('clear').onclick=clear;
+document.getElementById('equals').onclick=calculate;
+
+document.querySelectorAll('.mode-switch button').forEach(btn=>{
+    btn.onclick=function(){
+        document.querySelector('.mode-switch .active').classList.remove('active');
+        this.classList.add('active');
+        document.getElementById('scientific').classList.toggle('show',this.dataset.mode==='scientific');
+    };
+});
+
+document.addEventListener('keydown',e=>{
+    if(e.key>='0'&&e.key<='9'||e.key==='.')inputNumber(e.key);
+    else if(['+','-','*','/'].includes(e.key))inputOperator(e.key);
+    else if(e.key==='Enter'||e.key==='=')calculate();
+    else if(e.key==='Escape')clear();
+    else if(e.key==='Backspace')inputOperator('backspace');
+    else if(e.key==='%')inputOperator('percent');
+});
+
+updateDisplay();
+</script>
+</body>
+</html>
