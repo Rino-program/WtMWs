@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="./img/title.png">
+    <link rel="stylesheet" href="./html/blog/blogcss/blogstyle.css">
+    <link rel="stylesheet" href="./announcements.css">
+    <title>すべてのお知らせ - Welcome to My Website</title>
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .back-link:hover {
+            background: #0056b3;
+        }
+        .all-announcements {
+            margin: 20px 0;
+        }
+        .all-announcements h1 {
+            margin-bottom: 20px;
+        }
+    </style>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-144HPKP3NS"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-144HPKP3NS');
+    </script>
+</head>
+<body>
+    <a href="./index.html" class="back-link">← トップページに戻る</a>
+    
+    <section class="all-announcements announcements">
+        <h1>すべてのお知らせ</h1>
+        <div id="all-announcements-list">読み込み中…</div>
+    </section>
+
+    <script>
+    (function(){
+        function renderAll(items){
+            var container = document.getElementById('all-announcements-list');
+            container.innerHTML = '';
+            if(!items || items.length===0){ 
+                container.textContent = 'お知らせはありません。'; 
+                return; 
+            }
+            var ul = document.createElement('ul');
+            // JSON は最新順（新しいものが先）を想定して、その順で表示する
+            var ordered = items.slice();
+            ordered.forEach(function(it){
+                var li = document.createElement('li');
+
+                var dateSpan = document.createElement('span');
+                dateSpan.className = 'announcement-date';
+                dateSpan.textContent = it.date;
+
+                var textSpan = document.createElement('span');
+                textSpan.className = 'announcement-text';
+                textSpan.textContent = it.text;
+
+                li.appendChild(dateSpan);
+                li.appendChild(textSpan);
+                ul.appendChild(li);
+            });
+            container.appendChild(ul);
+        }
+        
+        fetch('./announcements.json')
+            .then(function(r){ return r.json(); })
+            .then(function(data){
+                var list = data.announcements || [];
+                renderAll(list);
+            })
+            .catch(function(e){
+                console.error(e);
+                document.getElementById('all-announcements-list').textContent = 'お知らせの読み込みに失敗しました。';
+            });
+    })();
+    </script>
+
+    <footer style="margin-top: 40px; text-align: center;">
+        <a href="https://github.com/Rino-program">@Rino-program</a>
+    </footer>
+</body>
+</html>

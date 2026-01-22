@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="./img/title.png">
     <link rel="stylesheet" href=".\\html\\blog\\blogcss\\blogstyle.css">
+    <link rel="stylesheet" href="./announcements.css">
     <title>Welcome to My Website (main page)</title>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-144HPKP3NS"></script>
@@ -14,24 +15,14 @@
 
         gtag('config', 'G-144HPKP3NS');
     </script>
-    <style>
-    body {
-        margin-left: 20px; /* 左に20pxの空白を作成 */
-    }
-    #main-header {
-        margin-left: -20px;
-    }
-    #main-nav {
-        margin-left: -20px;
-    }
-    </style>
 </head>
 <body>
     <header id="main-header">
         <h1>Welcome to My Website</h1>
-        <p>全体最終更新日:2026/01/15</p>
-        <p>ノーコードで作れるようなツールは基本使っていません。(一部githubcopilotを使用)</p>
+        <p>全体最終更新日:2026/01/22</p>
+        <p>ノーコードで作れるようなツールは基本使っていません。(一部GitHubCopilotを使用)</p>
         <p>このサイトはRino-programが作成したものです。</p>
+        <a href="https://x.com/Rinoprogram" class="icon-link" title="Xを見に行く">𝕏</a>
     </header>
     <nav id="main-nav">
         <ul>
@@ -41,42 +32,34 @@
             <li><a href="./audio">Audio-Visualizer v1.0.4</a></li>
             <li><a href="./post">ポスト集</a></li>
             <li><a href="./study-v2">勉強補助サイト</a></li>
+            <li><a href="https://x.com/Rinoprogram">X (旧Twitter)</a></li>
             <li><a href="https://forms.gle/6dbLHQxDBsK87Ksv6">お問い合わせ</a></li>
         </ul>
     </nav>
+    <main id="main-content">
+    <section id="recent-announcements" class="announcements">
+        <h2>〜最近のお知らせ〜</h2>
+        <div id="announcements-list">読み込み中…</div>
+        <a id="all-announcements-link" href="./announcements.html">すべてのお知らせを見る</a>
+    </section>
+    <script src="./announcements.js"></script>
     <br>
-    <h2>サイトの説明</h2>
-    <p>このサイトでは</p>
-    <p>ブログやリンク集などの</p>
-    <p>様々な情報を提供します。</p>
-    <p>〜最近のお知らせ〜(基本3つ)</p>
-    <ul>
-        <li>26/01/15 app: Audio-Visualizer v1.0.3 安定版公開開始！</li>
-        <li>25/12/19 site: デモコレクション集(pre)を公開しました。</li>
-        <li>25/12/18 site: 勉強補助サイト(v1)を公開しました。</li>
-    </ul>
-    <h2>～投票・アンケート～</h2>
-    <a style="margin-left: 30px;" href="./vote/index.html">投票ページ</a>
-    <h2>〜特設サイト〜</h2>
-    <a style="margin-left: 30px;" href="./tokusetu.html">特設サイト一覧</a>
-    <h2>～ブログ～</h2>
-    <a style="margin-left: 30px;" href="./html/blog_list.html">ブログ一覧</a>
-    <h2>～ポスト集～</h2>
-    <a style="margin-left: 30px;" href="./post">ポスト集</a>
-    <h2>～勉強補助サイト～</h2>
-    <a style="margin-left: 30px;" href="./study-v2">勉強補助サイト</a><br>
-    <p style="margin-left: 30px;">(ほぼ)完成です！<br>ですがまだ改良予定はあります...</p>
+    <hr>
+    <br>
     <h2>～Audio-Visualizer～</h2>
     <a style="margin-left: 30px;" href="./audio">Audio-Visualizer v1.0.4 安定版</a><br>
     <p style="margin-left: 30px;">音楽を視覚化するツールです。デモコレクション集から派生しました。</p>
-    <h2>～デモコレクション集～</h2>
-    <a style="margin-left: 30px;" href="./tmp">デモコレクション集(pre)</a><br>
     <h2>～リンク集～</h2>
     <ul>
         <li>
             <a href="./index.html">Welcome to My Website (ここです)</a>
             <p>私のウェブサイトです。ブログやリンク集などがあります。</p>
         </li>
+        <li>
+            <a href="https://x.com/Rinoprogram">X (旧Twitter)</a>
+            <p>今後はこちらで情報発信してきます。</p>
+        </li>
+        <!--
         <li>
             <a href="./html/blog_list.html">ブログ一覧</a>
             <p>ブログの一覧ページです。投稿を確認できます。</p>
@@ -85,8 +68,9 @@
             <a href="./post">ポスト集</a>
             <p>ちょっとした投稿を集めたページです。短い内容の投稿が多いです。</p>
         </li>
+        -->
         <li>
-            <a href="https://forms.gle/6dbLHQxDBsK87Ksv6">google フォーム</a>
+            <a href="https://forms.gle/6dbLHQxDBsK87Ksv6">Google フォーム</a>
             <p>
                 不具合報告、依頼受付、質問受付、ご感想などが送れます。
             </p>
@@ -95,33 +79,57 @@
             <a href="https://atcoder.jp/users/yakiringo">AtCoder(競技プログラミング)</a>
             <p>
                 AtCoderという国内最大・世界最大規模の競技プログラミングサイトです。<br>
-                現在536茶色(2026/01/15)まで上り詰めています！<br>
+                現在576茶色(2026/01/22)まで上り詰めています！<br>
                 応援よろしくお願いします！
             </p>
         </li>
         <li>
-            <a href="https://github.com/Rino-program/public-code">github</a>
+            <a href="https://github.com/Rino-program/public-code">GitHub</a>
             <p>プログラムの保管庫です。</p>
         </li>
     </ul>
+    <!--
+    <h2>～投票・アンケート～</h2>
+    <a style="margin-left: 30px;" href="./vote/index.html">投票ページ</a>
+    -->
+
+    <h2>〜特設サイト〜</h2>
+    <a style="margin-left: 30px;" href="./tokusetu.html">特設サイト一覧</a>
+    <!--
+    <h2>～ブログ～</h2>
+    <a style="margin-left: 30px;" href="./html/blog_list.html">ブログ一覧</a>
+    <h2>～ポスト集～</h2>
+    <a style="margin-left: 30px;" href="./post">ポスト集</a>
+    -->
+    <h2>～勉強補助サイト～</h2>
+    <a style="margin-left: 30px;" href="./study-v2">勉強補助サイト</a><br>
+    <p style="margin-left: 30px;">(ほぼ)完成です！<br>ですがまだ改良予定はあります...</p>
+    <h2>～Audio-Visualizer～</h2>
+    <a style="margin-left: 30px;" href="./audio">Audio-Visualizer v1.0.4 安定版</a><br>
+    <p style="margin-left: 30px;">音楽を視覚化するツールです。デモコレクション集から派生しました。</p>
+    <h2>～デモコレクション集～</h2>
+    <a style="margin-left: 30px;" href="./tmp">デモコレクション集</a><br>
+    <br>
+    <hr>
+    <br>
     <section id="update-schedule">
         <h2>製作中, 制作予定リスト</h2>
         <ul>
-            <li>Audio-Visualizerの更新とデバッグ作業中</li>
+            <li>Audio-Visualizerの更新とデバッグ作業中 → ほぼ完了</li>
             <li>ブログ記事を制作予定 (C++) → 大幅延期中</li>
-            <li>地震の特設サイトを制作中 → apiの利用規約により不可能かも...</li>
         </ul>
     </section>
     <h2 id="otoiawase">～お問い合わせ～</h2>
-    <p>ご意見やご質問がありましたら、<a href="https://forms.gle/6dbLHQxDBsK87Ksv6">google フォーム</a>でご連絡ください。</p>
+    <p>ご意見やご質問がありましたら<a href="https://forms.gle/6dbLHQxDBsK87Ksv6">Google フォーム</a>でご連絡ください。</p>
     <br>
     <h3>～感謝～</h3>
     <p>サイトのコードや公開: <a href="https://docs.github.com/jp/pages">GitHub Pages</a></p>
-    <p>コーディング補助・一部サイトの構築: <a href="https://github.com/features/copilot">GitHubCopilot</a></p>
+    <p>コーディング補助・一部サイトの構築: <a href="https://github.com/features/copilot">GitHub Copilot</a></p>
     <p>サイトURLのDNS: <a href="https://ddns.kuku.lu/">DDSN Now</a> / <a href="https://aquapal.net/">aquapal</a></p>
     <br>
     <hr>
-    <p>このサイト内ではより良いサイト作りの為、Google Analyticsでの情報収集を行っています。</p>
+    <p>当サイトでは一部ページを除き、より良い運営のためにGoogle Analyticsでアクセス解析を行っています。</p>
+    </main>
     <footer><a href="https://github.com/Rino-program">@Rino-program</a></footer>
 </body>
 </html>
