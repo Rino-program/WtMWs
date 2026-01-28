@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Akari Puzzle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #222;
+            font-family: Arial, sans-serif;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background-color: #333;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .file-input-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        input[type="file"] {
+            padding: 8px;
+            background-color: #444;
+            color: #fff;
+            border: 1px solid #666;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .game-area {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .puzzle-container {
+            background-color: #444;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        canvas {
+            display: block;
+            background-color: #222;
+            border: 2px solid #666;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 200px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .mode-buttons button {
+            flex: 1;
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        .mode-buttons button.active {
+            background-color: #2196F3;
+        }
+
+        button.reset-btn {
+            background-color: #f44336;
+        }
+
+        button.reset-btn:hover {
+            background-color: #da190b;
+        }
+
+        .info {
+            background-color: #444;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .info p {
+            margin-bottom: 8px;
+        }
+
+        .error {
+            color: #ff6b6b;
+            background-color: #3d2222;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .success {
+            color: #4CAF50;
+            background-color: #223d22;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .game-area {
+                gap: 15px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .puzzle-container, .controls, .info {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔆 Akari Puzzle 🔆</h1>
+        
+        <div class="file-input-section">
+            <input type="file" id="fileInput" accept=".txt" />
+            <button onclick="loadFile()">ファイルを読み込む</button>
+        </div>
+
+        <div id="errorMessage"></div>
+        <div id="successMessage"></div>
+
+        <div class="game-area" id="gameArea" style="display: none;">
+            <div class="puzzle-container">
+                <canvas id="canvas"></canvas>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>モード選択:</label>
+                    <div class="mode-buttons">
+                        <button class="mode-btn active" data-mode="light">💡 点灯</button>
+                        <button class="mode-btn" data-mode="block">🚫 ブロック</button>
+                        <button class="mode-btn" data-mode="erase">消す</button>
+                    </div>
+                </div>
+
+                <button class="reset-btn" onclick="resetPuzzle()">リセット</button>
+                <button onclick="checkAnswer()">答え確認</button>
+
+                <div class="info">
+                    <p><strong>グリッドサイズ:</strong> <span id="gridSize">-</span></p>
+                    <p><strong>ステータス:</strong> <span id="status">読み込み待機中</span></p>
+                    <p id="completionStatus" style="display: none;">✓ クリア！</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Akariパズルエンジン
+        class AkariPuzzle {
+            constructor(width, height, grid) {
+                this.width = width;
+                this.height = height;
+                this.originalGrid = JSON.parse(JSON.stringify(grid));
+                this.grid = JSON.parse(JSON.stringify(grid));
+                this.cellSize = 40;
+                this.currentMode = 'light';
+                this.setupCanvas();
+                this.setupEventListeners();
+            }
+
+            setupCanvas() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = this.width * this.cellSize;
+                this.canvas.height = this.height * this.cellSize;
+                this.render();
+            }
+
+            setupEventListeners() {
+                this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
+                this.canvas.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    return false;
+                });
+
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentMode = e.target.dataset.mode;
+                    });
+                });
+            }
+
+            handleCanvasClick(event) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = Math.floor((event.clientX - rect.left) / this.cellSize);
+                const y = Math.floor((event.clientY - rect.top) / this.cellSize);
+
+                if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
+                    const cell = this.grid[y][x];
+                    
+                    // 黒いマスや数字マスはクリックできない
+                    if (typeof cell === 'object' && (cell.type === 'black' || cell.type === 'number')) {
+                        return;
+                    }
+
+                    const currentState = typeof cell === 'object' ? cell.state : cell;
+
+                    if (this.currentMode === 'light') {
+                        this.grid[y][x] = { type: 'white', state: currentState === 'light' ? 'empty' : 'light' };
+                    } else if (this.currentMode === 'block') {
+                        this.grid[y][x] = { type: 'white', state: currentState === 'block' ? 'empty' : 'block' };
+                    } else if (this.currentMode === 'erase') {
+                        this.grid[y][x] = { type: 'white', state: 'empty' };
+                    }
+
+                    this.render();
+                }
+            }
+
+            render() {
+                this.ctx.fillStyle = '#222';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                for (let y = 0; y < this.height; y++) {
+                    for (let x = 0; x < this.width; x++) {
+                        this.drawCell(x, y);
+                    }
+                }
+            }
+
+            drawCell(x, y) {
+                const cell = this.grid[y][x];
+                const cellSize = this.cellSize;
+
+                // 背景と枠線
+                this.ctx.strokeStyle = '#666';
+                this.ctx.lineWidth = 1;
+                this.ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
+
+                if (typeof cell === 'object') {
+                    if (cell.type === 'black') {
+                        this.ctx.fillStyle = '#000';
+                        this.ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                    } else if (cell.type === 'number') {
+                        this.ctx.fillStyle = '#000';
+                        this.ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                        this.ctx.fillStyle = '#fff';
+                        this.ctx.font = 'bold 18px Arial';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'middle';
+                        this.ctx.fillText(cell.value, x * cellSize + cellSize / 2, y * cellSize + cellSize / 2);
+                    } else if (cell.type === 'white') {
+                        if (cell.state === 'light') {
+                            this.ctx.fillStyle = '#ffff99';
+                            this.ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                            this.ctx.fillStyle = '#888';
+                            this.ctx.font = '12px Arial';
+                            this.ctx.textAlign = 'right';
+                            this.ctx.textBaseline = 'bottom';
+                            this.ctx.fillText('💡', x * cellSize + cellSize - 5, y * cellSize + cellSize - 5);
+                        } else if (cell.state === 'block') {
+                            this.ctx.fillStyle = '#333';
+                            this.ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                            this.ctx.fillStyle = '#888';
+                            this.ctx.font = '12px Arial';
+                            this.ctx.textAlign = 'center';
+                            this.ctx.textBaseline = 'middle';
+                            this.ctx.fillText('X', x * cellSize + cellSize / 2, y * cellSize + cellSize / 2);
+                        } else {
+                            this.ctx.fillStyle = '#f0f0f0';
+                            this.ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                        }
+                    }
+                } else {
+                    this.ctx.fillStyle = '#f0f0f0';
+                    this.ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
+            }
+
+            reset() {
+                this.grid = JSON.parse(JSON.stringify(this.originalGrid));
+                this.render();
+            }
+
+            validateSolution() {
+                // 簡単な検証：全てのセルが確定しているか確認
+                for (let y = 0; y < this.height; y++) {
+                    for (let x = 0; x < this.width; x++) {
+                        const cell = this.grid[y][x];
+                        if (typeof cell === 'object' && cell.type === 'white' && cell.state === 'empty') {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+
+        // パズルデータのパース（堅牢化）
+        function parsePuzzleData(content) {
+            // CR を取り除き、BOM/先頭空白を除去し、空行を無視する
+            let lines = content.replace(/\r/g, '').split('\n').map(l => l.replace(/^\uFEFF/, '').trim()).filter(l => l.length > 0);
+
+            if (lines.length < 4) {
+                throw new Error('Invalid puzzle format');
+            }
+
+            // pzprv3 ヘッダを探す（前に空行やコメントがあっても許容）
+            const headerIdx = lines.findIndex(l => l.toLowerCase() === 'pzprv3');
+            if (headerIdx === -1) {
+                throw new Error('Invalid puzzle format: missing pzprv3');
+            }
+
+            if (lines.length <= headerIdx + 1 || lines[headerIdx + 1].toLowerCase() !== 'lightup') {
+                throw new Error('Invalid puzzle format: not a lightup puzzle');
+            }
+
+            if (lines.length <= headerIdx + 3) {
+                throw new Error('Invalid puzzle format: missing dimensions');
+            }
+
+            const width = parseInt(lines[headerIdx + 2]);
+            const height = parseInt(lines[headerIdx + 3]);
+
+            if (isNaN(width) || isNaN(height)) {
+                throw new Error('Invalid dimensions');
+            }
+
+            const grid = [];
+            for (let i = 0; i < height; i++) {
+                const rowLine = lines[headerIdx + 4 + i] || '';
+                const tokens = rowLine.split(/\s+/).filter(t => t.length > 0);
+                if (tokens.length < width) {
+                    throw new Error(`Invalid puzzle format: row ${i+1} length mismatch`);
+                }
+                const gridRow = [];
+                for (let j = 0; j < width; j++) {
+                    const cell = tokens[j];
+                    if (cell === '#') {
+                        gridRow.push({ type: 'black' });
+                    } else if (cell === '.') {
+                        gridRow.push({ type: 'white', state: 'empty' });
+                    } else if (/^\d+$/.test(cell)) {
+                        gridRow.push({ type: 'number', value: parseInt(cell) });
+                    } else {
+                        gridRow.push({ type: 'white', state: 'empty' });
+                    }
+                }
+                grid.push(gridRow);
+            }
+
+            return { width, height, grid };
+        }
+
+        let puzzle = null;
+
+        function loadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showError('ファイルを選択してください');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    const { width, height, grid } = parsePuzzleData(content);
+                    
+                    puzzle = new AkariPuzzle(width, height, grid);
+                    
+                    document.getElementById('gameArea').style.display = 'flex';
+                    document.getElementById('gridSize').textContent = `${width} × ${height}`;
+                    document.getElementById('status').textContent = 'プレイ中';
+                    document.getElementById('completionStatus').style.display = 'none';
+                    
+                    showSuccess(`パズルを読み込みました！(${width} × ${height})`);
+                    clearError();
+                } catch (err) {
+                    showError(`エラー: ${err.message}`);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetPuzzle() {
+            if (puzzle) {
+                puzzle.reset();
+                document.getElementById('completionStatus').style.display = 'none';
+                document.getElementById('status').textContent = 'リセット完了';
+            }
+        }
+
+        function checkAnswer() {
+            if (puzzle && puzzle.validateSolution()) {
+                document.getElementById('completionStatus').style.display = 'block';
+                document.getElementById('status').textContent = 'クリア！';
+                showSuccess('おめでとうございます！🎉');
+            } else {
+                showError('まだ完成していません。続けてください！');
+            }
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorMessage');
+            el.textContent = msg;
+            el.className = 'error';
+            el.style.display = 'block';
+        }
+
+        function showSuccess(msg) {
+            const el = document.getElementById('successMessage');
+            el.textContent = msg;
+            el.className = 'success';
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        function clearError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // ページ読み込み時
+        window.addEventListener('load', () => {
+            document.getElementById('status').textContent = '準備完了';
+        });
+    </script>
+</body>
+</html>
