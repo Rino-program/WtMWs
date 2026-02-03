@@ -6,14 +6,33 @@
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#0f172a">
     <!-- キャッシュ制御 -->
-    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="pragma" content="no-cache">
-    <meta http-equiv="expires" content="0">
+    <meta http-equiv="expires" content="-1">
     <title>Audio Visualizer v1.0.5(demo)</title>
-    <link rel="stylesheet" href="style.css?v=1707027600">
+    <link rel="stylesheet" href="style.css?v=1707027600" id="styleLink">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet">
 </head>
 <body>
+    <script>
+        // キャッシュバスター: 毎回ブラウザ起動時に新しい値を生成
+        (function() {
+            const timestamp = Math.floor(Date.now() / 1000);
+            const styleLink = document.getElementById('styleLink');
+            if (styleLink) {
+                const href = styleLink.href.split('?')[0];
+                styleLink.href = href + '?v=' + timestamp;
+            }
+            // script.jsのsrc修正はHTMLロード後に行う
+            document.addEventListener('DOMContentLoaded', function() {
+                const scripts = document.querySelectorAll('script[src*="script.js"]');
+                scripts.forEach(script => {
+                    const src = script.src.split('?')[0];
+                    script.src = src + '?v=' + timestamp;
+                });
+            });
+        })();
+    </script>
     <!-- Canvas Layer -->
     <canvas id="cv"></canvas>
 
@@ -433,6 +452,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=1707027600"></script>
+    <script src="script.js?v=1707027600" id="mainScript"></script>
 </body>
 </html>
