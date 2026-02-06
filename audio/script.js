@@ -21,6 +21,7 @@ const state = {
     playTimeout: null,
     uiTimeout: null,
     sleepTimerId: null,
+    sleepTimerEnd: 0,
     lastSyncTime: 0,
     lastAudioTime: 0,  // シーク検出用
 
@@ -73,6 +74,7 @@ const state = {
         showLabels: true,
         persistSettings: true,
         lowPowerMode: false,
+        targetFps: 60,
         showVideo: true,
         videoMode: 'window', // 'window' or 'background'
         videoFitMode: 'cover', // 'cover', 'contain', 'fill'
@@ -85,6 +87,7 @@ const state = {
         balance: 0,
         autoPlayNext: true,
         stopOnVideoEnd: false,
+        volume: 1.0,
         // New visualization settings
         changeMode: 'off', // 'off' | 'plus' | 'plusminus'
         sandMode: false,
@@ -96,6 +99,15 @@ const state = {
         autoHideUI: true
     }
 };
+
+// ============== DEBOUNCE UTILITY ==============
+function debounce(fn, delay) {
+    let timer;
+    return function(...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
 
 // ============== BLOB URL CACHE ==============
 function isBlobUrl(url) { return typeof url === 'string' && url.startsWith('blob:'); }
@@ -177,6 +189,12 @@ function releaseObjectUrlForTrack(track) {
 }
 
 const EQ_FREQS = [60, 170, 350, 1000, 3000, 6000, 12000, 14000];
+const FREQ_RANGE_PRESETS = {
+    standard: { low: 20, high: 16000 },
+    full: { low: 20, high: 20000 },
+    voice: { low: 100, high: 8000 },
+    bass: { low: 20, high: 4000 }
+};
 
 const COLOR_PRESETS = [
     { name: 'Cyber', color: '#00f2ff' },
@@ -209,6 +227,14 @@ const els = {
     volIcon: $('volIcon'),
     modeSelect: $('modeSelect'),
     statusText: $('statusText'),
+    nowPlayingArtSm: $('nowPlayingArtSm'),
+    nextUpText: $('nextUpText'),
+    nowPlaying: $('nowPlaying'),
+    nowPlayingArt: $('nowPlayingArt'),
+    nowPlayingIcon: $('nowPlayingIcon'),
+    nowPlayingTitle: $('nowPlayingTitle'),
+    nowPlayingArtist: $('nowPlayingArtist'),
+    nowPlayingIndex: $('nowPlayingIndex'),
     playlistPanel: $('playlistPanel'),
     playlistToggle: $('playlistToggle'),
     closePlaylistBtn: $('closePlaylistBtn'),
@@ -231,11 +257,13 @@ const els = {
     controlsBar: $('controlsBar'),
     overlayMsg: $('overlayMsg'),
     progressContainer: $('progressContainer'),
+    seekFill: $('seekFill'),
+    seekBuffer: $('seekBuffer'),
     playbackControls: $('playbackControls'),
     videoContainer: $('videoContainer'),
     closeVideoBtn: $('closeVideoBtn'),
     toggleVideoModeBtn: $('toggleVideoModeBtn'),
-    lowPowerModeCheckbox: $('lowPowerModeCheckbox'),
+    // lowPowerModeCheckbox removed - replaced by fpsSelect
     showVideoCheckbox: $('showVideoCheckbox'),
     videoModeSelect: $('videoModeSelect'),
     autoPlayNextCheckbox: $('autoPlayNextCheckbox'),
@@ -354,7 +382,21 @@ function init() {
     setAppHeight();
     
     resize();
-    window.addEventListener('resize', resize);
+    const debouncedResize = debounce(resize, 100);
+    window.addEventListener('resize', debouncedResize);
+
+    // バックグラウンド/フォアグラウンド切り替え処理
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            lastDrawTs = 0;
+            // 動画を音声と再同期
+            if (bgVideo.src && state.isPlaying && state.settings.showVideo) {
+                bgVideo.currentTime = audio.currentTime + (typeof getVideoSyncOffset === 'function' ? getVideoSyncOffset() : 0);
+                bgVideo.playbackRate = audio.playbackRate || 1.0;
+                if (bgVideo.paused) bgVideo.play().catch(() => {});
+            }
+        }
+    });
     
     // Safari/iOS対応：リサイズ・スクロール・向き変更時に高さを再計算
     window.addEventListener('resize', setAppHeight);
@@ -400,7 +442,11 @@ function init() {
             bgVideo.play().catch(() => {});
         }
         const track = state.playlist[state.currentIndex];
-        if (track) els.statusText.textContent = `🎵 ${track.name}`;
+        if (track) {
+            const trackNum = `[${state.currentIndex + 1}/${state.playlist.length}]`;
+            els.statusText.textContent = `🎵 ${trackNum} ${track.name}`;
+            updateTopBadge(track, state.currentIndex);
+        }
     });
     audio.addEventListener('waiting', () => {
         if (bgVideo.src) bgVideo.pause();
@@ -496,6 +542,8 @@ function init() {
             updateVideoVisibility();
             renderPlaylist();
             els.statusText.textContent = '待機中...';
+            updateTopBadge(null, -1);
+            updateNowPlayingCustom('未再生', '--', '🎵', '0/0');
             saveSettingsToStorage();
             showOverlay('✅ プレイリストをクリアしました');
         }
@@ -548,12 +596,13 @@ function init() {
     initDraggablePlaylist();
     applySettingsToUI();
     updateShuffleRepeatUI();
+    updateTopBadge(null, -1);
+    updateNowPlayingCustom('未再生', '--', '🎵', `0/${state.playlist.length}`);
     
-    // Drag & Drop
-    document.body.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
     // Drag & Drop
     document.body.addEventListener('dragover', e => {
         e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
         document.body.classList.add('drag-over');
     });
     document.body.addEventListener('dragleave', e => {
@@ -575,9 +624,11 @@ function init() {
     document.addEventListener('touchstart', resetUITimeout);
     document.addEventListener('keydown', e => {
         resetUITimeout();
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        const tag = e.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable) return;
+        const keyId = (e.key === ']' ? 'BracketRight' : (e.key === '[' ? 'BracketLeft' : e.code));
 
-        switch(e.code) {
+        switch(keyId) {
             case 'Space': e.preventDefault(); togglePlay(); break;
             case 'ArrowLeft': prevTrack(); break;
             case 'ArrowRight': nextTrack(); break;
@@ -601,11 +652,18 @@ function init() {
                 applySettingsToUI(); 
                 showOverlay(state.settings.showVideo ? '📺 動画表示: ON' : '📺 動画表示: OFF');
                 break;
-            case 'KeyL': 
-                state.settings.lowPowerMode = !state.settings.lowPowerMode; 
-                applySettingsToUI(); 
-                showOverlay(state.settings.lowPowerMode ? '🔋 低電力モード: ON' : '⚡ 低電力モード: OFF'); 
+            case 'KeyL': {
+                // FPSサイクル: 30 → 60 → 120 → 無制限 → 30
+                const fpsSteps = [30, 60, 120, 0];
+                const curFps = state.settings.targetFps || 60;
+                const ci = fpsSteps.indexOf(curFps);
+                const nextFps = fpsSteps[(ci + 1) % fpsSteps.length];
+                state.settings.targetFps = nextFps;
+                state.settings.lowPowerMode = (nextFps <= 30);
+                applySettingsToUI();
+                showOverlay(`🎬 FPS: ${nextFps === 0 ? '無制限' : nextFps}`);
                 break;
+            }
             case 'KeyR': 
                 state.settings.rainbow = !state.settings.rainbow; 
                 applySettingsToUI(); 
@@ -619,11 +677,35 @@ function init() {
             case 'KeyS': toggleShuffle(); applySettingsToUI(); break;
             case 'KeyP': toggleRepeat(); applySettingsToUI(); break;
             case 'KeyM': 
-                state.mode = (state.mode + 1) % 11; 
+                state.mode = (state.mode + 1) % 9; 
                 els.modeSelect.value = state.mode;
                 const modeName = els.modeSelect.options[els.modeSelect.selectedIndex].text;
                 showOverlay(`📊 モード: ${modeName}`);
                 break;
+            case 'BracketLeft': {
+                const rates = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+                const ci = rates.indexOf(audio.playbackRate);
+                const ni = Math.max(0, ci <= 0 ? 0 : ci - 1);
+                audio.playbackRate = rates[ni];
+                state.settings.playbackRate = rates[ni];
+                if (bgVideo.src) bgVideo.playbackRate = rates[ni];
+                syncVideoRateAfterChange();
+                const sel = $('speedSelect'); if (sel) sel.value = rates[ni];
+                showOverlay(`⏪ 再生速度: ${rates[ni]}x`);
+                break;
+            }
+            case 'BracketRight': {
+                const rates = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+                const ci = rates.indexOf(audio.playbackRate);
+                const ni = Math.min(rates.length - 1, ci < 0 ? 3 : ci + 1);
+                audio.playbackRate = rates[ni];
+                state.settings.playbackRate = rates[ni];
+                if (bgVideo.src) bgVideo.playbackRate = rates[ni];
+                syncVideoRateAfterChange();
+                const sel = $('speedSelect'); if (sel) sel.value = rates[ni];
+                showOverlay(`⏩ 再生速度: ${rates[ni]}x`);
+                break;
+            }
         }
     });
     resetUITimeout();
@@ -882,11 +964,11 @@ function updateVideoVisibility() {
     if (isVideo && state.settings.showVideo) {
         if (bgVideo.src !== track.url) {
             bgVideo.src = track.url;
-            bgVideo.playbackRate = 1.0; // 再生速度をリセット
+            bgVideo.playbackRate = audio.playbackRate || 1.0;
             
-            // ロード完了後に時間を合わせる（MVを少しだけ先に）
             const onLoaded = () => {
                 bgVideo.currentTime = audio.currentTime + getVideoSyncOffset();
+                bgVideo.playbackRate = audio.playbackRate || 1.0;
                 if (state.isPlaying) bgVideo.play().catch(() => {});
                 bgVideo.removeEventListener('loadedmetadata', onLoaded);
             };
@@ -979,7 +1061,15 @@ function setupSettingsInputs() {
         updateNumBars();
     };
     $('showLabelsCheckbox').onchange = e => { state.settings.showLabels = e.target.checked; };
-    $('lowPowerModeCheckbox').onchange = e => { state.settings.lowPowerMode = e.target.checked; };
+    const fpsSelect = $('fpsSelect');
+    if (fpsSelect) {
+        fpsSelect.onchange = e => {
+            const fps = +e.target.value;
+            state.settings.targetFps = fps;
+            state.settings.lowPowerMode = (fps <= 30);
+            showOverlay(`🎬 FPS: ${fps === 0 ? '無制限' : fps}`);
+        };
+    }
     $('showVideoCheckbox').onchange = e => { state.settings.showVideo = e.target.checked; updateVideoVisibility(); };
     $('videoModeSelect').onchange = e => { state.settings.videoMode = e.target.value; updateVideoVisibility(); };
     $('videoFitModeSelect').onchange = e => { state.settings.videoFitMode = e.target.value; updateVideoVisibility(); };
@@ -1001,13 +1091,30 @@ function setupSettingsInputs() {
         };
     }
 
+    const freqRangeSelect = $('freqRangeSelect');
+    if (freqRangeSelect) {
+        freqRangeSelect.onchange = e => {
+            const presetKey = e.target.value;
+            if (presetKey === 'custom') return;
+            const preset = FREQ_RANGE_PRESETS[presetKey];
+            if (!preset) return;
+            state.settings.lowFreq = preset.low;
+            state.settings.highFreq = preset.high;
+            $('lowFreqSlider').value = preset.low;
+            $('lowFreqValue').textContent = preset.low + 'Hz';
+            $('highFreqSlider').value = preset.high;
+            $('highFreqValue').textContent = (preset.high >= 1000 ? (preset.high/1000) + 'kHz' : preset.high + 'Hz');
+        };
+    }
     $('lowFreqSlider').oninput = e => {
         state.settings.lowFreq = +e.target.value;
         $('lowFreqValue').textContent = state.settings.lowFreq + 'Hz';
+        if (freqRangeSelect) freqRangeSelect.value = 'custom';
     };
     $('highFreqSlider').oninput = e => {
         state.settings.highFreq = +e.target.value;
         $('highFreqValue').textContent = (state.settings.highFreq >= 1000 ? (state.settings.highFreq/1000) + 'kHz' : state.settings.highFreq + 'Hz');
+        if (freqRangeSelect) freqRangeSelect.value = 'custom';
     };
     EQ_FREQS.forEach((freq, i) => {
         const id = freq >= 1000 ? `eq${freq/1000}k` : `eq${freq}`;
@@ -1015,6 +1122,34 @@ function setupSettingsInputs() {
         if (el) el.oninput = e => { state.settings.eq[i] = +e.target.value; updateEQ(i, +e.target.value); };
     });
     $('resetEqBtn').onclick = resetEQ;
+
+    // EQプリセットボタン
+    const EQ_PRESETS = {
+        flat:       [0, 0, 0, 0, 0, 0, 0, 0],
+        rock:       [5, 4, -2, -3, 2, 5, 7, 6],
+        pop:        [-1, 2, 5, 4, 1, -1, -2, -1],
+        jazz:       [3, 2, -2, -1, 2, 4, 5, 3],
+        classical:  [4, 3, -1, 1, -1, 2, 3, 4],
+        bass:       [8, 6, 4, 1, 0, 0, 0, 0],
+        vocal:      [-2, -1, 3, 5, 4, 2, 0, -1],
+        electronic: [5, 4, 1, -2, 0, 3, 5, 7]
+    };
+    document.querySelectorAll('.eq-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const preset = btn.dataset.preset;
+            const values = EQ_PRESETS[preset];
+            if (!values) return;
+            state.settings.eq = [...values];
+            state.eqFilters.forEach((f, i) => {
+                f.gain.value = values[i];
+                const freq = EQ_FREQS[i];
+                const id = freq >= 1000 ? `eq${freq/1000}k` : `eq${freq}`;
+                const el = $(id);
+                if (el) el.value = values[i];
+            });
+            showOverlay(`🎵 EQ: ${btn.textContent}`);
+        });
+    });
     $('glowSlider').oninput = e => {
         state.settings.glowStrength = +e.target.value;
         $('glowValue').textContent = state.settings.glowStrength > 30 ? '強' : state.settings.glowStrength > 10 ? '中' : '弱';
@@ -1057,6 +1192,37 @@ function setupSettingsInputs() {
 
     $('autoPlayNextCheckbox').onchange = e => { state.settings.autoPlayNext = e.target.checked; };
     $('stopOnVideoEndCheckbox').onchange = e => { state.settings.stopOnVideoEnd = e.target.checked; };
+
+    // 再生速度セレクト
+    const speedSelect = $('speedSelect');
+    if (speedSelect) {
+        speedSelect.onchange = e => {
+            const rate = +e.target.value;
+            audio.playbackRate = rate;
+            state.settings.playbackRate = rate;
+            if (bgVideo.src) bgVideo.playbackRate = rate;
+            syncVideoRateAfterChange();
+            showOverlay(`⏩ 再生速度: ${rate}x`);
+        };
+    }
+
+    // スリープタイマーボタン
+    document.querySelectorAll('.sleep-btn').forEach(btn => {
+        btn.onclick = () => {
+            const minutes = +btn.dataset.minutes;
+            if (minutes === 0) {
+                stopSleepTimer();
+                showOverlay('⏰ スリープタイマー: オフ');
+                updateSleepTimerStatus();
+            } else {
+                startSleepTimer(minutes);
+                updateSleepTimerStatus();
+            }
+            // アクティブ状態更新
+            document.querySelectorAll('.sleep-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        };
+    });
 
     const changeModeSelect = $('changeModeSelect');
     if (changeModeSelect) changeModeSelect.onchange = e => { state.settings.changeMode = e.target.value; };
@@ -1132,7 +1298,8 @@ function applySettingsToUI() {
     $('qualitySelect').value = state.settings.fftSize;
     $('barCountSelect').value = state.settings.barCount;
     $('showLabelsCheckbox').checked = state.settings.showLabels;
-    $('lowPowerModeCheckbox').checked = state.settings.lowPowerMode;
+    const fpsSelectUI = $('fpsSelect');
+    if (fpsSelectUI) fpsSelectUI.value = state.settings.targetFps || 60;
     $('showVideoCheckbox').checked = state.settings.showVideo;
     $('videoModeSelect').value = state.settings.videoMode;
     $('videoFitModeSelect').value = state.settings.videoFitMode || 'cover';
@@ -1141,6 +1308,17 @@ function applySettingsToUI() {
     $('lowFreqValue').textContent = state.settings.lowFreq + 'Hz';
     $('highFreqSlider').value = state.settings.highFreq;
     $('highFreqValue').textContent = (state.settings.highFreq >= 1000 ? (state.settings.highFreq/1000) + 'kHz' : state.settings.highFreq + 'Hz');
+    const freqRangeSelectUI = $('freqRangeSelect');
+    if (freqRangeSelectUI) {
+        let matched = 'custom';
+        Object.keys(FREQ_RANGE_PRESETS).forEach(key => {
+            const preset = FREQ_RANGE_PRESETS[key];
+            if (preset.low === state.settings.lowFreq && preset.high === state.settings.highFreq) {
+                matched = key;
+            }
+        });
+        freqRangeSelectUI.value = matched;
+    }
     $('glowSlider').value = state.settings.glowStrength;
     $('rainbowCheckbox').checked = state.settings.rainbow;
     $('mirrorCheckbox').checked = state.settings.mirror;
@@ -1180,6 +1358,17 @@ function applySettingsToUI() {
     
     updateRenderModeStatus();
     applyBalanceToPan();
+
+    // ボリューム復元
+    if (state.settings.volume !== undefined) {
+        els.volSlider.value = state.settings.volume;
+        updateVolume();
+    }
+
+    // 再生速度復元
+    const speedSelect = $('speedSelect');
+    if (speedSelect) speedSelect.value = state.settings.playbackRate || 1.0;
+    audio.playbackRate = state.settings.playbackRate || 1.0;
 
     state.settings.eq.forEach((val, i) => {
         const freq = EQ_FREQS[i];
@@ -1408,10 +1597,18 @@ async function setInputSource(source) {
         audio.pause();
         await startMic();
         els.statusText.textContent = '🎤 マイク入力中';
+        updateTopBadge(null, -1);
+        updateNowPlayingCustom('マイク入力', 'ライブ入力', '🎤', 'LIVE');
     } else {
         stopMic();
         connectFileSource();
         els.statusText.textContent = state.playlist[state.currentIndex] ? `🎵 ${state.playlist[state.currentIndex].name}` : '待機中...';
+        updateTopBadge(state.playlist[state.currentIndex], state.currentIndex);
+        if (state.playlist[state.currentIndex]) {
+            updateNowPlayingUI(state.playlist[state.currentIndex], state.currentIndex);
+        } else {
+            updateNowPlayingCustom('未再生', '--', '🎵', `0/${state.playlist.length}`);
+        }
     }
 }
 
@@ -1476,6 +1673,14 @@ function resetEQ() {
         const el = $(id);
         if (el) el.value = 0;
     });
+}
+
+function syncVideoRateAfterChange() {
+    state.lastAudioTime = audio.currentTime;
+    if (typeof videoSyncCooldown !== 'undefined') videoSyncCooldown = 0.6;
+    if (typeof lastVideoSyncCheckTs !== 'undefined') {
+        lastVideoSyncCheckTs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    }
 }
 
 // ============== PLAYBACK ==============
@@ -1563,7 +1768,10 @@ function playTrack(index) {
     if (index < 0 || index >= state.playlist.length) return;
     state.currentIndex = index;
     const track = state.playlist[index];
-    els.statusText.textContent = `🎵 ${track.name}`;
+    const trackNum = `[${index + 1}/${state.playlist.length}]`;
+    els.statusText.textContent = `🎵 ${trackNum} ${track.name}`;
+    updateTopBadge(track, index);
+    updateNowPlayingUI(track, index);
     document.title = `${track.name} - Audio Visualizer`;
     renderPlaylist();
     
@@ -1619,6 +1827,8 @@ function updateVolume() {
     audio.volume = volume;
     if (state.inputSource === 'file' && state.gainNode) state.gainNode.gain.value = volume;
     els.volIcon.textContent = v == 0 ? '🔇' : v < 0.5 ? '🔉' : '🔊';
+    // ボリューム設定を保存
+    state.settings.volume = +v;
 }
 function onMetadataLoaded() { els.seekBar.max = audio.duration || 0; updateTimeDisplay(); }
 function updateProgress() { 
@@ -1627,7 +1837,10 @@ function updateProgress() {
         updateTimeDisplay(); 
     } 
 }
-function updateTimeDisplay() { els.timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`; }
+function updateTimeDisplay() {
+    els.timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+    updateSeekVisuals();
+}
 function updatePlayBtn() { els.playBtn.textContent = state.isPlaying ? '⏸' : '▶'; }
 function handleAudioError(e) { 
     console.error('Audio error:', e); 
@@ -1637,6 +1850,85 @@ function handleAudioError(e) {
     setTimeout(nextTrack, 3000);
 }
 function formatTime(s) { if (!s || isNaN(s)) return '0:00'; const m = Math.floor(s / 60); const sec = Math.floor(s % 60); return `${m}:${sec.toString().padStart(2, '0')}`; }
+
+function updateSeekVisuals() {
+    if (!els.seekFill || !els.seekBuffer) return;
+    const duration = audio.duration || 0;
+    const current = audio.currentTime || 0;
+    const playedPct = duration > 0 ? Math.min(100, Math.max(0, (current / duration) * 100)) : 0;
+    els.seekFill.style.width = `${playedPct}%`;
+    let bufferedEnd = 0;
+    try {
+        for (let i = 0; i < audio.buffered.length; i++) {
+            const start = audio.buffered.start(i);
+            const end = audio.buffered.end(i);
+            if (current + 0.2 >= start) bufferedEnd = Math.max(bufferedEnd, end);
+        }
+    } catch {}
+    const bufferedPct = duration > 0 ? Math.min(100, Math.max(0, (bufferedEnd / duration) * 100)) : 0;
+    els.seekBuffer.style.width = `${bufferedPct}%`;
+}
+
+function getTrackDisplayInfo(track) {
+    if (!track) return { title: '未再生', artist: '--', icon: '🎵' };
+    let title = track.name || 'Unknown';
+    title = title.replace(/\.(mp3|m4a|wav|aac|mp4|webm|mkv|mov|ogg|flac|opus)$/i, '');
+    let artist = 'Audio Visualizer';
+    if (title.includes(' - ')) {
+        const parts = title.split(' - ');
+        artist = parts[0].trim();
+        title = parts.slice(1).join(' - ').trim();
+    }
+    return { title, artist, icon: track.isVideo ? '🎬' : '🎵' };
+}
+
+function hashString(input) {
+    let hash = 0;
+    for (let i = 0; i < input.length; i++) {
+        hash = ((hash << 5) - hash) + input.charCodeAt(i);
+        hash |= 0;
+    }
+    return Math.abs(hash);
+}
+
+function updateTopBadge(track, index) {
+    if (!els.nowPlayingArtSm) return;
+    const info = getTrackDisplayInfo(track);
+    const base = info.title + info.artist;
+    const hue = hashString(base) % 360;
+    els.nowPlayingArtSm.style.background = `linear-gradient(135deg, hsla(${hue}, 85%, 55%, 0.7), hsla(${(hue + 40) % 360}, 85%, 45%, 0.7))`;
+    els.nowPlayingArtSm.textContent = info.icon;
+    updateNextUpText(index);
+}
+
+function updateNextUpText(currentIndex) {
+    if (!els.nextUpText) return;
+    if (!state.playlist.length || currentIndex < 0) {
+        els.nextUpText.textContent = '次: --';
+        return;
+    }
+    const nextIndex = (currentIndex + 1) % state.playlist.length;
+    const nextTrack = state.playlist[nextIndex];
+    if (!nextTrack) {
+        els.nextUpText.textContent = '次: --';
+        return;
+    }
+    els.nextUpText.textContent = `次: ${nextTrack.name}`;
+}
+
+function updateNowPlayingCustom(title, artist, icon, indexText) {
+    if (!els.nowPlayingTitle) return;
+    els.nowPlayingTitle.textContent = title;
+    els.nowPlayingArtist.textContent = artist;
+    if (els.nowPlayingIcon) els.nowPlayingIcon.textContent = icon;
+    if (els.nowPlayingIndex) els.nowPlayingIndex.textContent = indexText;
+}
+
+function updateNowPlayingUI(track, index) {
+    const info = getTrackDisplayInfo(track);
+    const indexText = index >= 0 ? `${index + 1}/${state.playlist.length}` : `0/${state.playlist.length}`;
+    updateNowPlayingCustom(info.title, info.artist, info.icon, indexText);
+}
 
 function handleFiles(files) {
     const allowedExt = new Set(['mp3', 'wav', 'm4a', 'aac', 'mp4', 'webm', 'mkv', 'mov', 'ogg', 'flac', 'opus']);
@@ -1691,11 +1983,13 @@ function renderPlaylist() {
 
     if (state.playlist.length === 0) { 
         els.playlistItems.innerHTML = '<div class="playlist-empty">曲を追加してください</div>'; 
+        updatePlaylistCount();
         return; 
     }
     
     if (filtered.length === 0) {
         els.playlistItems.innerHTML = '<div class="playlist-empty">見つかりませんでした</div>';
+        updatePlaylistCount();
         return;
     }
 
@@ -1745,6 +2039,27 @@ function renderPlaylist() {
     
     // ドラッグ&ドロップ処理
     setupPlaylistDragDrop();
+    updatePlaylistCount();
+}
+
+function updatePlaylistCount() {
+    const countEl = $('playlistCount');
+    if (countEl) {
+        countEl.textContent = state.playlist.length > 0 ? `(${state.playlist.length}曲)` : '';
+    }
+}
+
+function updateSleepTimerStatus() {
+    const el = $('sleepTimerStatus');
+    if (!el) return;
+    const remaining = getSleepTimerRemaining();
+    if (remaining > 0) {
+        const min = Math.floor(remaining / 60);
+        const sec = remaining % 60;
+        el.textContent = `残り ${min}:${sec.toString().padStart(2, '0')}`;
+    } else {
+        el.textContent = '';
+    }
 }
 
 let draggedIndex = -1;
@@ -2125,7 +2440,52 @@ function toggleFullscreen() {
     }
 }
 
-function showOverlay(msg, duration = 2000) { els.overlayMsg.textContent = msg; els.overlayMsg.classList.remove('hidden'); if (duration > 0) setTimeout(() => { els.overlayMsg.classList.add('hidden'); }, duration); }
+function showOverlay(msg, duration = 2000) {
+    els.overlayMsg.textContent = msg;
+    els.overlayMsg.classList.remove('hidden');
+    els.overlayMsg.classList.remove('fade-out');
+    if (duration > 0) {
+        setTimeout(() => {
+            els.overlayMsg.classList.add('fade-out');
+            setTimeout(() => {
+                els.overlayMsg.classList.add('hidden');
+                els.overlayMsg.classList.remove('fade-out');
+            }, 400);
+        }, duration);
+    }
+}
+
+// ============== SLEEP TIMER ==============
+function startSleepTimer(minutes) {
+    stopSleepTimer();
+    if (minutes <= 0) return;
+    state.sleepTimerEnd = Date.now() + minutes * 60 * 1000;
+    state.sleepTimerId = setInterval(() => {
+        const remaining = state.sleepTimerEnd - Date.now();
+        if (remaining <= 0) {
+            stopSleepTimer();
+            audio.pause();
+            state.isPlaying = false;
+            updatePlayBtn();
+            showOverlay('💤 スリープタイマーで停止しました');
+        }
+    }, 1000);
+    const label = minutes >= 60 ? `${Math.floor(minutes/60)}時間${minutes%60 ? minutes%60 + '分' : ''}` : `${minutes}分`;
+    showOverlay(`⏰ スリープタイマー: ${label}後に停止`);
+}
+
+function stopSleepTimer() {
+    if (state.sleepTimerId) {
+        clearInterval(state.sleepTimerId);
+        state.sleepTimerId = null;
+    }
+    state.sleepTimerEnd = 0;
+}
+
+function getSleepTimerRemaining() {
+    if (!state.sleepTimerEnd) return 0;
+    return Math.max(0, Math.ceil((state.sleepTimerEnd - Date.now()) / 1000));
+}
 
 // ============== EXPORT ==============
 function startExport() {
@@ -2168,13 +2528,38 @@ function getFilteredData() {
     const loIdx = freqToIdx(state.settings.lowFreq);
     const hiIdx = Math.min(freqToIdx(state.settings.highFreq), state.bufLen);
     const out = new Uint8Array(state.settings.barCount);
-    const step = (hiIdx - loIdx) / state.settings.barCount;
+    const range = hiIdx - loIdx;
+    if (range <= 0) return out;
+    
+    // 対数スケーリングで人間の聴覚に合わせた周波数マッピング
     for (let i = 0; i < state.settings.barCount; i++) {
-        const idx = Math.min(loIdx + Math.floor(i * step), state.bufLen - 1);
-        // 感度はAnalyserのdBレンジで反映（出力はそのまま使用）
-        out[i] = state.freqData[idx];
+        // 対数スケール: 低音域により多くのバーを割り当て
+        const t0 = i / state.settings.barCount;
+        const t1 = (i + 1) / state.settings.barCount;
+        const startIdx = loIdx + Math.floor(Math.pow(t0, 0.6) * range);
+        const endIdx = Math.min(loIdx + Math.floor(Math.pow(t1, 0.6) * range), hiIdx - 1);
+        
+        // 範囲内のビンを平均化（データの損失を防止）
+        if (endIdx >= startIdx) {
+            let sum = 0;
+            let maxVal = 0;
+            for (let j = startIdx; j <= endIdx; j++) {
+                const v = state.freqData[j];
+                sum += v;
+                if (v > maxVal) maxVal = v;
+            }
+            // 平均とピークのブレンドで自然な見た目を実現
+            const avg = sum / (endIdx - startIdx + 1);
+            out[i] = Math.round(avg * 0.7 + maxVal * 0.3);
+        } else {
+            out[i] = state.freqData[Math.min(startIdx, state.bufLen - 1)];
+        }
     }
     return out;
+}
+function updateNumBars() {
+    const count = Math.max(16, Math.min(512, state.settings.barCount || 64));
+    state.settings.barCount = count;
 }
 function freqToIdx(f) { return state.audioCtx ? Math.round(f * state.analyser.fftSize / state.audioCtx.sampleRate) : 0; }
 function getColor(i, v = 1, total = state.settings.barCount) {
@@ -2263,12 +2648,12 @@ function getVideoStartOffset() {
 
 let lastDrawTs = 0;
 let lastVideoSyncCheckTs = 0;
-let videoSyncCooldown = 0; // 同期後のクールダウン時間
 let cachedReduceMotion = false; // matchMediaキャッシュ
 let colorsCache = []; // 色配列キャッシュ
 let animationFrameId = null; // rAF IDを保存して制御
 let appliedBlurPx = -1;
 let visualizerBaseAlpha = 1;
+let videoSyncCooldown = 0; // 同期後のクールダウン時間
 
 // リソースモニター用
 let fpsFrameCount = 0;
@@ -2330,10 +2715,10 @@ function draw(ts = 0) {
             return;
         }
 
-        const targetFps = state.settings.lowPowerMode ? 30 : 60;
-        const minInterval = 1000 / targetFps;
+        const targetFps = state.settings.targetFps || 60;
+        const minInterval = targetFps > 0 ? (1000 / targetFps) : 0;
         const dtSecRaw = lastDrawTs ? (ts - lastDrawTs) / 1000 : 0;
-        if (lastDrawTs && ts - lastDrawTs < minInterval) {
+        if (minInterval > 0 && lastDrawTs && ts - lastDrawTs < minInterval) {
             animationFrameId = requestAnimationFrame(draw);
             return;
         }
@@ -2358,41 +2743,37 @@ function draw(ts = 0) {
         const wasSeek = audioTimeDelta > 0.5 && state.lastAudioTime > 0;
         state.lastAudioTime = audio.currentTime;
         
+        const baseRate = audio.playbackRate || 1.0;
         if (wasSeek) {
             // シーク時は即座に動画位置を合わせてクールダウン
             const targetTime = audio.currentTime + getVideoSyncOffset();
             bgVideo.currentTime = targetTime;
-            bgVideo.playbackRate = 1.0;
-            videoSyncCooldown = 2.0; // シーク後は長めのクールダウン
+            bgVideo.playbackRate = baseRate;
+            videoSyncCooldown = 2.0;
             lastVideoSyncCheckTs = ts;
         } else if (videoSyncCooldown > 0) {
-            // クールダウン中は同期チェックをスキップ
             videoSyncCooldown -= dtSec;
         } else if (!lastVideoSyncCheckTs || ts - lastVideoSyncCheckTs >= 500) {
             lastVideoSyncCheckTs = ts;
-            const videoOffset = getVideoSyncOffset(); // MVを少しだけ先に進める
+            const videoOffset = getVideoSyncOffset();
             const targetTime = audio.currentTime + videoOffset;
             const timeDiff = bgVideo.currentTime - targetTime;
             const absTimeDiff = Math.abs(timeDiff);
             
-            // 同期閾値: 0秒=即時通過、0.1=倍速調整、2.0=シーク
             if (absTimeDiff > 2.0) {
-                // 大きなズレ：直接シーク
                 bgVideo.currentTime = targetTime;
-                bgVideo.playbackRate = 1.0;
+                bgVideo.playbackRate = baseRate;
                 videoSyncCooldown = 1.5;
             } else if (absTimeDiff > 0.1) {
-                // 中程度のズレ：再生速度で緊和に調整
                 if (timeDiff > 0) {
-                    bgVideo.playbackRate = Math.max(0.9, 1 - absTimeDiff * 0.1);
+                    bgVideo.playbackRate = baseRate * Math.max(0.9, 1 - absTimeDiff * 0.1);
                 } else {
-                    bgVideo.playbackRate = Math.min(1.1, 1 + absTimeDiff * 0.1);
+                    bgVideo.playbackRate = baseRate * Math.min(1.1, 1 + absTimeDiff * 0.1);
                 }
                 videoSyncCooldown = 0.5;
             } else {
-                // 0.1秒以下のズレは無視
-                if (bgVideo.playbackRate !== 1.0) {
-                    bgVideo.playbackRate = 1.0;
+                if (Math.abs(bgVideo.playbackRate - baseRate) > 0.01) {
+                    bgVideo.playbackRate = baseRate;
                 }
             }
         }
@@ -2482,13 +2863,7 @@ function draw(ts = 0) {
     animationFrameId = requestAnimationFrame(draw);
 }
 // ============== Shake & Sparkles ==============
-function computeEnergy(display) {
-    let sum = 0, peak = 0, n = display.length;
-    for (let i = 0; i < n; i++) { const v = Math.abs(display[i]); sum += v; if (v > peak) peak = v; }
-    const avg = sum / Math.max(1, n);
-    return Math.max(avg, peak);
-}
-// Shake and Sparkles features removed
+// (removed - features not used)
 
 // Modes (updated bars/circle to use display & sand)
 function drawBarsFromDisplay(display, colors, maxH, drawH, drawStartY) {
