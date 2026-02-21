@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AtCoder Template 仕様書</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- ヘッダー -->
+        <header class="header">
+            <h1>AtCoder Template v2 仕様書</h1>
+            <p class="subtitle">PyPy 7.3.20 / Python 3.11</p>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="関数名・クラス名で検索...">
+            </div>
+        </header>
+
+        <!-- サイドバー -->
+        <aside class="sidebar">
+            <nav class="nav-menu">
+                <div class="nav-item" data-category="io">
+                    <h3>入出力ヘルパ</h3>
+                </div>
+                <div class="nav-item" data-category="constants">
+                    <h3>定数・方向ベクトル</h3>
+                </div>
+                <div class="nav-item" data-category="output">
+                    <h3>出力関数</h3>
+                </div>
+                <div class="nav-item" data-category="math">
+                    <h3>数学・整数論</h3>
+                </div>
+                <div class="nav-item" data-category="combination">
+                    <h3>組み合わせ計算</h3>
+                </div>
+                <div class="nav-item" data-category="prefix">
+                    <h3>累積和</h3>
+                </div>
+                <div class="nav-item" data-category="imos">
+                    <h3>いもす法</h3>
+                </div>
+                <div class="nav-item" data-category="dsu">
+                    <h3>Union-Find</h3>
+                </div>
+                <div class="nav-item" data-category="graph">
+                    <h3>グラフアルゴリズム</h3>
+                </div>
+                <div class="nav-item" data-category="tree">
+                    <h3>木アルゴリズム</h3>
+                </div>
+                <div class="nav-item" data-category="datastructure">
+                    <h3>データ構造</h3>
+                </div>
+                <div class="nav-item" data-category="string">
+                    <h3>文字列アルゴリズム</h3>
+                </div>
+                <div class="nav-item" data-category="binary">
+                    <h3>二分探索</h3>
+                </div>
+                <div class="nav-item" data-category="compress">
+                    <h3>座標圧縮</h3>
+                </div>
+                <div class="nav-item" data-category="utility">
+                    <h3>ユーティリティ</h3>
+                </div>
+                <div class="nav-item" data-category="output-class">
+                    <h3>Outputクラス</h3>
+                </div>
+                <div class="nav-item" data-category="debug">
+                    <h3>デバッグ</h3>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- メインコンテンツ -->
+        <main class="main-content">
+            <!-- 入出力ヘルパ -->
+            <section id="io" class="category-section">
+                <h2>入出力ヘルパ</h2>
+                
+                <div class="function-card">
+                    <h3>INT()</h3>
+                    <p class="description">整数を1つ入力</p>
+                    <div class="code-block">
+                        <pre><code>def INT() -> int:
+    return int(input())</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>N = INT()  # 10 を入力すると N = 10</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>MAP()</h3>
+                    <p class="description">空白区切りの整数列をmapオブジェクトとして取得</p>
+                    <div class="code-block">
+                        <pre><code>def MAP():
+    return map(int, input().split())</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>A, B = MAP()  # "3 5" を入力すると A=3, B=5</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>LIST()</h3>
+                    <p class="description">空白区切りの整数列をリストとして取得</p>
+                    <div class="code-block">
+                        <pre><code>def LIST() -> list[int]:
+    return list(MAP())</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>A = LIST()  # "1 2 3 4 5" を入力すると A = [1, 2, 3, 4, 5]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>LISTS(n)</h3>
+                    <p class="description">n行の空白区切り整数列を2次元リストとして取得</p>
+                    <div class="code-block">
+                        <pre><code>def LISTS(n: int) -> list[list[int]]:
+    return [LIST() for _ in range(n)]</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>A = LISTS(3)  # 3行入力して、[[1,2], [3,4], [5,6]] のような2次元リスト</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>LISTSI(n)</h3>
+                    <p class="description">n行の整数を1次元リストとして取得</p>
+                    <div class="code-block">
+                        <pre><code>def LISTSI(n: int) -> list[int]:
+    return [INT() for _ in range(n)]</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>A = LISTSI(3)  # 3行（1,2,3）を入力すると A = [1, 2, 3]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>STR()</h3>
+                    <p class="description">文字列を1行入力</p>
+                    <div class="code-block">
+                        <pre><code>def STR() -> str:
+    return input()</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>S = STR()  # "hello" を入力すると S = "hello"</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>STRS(n)</h3>
+                    <p class="description">n行の文字列をリストとして取得</p>
+                    <div class="code-block">
+                        <pre><code>def STRS(n: int) -> list[str]:
+    return [STR() for _ in range(n)]</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>S = STRS(3)  # 3行入力して、["abc", "def", "ghi"]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>CHARS()</h3>
+                    <p class="description">文字列を文字のリストとして取得</p>
+                    <div class="code-block">
+                        <pre><code>def CHARS() -> list[str]:
+    return list(STR())</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>C = CHARS()  # "abc" を入力すると C = ['a', 'b', 'c']</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>STRSL(n)</h3>
+                    <p class="description">n行の文字列を2次元文字リストとして取得</p>
+                    <div class="code-block">
+                        <pre><code>def STRSL(n: int) -> list[list[str]]:
+    return [list(STR()) for _ in range(n)]</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>grid = STRSL(3)  # グリッド入力時に便利</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 定数・方向ベクトル -->
+            <section id="constants" class="category-section">
+                <h2>定数・方向ベクトル</h2>
+                
+                <div class="function-card">
+                    <h3>INF</h3>
+                    <p class="description">無限大を表す大きな数</p>
+                    <div class="code-block">
+                        <pre><code>INF = 10 ** 18</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>dist = [INF] * N  # 最短距離の初期値など</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>MOD</h3>
+                    <p class="description">modulo演算用の定数</p>
+                    <div class="code-block">
+                        <pre><code>MOD = 998244353
+# MOD = 10**9 + 7  # 問題に応じて変更</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>ans = (A * B) % MOD</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>DIR4, DIR8, DIR9</h3>
+                    <p class="description">方向ベクトル（4方向・8方向・9方向）</p>
+                    <div class="code-block">
+                        <pre><code>DIR4 = [(1, 0), (0, 1), (-1, 0), (0, -1)]  # 上下左右
+DIR8 = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)]  # 8方向
+DIR9 = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1), (0, 0)]  # 8方向+自分</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>for dy, dx in DIR4:
+    ny, nx = y + dy, x + dx
+    if 0 <= ny < H and 0 <= nx < W:
+        # 隣接マスの処理</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>LOWER, UPPER, DIGITS</h3>
+                    <p class="description">文字列のリスト</p>
+                    <div class="code-block">
+                        <pre><code>LOWER = list(string.ascii_lowercase)  # ['a', 'b', ..., 'z']
+UPPER = list(string.ascii_uppercase)  # ['A', 'B', ..., 'Z']
+DIGITS = list(string.digits)          # ['0', '1', ..., '9']</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 出力関数 -->
+            <section id="output" class="category-section">
+                <h2>出力関数</h2>
+                
+                <div class="function-card">
+                    <h3>Yes() / No()</h3>
+                    <p class="description">Yes/Noを出力</p>
+                    <div class="code-block">
+                        <pre><code>def Yes(): print("Yes")
+def No(): print("No")</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>if condition:
+    Yes()
+else:
+    No()</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>yes() / no(), YES() / NO()</h3>
+                    <p class="description">小文字・大文字版のyes/no出力</p>
+                    <div class="code-block">
+                        <pre><code>def yes(): print("yes")
+def no(): print("no")
+def YES(): print("YES")
+def NO(): print("NO")</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 数学・整数論 -->
+            <section id="math" class="category-section">
+                <h2>数学・整数論</h2>
+                <p class="frequency-tag high">出題頻度：非常に高い</p>
+                
+                <div class="function-card">
+                    <h3>is_prime(n)</h3>
+                    <p class="description">素数判定 O(√n)</p>
+                    <div class="code-block">
+                        <pre><code>def is_prime(n: int) -> bool:
+    if n < 2: return False
+    if n == 2: return True
+    if n % 2 == 0: return False
+    for i in range(3, int(n**0.5) + 1, 2):
+        if n % i == 0: return False
+    return True</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>if is_prime(17):
+    print("17は素数")</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>prime_factors(n)</h3>
+                    <p class="description">素因数分解 O(√n) → {素因数: 指数}</p>
+                    <div class="code-block">
+                        <pre><code>def prime_factors(n: int) -> dict[int, int]:
+    factors = defaultdict(int)
+    d = 2
+    while d * d <= n:
+        while n % d == 0:
+            factors[d] += 1
+            n //= d
+        d += 1
+    if n > 1:
+        factors[n] += 1
+    return dict(factors)</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>factors = prime_factors(24)  # {2: 3, 3: 1} (24 = 2^3 * 3)</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>divisors(n)</h3>
+                    <p class="description">約数列挙 O(√n) → ソート済みリスト</p>
+                    <div class="code-block">
+                        <pre><code>def divisors(n: int) -> list[int]:
+    divs = []
+    for i in range(1, int(n**0.5) + 1):
+        if n % i == 0:
+            divs.append(i)
+            if i != n // i:
+                divs.append(n // i)
+    return sorted(divs)</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>divs = divisors(12)  # [1, 2, 3, 4, 6, 12]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>sieve(n)</h3>
+                    <p class="description">エラトステネスの篩 O(n log log n)</p>
+                    <div class="code-block">
+                        <pre><code>def sieve(n: int) -> tuple[list[bool], list[int]]:
+    is_prime_arr = [True] * (n + 1)
+    if n >= 0: is_prime_arr[0] = False
+    if n >= 1: is_prime_arr[1] = False
+    for p in range(2, int(n ** 0.5) + 1):
+        if is_prime_arr[p]:
+            for q in range(p * p, n + 1, p):
+                is_prime_arr[q] = False
+    primes = [i for i in range(2, n + 1) if is_prime_arr[i]]
+    return is_prime_arr, primes</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>is_prime, primes = sieve(100)
+# primes = [2, 3, 5, 7, 11, 13, ...]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>gcd(a, b)</h3>
+                    <p class="description">最大公約数</p>
+                    <div class="code-block">
+                        <pre><code>def gcd(a: int, b: int) -> int:
+    while b:
+        a, b = b, a % b
+    return a</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>g = gcd(12, 18)  # 6</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>lcm(a, b)</h3>
+                    <p class="description">最小公倍数</p>
+                    <div class="code-block">
+                        <pre><code>def lcm(a: int, b: int) -> int:
+    return a // gcd(a, b) * b</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>l = lcm(12, 18)  # 36</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>ext_gcd(a, b)</h3>
+                    <p class="description">拡張ユークリッド互除法 → (gcd, x, y) where ax + by = gcd</p>
+                    <div class="code-block">
+                        <pre><code>def ext_gcd(a: int, b: int) -> tuple[int, int, int]:
+    if b == 0:
+        return a, 1, 0
+    g, x, y = ext_gcd(b, a % b)
+    return g, y, x - (a // b) * y</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>pow_mod(x, n, mod)</h3>
+                    <p class="description">高速べき乗 O(log n)</p>
+                    <div class="code-block">
+                        <pre><code>def pow_mod(x: int, n: int, mod: int = MOD) -> int:
+    res = 1
+    x %= mod
+    while n > 0:
+        if n & 1:
+            res = res * x % mod
+        x = x * x % mod
+        n >>= 1
+    return res</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>result = pow_mod(2, 10, MOD)  # 2^10 mod MOD</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>mod_inverse(a, mod)</h3>
+                    <p class="description">逆元（modが素数の場合）O(log mod)</p>
+                    <div class="code-block">
+                        <pre><code>def mod_inverse(a: int, mod: int = MOD) -> int:
+    return pow_mod(a, mod - 2, mod)</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>inv = mod_inverse(3, MOD)  # 3の逆元</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 組み合わせ計算 -->
+            <section id="combination" class="category-section">
+                <h2>組み合わせ計算</h2>
+                <p class="frequency-tag high">出題頻度：非常に高い</p>
+                
+                <div class="function-card">
+                    <h3>Combinationクラス</h3>
+                    <p class="description">組み合わせ計算 前処理O(n)、クエリO(1)</p>
+                    <div class="code-block">
+                        <pre><code>class Combination:
+    def __init__(self, n: int, mod: int = MOD):
+        # 階乗と逆元を前計算
+        
+    def nCr(self, n: int, r: int) -> int:
+        """組み合わせ nCr"""
+        
+    def nPr(self, n: int, r: int) -> int:
+        """順列 nPr"""
+        
+    def nHr(self, n: int, r: int) -> int:
+        """重複組み合わせ nHr = C(n+r-1, r)"""
+        
+    def catalan(self, n: int) -> int:
+        """カタラン数 C_n"""</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>comb = Combination(200000)
+print(comb.nCr(10, 3))  # 120
+print(comb.nPr(5, 2))   # 20
+print(comb.nHr(3, 2))   # 重複組み合わせ
+print(comb.catalan(3))  # カタラン数</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 累積和 -->
+            <section id="prefix" class="category-section">
+                <h2>累積和</h2>
+                <p class="frequency-tag high">出題頻度：非常に高い</p>
+                
+                <div class="function-card">
+                    <h3>prefix_sum(arr)</h3>
+                    <p class="description">1次元累積和 → ps[r] - ps[l] で [l, r) の和</p>
+                    <div class="code-block">
+                        <pre><code>def prefix_sum(arr: list[int]) -> list[int]:
+    ps = [0]
+    for x in arr:
+        ps.append(ps[-1] + x)
+    return ps</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>A = [1, 2, 3, 4, 5]
+ps = prefix_sum(A)
+# [l, r) の和は ps[r] - ps[l]
+sum_2_4 = ps[4] - ps[2]  # A[2] + A[3] = 3 + 4 = 7</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>prefix_sum_2d(grid)</h3>
+                    <p class="description">2次元累積和</p>
+                    <div class="code-block">
+                        <pre><code>def prefix_sum_2d(grid: list[list[int]]) -> list[list[int]]:
+    H, W = len(grid), len(grid[0])
+    ps = [[0] * (W + 1) for _ in range(H + 1)]
+    for i in range(H):
+        for j in range(W):
+            ps[i+1][j+1] = ps[i][j+1] + ps[i+1][j] - ps[i][j] + grid[i][j]
+    return ps</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>grid = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+ps = prefix_sum_2d(grid)
+# range_sum_2d で矩形和を取得</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>range_sum_2d(ps, y1, x1, y2, x2)</h3>
+                    <p class="description">2次元累積和から [y1, y2) × [x1, x2) の和を取得</p>
+                    <div class="code-block">
+                        <pre><code>def range_sum_2d(ps: list[list[int]], y1: int, x1: int, y2: int, x2: int) -> int:
+    return ps[y2][x2] - ps[y1][x2] - ps[y2][x1] + ps[y1][x1]</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- いもす法 -->
+            <section id="imos" class="category-section">
+                <h2>いもす法</h2>
+                <p class="frequency-tag medium">出題頻度：高い</p>
+                
+                <div class="function-card">
+                    <h3>Imos1Dクラス</h3>
+                    <p class="description">1次元いもす法</p>
+                    <div class="code-block">
+                        <pre><code>class Imos1D:
+    def __init__(self, n: int):
+        self.n = n
+        self.diff = [0] * (n + 1)
+    
+    def add(self, l: int, r: int, x: int = 1) -> None:
+        """[l, r) に x を加算"""
+        self.diff[l] += x
+        self.diff[r] -= x
+    
+    def build(self) -> list[int]:
+        """累積和を計算して結果を返す"""</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>imos = Imos1D(10)
+imos.add(2, 5, 1)   # [2, 5) に +1
+imos.add(3, 7, 2)   # [3, 7) に +2
+result = imos.build()</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>Imos2Dクラス</h3>
+                    <p class="description">2次元いもす法</p>
+                    <div class="code-block">
+                        <pre><code>class Imos2D:
+    def __init__(self, h: int, w: int):
+        self.h = h
+        self.w = w
+        self.diff = [[0] * (w + 1) for _ in range(h + 1)]
+    
+    def add(self, y1: int, x1: int, y2: int, x2: int, x: int = 1) -> None:
+        """[y1, y2) × [x1, x2) に x を加算"""
+    
+    def build(self) -> list[list[int]]:
+        """累積和を計算して結果を返す"""</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>imos = Imos2D(H, W)
+imos.add(y1, x1, y2, x2, 1)  # [y1,y2) × [x1,x2) に +1
+result = imos.build()</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Union-Find -->
+            <section id="dsu" class="category-section">
+                <h2>Union-Find</h2>
+                <p class="frequency-tag high">出題頻度：非常に高い</p>
+                
+                <div class="function-card">
+                    <h3>DSUクラス</h3>
+                    <p class="description">Union-Find木（経路圧縮 + サイズ併合）</p>
+                    <div class="code-block">
+                        <pre><code>class DSU:
+    def __init__(self, n: int):
+        """n個の頂点で初期化"""
+    
+    def leader(self, x: int) -> int:
+        """xの根を取得"""
+    
+    def merge(self, a: int, b: int) -> bool:
+        """aとbを併合（成功でTrue）"""
+    
+    def same(self, a: int, b: int) -> bool:
+        """aとbが同じグループか"""
+    
+    def size(self, x: int) -> int:
+        """xが属するグループのサイズ"""
+    
+    def group_count(self) -> int:
+        """グループ数"""
+    
+    def groups(self) -> list[list[int]]:
+        """全グループを取得"""</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>uf = DSU(n)
+uf.merge(0, 1)
+uf.merge(2, 3)
+print(uf.same(0, 1))  # True
+print(uf.size(0))     # 2
+print(uf.group_count())  # グループ数</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>WeightedDSUクラス</h3>
+                    <p class="description">重み付きUnion-Find（ポテンシャル付き）</p>
+                    <div class="code-block">
+                        <pre><code>class WeightedDSU:
+    def __init__(self, n: int):
+        """n個の頂点で初期化"""
+    
+    def merge(self, x: int, y: int, w: int) -> bool:
+        """weight[x] - weight[y] = w となるよう併合"""
+    
+    def diff(self, x: int, y: int) -> int:
+        """weight[x] - weight[y] を返す"""
+    
+    def same(self, x: int, y: int) -> bool:
+        """xとyが同じグループか"""</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>wuf = WeightedDSU(n)
+wuf.merge(x, y, w)  # weight[x] - weight[y] = w
+diff = wuf.diff(x, y)  # weight[x] - weight[y]</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- グラフアルゴリズム -->
+            <section id="graph" class="category-section">
+                <h2>グラフアルゴリズム</h2>
+                <p class="frequency-tag high">出題頻度：非常に高い</p>
+                
+                <div class="function-card">
+                    <h3>build_graph(n, edges, directed)</h3>
+                    <p class="description">隣接リスト構築（重みなし）</p>
+                    <div class="code-block">
+                        <pre><code>def build_graph(n: int, edges: list[tuple[int, int]], directed: bool = False) -> list[list[int]]:
+    g = [[] for _ in range(n)]
+    for a, b in edges:
+        g[a].append(b)
+        if not directed:
+            g[b].append(a)
+    return g</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>edges = [(0, 1), (1, 2), (0, 2)]
+g = build_graph(3, edges)  # 無向グラフ</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>build_weighted_graph(n, edges, directed)</h3>
+                    <p class="description">隣接リスト構築（重みあり）</p>
+                    <div class="code-block">
+                        <pre><code>def build_weighted_graph(n: int, edges: list[tuple[int, int, int]], directed: bool = False) -> list[list[tuple[int, int]]]:
+    g = [[] for _ in range(n)]
+    for a, b, c in edges:
+        g[a].append((b, c))
+        if not directed:
+            g[b].append((a, c))
+    return g</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>edges = [(0, 1, 5), (1, 2, 3)]
+g = build_weighted_graph(3, edges)</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>bfs(g, s)</h3>
+                    <p class="description">BFS最短距離（重みなし）→ 到達不能は-1</p>
+                    <div class="code-block">
+                        <pre><code>def bfs(g: list[list[int]], s: int) -> list[int]:
+    dist = [-1] * len(g)
+    dist[s] = 0
+    q = deque([s])
+    while q:
+        v = q.popleft()
+        for to in g[v]:
+            if dist[to] == -1:
+                dist[to] = dist[v] + 1
+                q.append(to)
+    return dist</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>dist = bfs(g, 0)  # 頂点0からの最短距離</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>bfs_grid(grid, sy, sx, wall)</h3>
+                    <p class="description">グリッドBFS → 到達不能は-1</p>
+                    <div class="code-block">
+                        <pre><code>def bfs_grid(grid: list[list[str]], sy: int, sx: int, wall: str = '#') -> list[list[int]]:
+    H, W = len(grid), len(grid[0])
+    dist = [[-1] * W for _ in range(H)]
+    dist[sy][sx] = 0
+    q = deque([(sy, sx)])
+    while q:
+        y, x = q.popleft()
+        for dy, dx in DIR4:
+            ny, nx = y + dy, x + dx
+            if 0 <= ny < H and 0 <= nx < W and dist[ny][nx] == -1 and grid[ny][nx] != wall:
+                dist[ny][nx] = dist[y][x] + 1
+                q.append((ny, nx))
+    return dist</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>grid = [['.','.','#'], ['.','#','.'], ['.','.','.']]
+dist = bfs_grid(grid, 0, 0)</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>dijkstra(g, s)</h3>
+                    <p class="description">Dijkstra法 O((V+E)log V)</p>
+                    <div class="code-block">
+                        <pre><code>def dijkstra(g: list[list[tuple[int, int]]], s: int) -> list[int]:
+    dist = [INF] * len(g)
+    dist[s] = 0
+    pq = [(0, s)]
+    while pq:
+        d, v = heapq.heappop(pq)
+        if d > dist[v]: continue
+        for to, w in g[v]:
+            if dist[v] + w < dist[to]:
+                dist[to] = dist[v] + w
+                heapq.heappush(pq, (dist[to], to))
+    return dist</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>g = build_weighted_graph(n, edges)
+dist = dijkstra(g, 0)  # 頂点0からの最短距離</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>bellman_ford(n, edges, s)</h3>
+                    <p class="description">Bellman-Ford法 O(VE) → (距離, 負閉路あり?)</p>
+                    <div class="code-block">
+                        <pre><code>def bellman_ford(n: int, edges: list[tuple[int, int, int]], s: int) -> tuple[list[int], bool]:
+    dist = [INF] * n
+    dist[s] = 0
+    for i in range(n):
+        updated = False
+        for u, v, w in edges:
+            if dist[u] != INF and dist[u] + w < dist[v]:
+                dist[v] = dist[u] + w
+                updated = True
+        if not updated: break
+        if i == n - 1: return dist, True
+    return dist, False</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>dist, has_negative_cycle = bellman_ford(n, edges, 0)</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>warshall_floyd(n, edges)</h3>
+                    <p class="description">Warshall-Floyd法 O(V³) → 全点対最短距離</p>
+                    <div class="code-block">
+                        <pre><code>def warshall_floyd(n: int, edges: list[tuple[int, int, int]]) -> list[list[int]]:
+    dist = [[INF] * n for _ in range(n)]
+    for i in range(n): dist[i][i] = 0
+    for u, v, w in edges:
+        dist[u][v] = min(dist[u][v], w)
+    for k in range(n):
+        for i in range(n):
+            for j in range(n):
+                dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])
+    return dist</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>dist = warshall_floyd(n, edges)
+print(dist[i][j])  # 頂点i→jの最短距離</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>topological_sort(g)</h3>
+                    <p class="description">トポロジカルソート → 閉路ありならNone</p>
+                    <div class="code-block">
+                        <pre><code>def topological_sort(g: list[list[int]]) -> list[int] | None:
+    n = len(g)
+    indeg = [0] * n
+    for v in range(n):
+        for to in g[v]:
+            indeg[to] += 1
+    q = deque([i for i in range(n) if indeg[i] == 0])
+    result = []
+    while q:
+        v = q.popleft()
+        result.append(v)
+        for to in g[v]:
+            indeg[to] -= 1
+            if indeg[to] == 0:
+                q.append(to)
+    return result if len(result) == n else None</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>order = topological_sort(g)
+if order is None:
+    print("閉路あり")</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>detect_cycle(g)</h3>
+                    <p class="description">有向グラフの閉路検出 → 閉路の頂点リスト or None</p>
+                    <div class="code-block">
+                        <pre><code>def detect_cycle(g: list[list[int]]) -> list[int] | None:
+    # DFSで閉路を検出
+    # 閉路があれば頂点リストを返す</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 木アルゴリズム -->
+            <section id="tree" class="category-section">
+                <h2>木アルゴリズム</h2>
+                <p class="frequency-tag medium">出題頻度：高い</p>
+                
+                <div class="function-card">
+                    <h3>tree_diameter(g)</h3>
+                    <p class="description">木の直径 → (直径, 端点1, 端点2)</p>
+                    <div class="code-block">
+                        <pre><code>def tree_diameter(g: list[list[int]]) -> tuple[int, int, int]:
+    def bfs_farthest(s: int) -> tuple[int, int]:
+        dist = bfs(g, s)
+        farthest = max(range(len(g)), key=lambda x: dist[x])
+        return farthest, dist[farthest]
+    
+    u, _ = bfs_farthest(0)
+    v, d = bfs_farthest(u)
+    return d, u, v</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>diameter, u, v = tree_diameter(g)</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>tree_depth(g, root)</h3>
+                    <p class="description">各頂点の深さを計算</p>
+                    <div class="code-block">
+                        <pre><code>def tree_depth(g: list[list[int]], root: int = 0) -> list[int]:
+    return bfs(g, root)</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>tree_parent(g, root)</h3>
+                    <p class="description">各頂点の親を計算（根は-1）</p>
+                    <div class="code-block">
+                        <pre><code>def tree_parent(g: list[list[int]], root: int = 0) -> list[int]:
+    n = len(g)
+    parent = [-1] * n
+    visited = [False] * n
+    visited[root] = True
+    q = deque([root])
+    while q:
+        v = q.popleft()
+        for to in g[v]:
+            if not visited[to]:
+                visited[to] = True
+                parent[to] = v
+                q.append(to)
+    return parent</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>subtree_size(g, root)</h3>
+                    <p class="description">部分木のサイズを計算</p>
+                    <div class="code-block">
+                        <pre><code>def subtree_size(g: list[list[int]], root: int = 0) -> list[int]:
+    n = len(g)
+    size = [1] * n
+    parent = tree_parent(g, root)
+    depth = tree_depth(g, root)
+    order = sorted(range(n), key=lambda x: -depth[x])
+    for v in order:
+        if parent[v] != -1:
+            size[parent[v]] += size[v]
+    return size</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>LCAクラス</h3>
+                    <p class="description">最小共通祖先（ダブリング）</p>
+                    <div class="code-block">
+                        <pre><code>class LCA:
+    def __init__(self, g: list[list[int]], root: int = 0):
+        """グラフgと根rootで初期化"""
+    
+    def query(self, u: int, v: int) -> int:
+        """u, v のLCAを返す"""
+    
+    def dist(self, u: int, v: int) -> int:
+        """u-v間の距離"""</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>lca = LCA(g, root=0)
+ancestor = lca.query(u, v)
+distance = lca.dist(u, v)</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- データ構造 -->
+            <section id="datastructure" class="category-section">
+                <h2>データ構造</h2>
+                <p class="frequency-tag medium">出題頻度：高い</p>
+                
+                <div class="function-card">
+                    <h3>BITクラス（Binary Indexed Tree）</h3>
+                    <p class="description">Fenwick Tree 0-indexed</p>
+                    <div class="code-block">
+                        <pre><code>class BIT:
+    def __init__(self, n: int):
+        """n要素で初期化"""
+    
+    def add(self, i: int, x: int) -> None:
+        """a[i] += x"""
+    
+    def sum(self, i: int) -> int:
+        """a[0] + ... + a[i]"""
+    
+    def range_sum(self, l: int, r: int) -> int:
+        """a[l] + ... + a[r-1]"""
+    
+    def lower_bound(self, w: int) -> int:
+        """累積和が w 以上になる最小のインデックス"""</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>bit = BIT(n)
+bit.add(i, x)        # a[i] += x
+s = bit.sum(i)       # a[0] + ... + a[i]
+s = bit.range_sum(l, r)  # a[l] + ... + a[r-1]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>SegTreeクラス（Segment Tree）</h3>
+                    <p class="description">汎用セグメント木</p>
+                    <div class="code-block">
+                        <pre><code>class SegTree:
+    def __init__(self, n: int, op: Callable = operator.add, e: int = 0):
+        """n要素、演算op、単位元eで初期化"""
+    
+    def build(self, arr: list[int]) -> None:
+        """配列で初期化"""
+    
+    def set(self, i: int, v: int) -> None:
+        """a[i] = v"""
+    
+    def get(self, i: int) -> int:
+        """a[i]を取得"""
+    
+    def query(self, l: int, r: int) -> int:
+        """[l, r) の演算結果"""
+    
+    def all_query(self) -> int:
+        """全区間の演算結果"""</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code># 区間和
+st = SegTree(n, op=operator.add, e=0)
+# 区間最小
+st = SegTree(n, op=min, e=INF)
+# 区間最大
+st = SegTree(n, op=max, e=-INF)
+# 区間GCD
+st = SegTree(n, op=gcd, e=0)
+
+st.set(i, v)
+result = st.query(l, r)</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>SortedMultisetクラス</h3>
+                    <p class="description">平方分割によるMultiset（要素の重複OK）</p>
+                    <div class="code-block">
+                        <pre><code>class SortedMultiset:
+    def __init__(self, a: list[int] = []):
+        """リストaで初期化"""
+    
+    def add(self, x: int) -> None:
+        """要素xを追加"""
+    
+    def discard(self, x: int) -> bool:
+        """要素xを削除（成功でTrue）"""
+    
+    def __getitem__(self, i: int) -> int:
+        """i番目の要素を取得"""
+    
+    def __len__(self) -> int:
+        """要素数"""
+    
+    def __contains__(self, x: int) -> bool:
+        """xが含まれるか"""
+    
+    def index(self, x: int) -> int:
+        """x未満の要素数"""
+    
+    def index_right(self, x: int) -> int:
+        """x以下の要素数"""</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>ms = SortedMultiset()
+ms.add(5)
+ms.add(3)
+ms.add(7)
+ms.discard(5)
+print(ms[0])   # 最小値: 3
+print(ms[-1])  # 最大値: 7
+print(len(ms)) # 要素数: 2</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 文字列アルゴリズム -->
+            <section id="string" class="category-section">
+                <h2>文字列アルゴリズム</h2>
+                <p class="frequency-tag medium">出題頻度：中〜高</p>
+                
+                <div class="function-card">
+                    <h3>RollingHashクラス</h3>
+                    <p class="description">ローリングハッシュ（ダブルハッシュ版）</p>
+                    <div class="code-block">
+                        <pre><code>class RollingHash:
+    def __init__(self, s: str):
+        """文字列sで初期化"""
+    
+    def get(self, l: int, r: int) -> tuple[int, int]:
+        """[l, r) のハッシュ"""
+    
+    def lcp(self, i: int, j: int) -> int:
+        """位置i, jから始まる最長共通接頭辞の長さ"""</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>rh = RollingHash("abcabc")
+print(rh.get(0, 3) == rh.get(3, 6))  # True ("abc" == "abc")
+print(rh.lcp(0, 3))  # 3</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>z_algorithm(s)</h3>
+                    <p class="description">Z-algorithm: z[i] = s と s[i:] の最長共通接頭辞の長さ</p>
+                    <div class="code-block">
+                        <pre><code>def z_algorithm(s: str) -> list[int]:
+    n = len(s)
+    z = [0] * n
+    z[0] = n
+    i, j = 1, 0
+    while i < n:
+        while i + j < n and s[j] == s[i + j]:
+            j += 1
+        z[i] = j
+        # ...
+    return z</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>z = z_algorithm("abcabcabc")
+# パターンマッチングなどに利用</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>run_length_encode(s)</h3>
+                    <p class="description">ランレングス圧縮 → [(文字, 連続数), ...]</p>
+                    <div class="code-block">
+                        <pre><code>def run_length_encode(s: str | list) -> list[tuple]:
+    if not s: return []
+    result = []
+    current, count = s[0], 1
+    for i in range(1, len(s)):
+        if s[i] == current:
+            count += 1
+        else:
+            result.append((current, count))
+            current, count = s[i], 1
+    result.append((current, count))
+    return result</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>rle = run_length_encode("aaabbcccc")
+# [('a', 3), ('b', 2), ('c', 4)]</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 二分探索 -->
+            <section id="binary" class="category-section">
+                <h2>二分探索</h2>
+                <p class="frequency-tag high">出題頻度：非常に高い</p>
+                
+                <div class="function-card">
+                    <h3>binary_search_min(ng, ok, check)</h3>
+                    <p class="description">条件を満たす最小値を探す</p>
+                    <div class="code-block">
+                        <pre><code>def binary_search_min(ng: int, ok: int, check: Callable[[int], bool]) -> int:
+    """check(x) = True となる最小の x を返す
+    ng: 条件を満たさない値, ok: 条件を満たす値"""
+    while abs(ok - ng) > 1:
+        mid = (ok + ng) // 2
+        if check(mid):
+            ok = mid
+        else:
+            ng = mid
+    return ok</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code># x >= 5 となる最小のx
+result = binary_search_min(0, 10, lambda x: x >= 5)  # 5</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>binary_search_max(ok, ng, check)</h3>
+                    <p class="description">条件を満たす最大値を探す</p>
+                    <div class="code-block">
+                        <pre><code>def binary_search_max(ok: int, ng: int, check: Callable[[int], bool]) -> int:
+    """check(x) = True となる最大の x を返す
+    ok: 条件を満たす値, ng: 条件を満たさない値"""
+    while abs(ok - ng) > 1:
+        mid = (ok + ng) // 2
+        if check(mid):
+            ok = mid
+        else:
+            ng = mid
+    return ok</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code># x <= 5 となる最大のx
+result = binary_search_max(0, 10, lambda x: x <= 5)  # 5</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>binary_search_float(ok, ng, check, iterations)</h3>
+                    <p class="description">実数二分探索</p>
+                    <div class="code-block">
+                        <pre><code>def binary_search_float(ok: float, ng: float, check: Callable[[float], bool], iterations: int = 100) -> float:
+    for _ in range(iterations):
+        mid = (ok + ng) / 2
+        if check(mid):
+            ok = mid
+        else:
+            ng = mid
+    return ok</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>result = binary_search_float(0.0, 100.0, lambda x: x**2 >= 2.0)</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 座標圧縮 -->
+            <section id="compress" class="category-section">
+                <h2>座標圧縮</h2>
+                <p class="frequency-tag medium">出題頻度：高い</p>
+                
+                <div class="function-card">
+                    <h3>compress(arr)</h3>
+                    <p class="description">座標圧縮 → (値→index辞書, ソート済み元値リスト)</p>
+                    <div class="code-block">
+                        <pre><code>def compress(arr: list[int]) -> tuple[dict[int, int], list[int]]:
+    xs = sorted(set(arr))
+    mp = {x: i for i, x in enumerate(xs)}
+    return mp, xs</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>arr = [100, 50, 200, 50, 100]
+mp, xs = compress(arr)
+# mp = {50: 0, 100: 1, 200: 2}
+# xs = [50, 100, 200]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>compress_list(arr)</h3>
+                    <p class="description">座標圧縮 → 圧縮後の配列</p>
+                    <div class="code-block">
+                        <pre><code>def compress_list(arr: list[int]) -> list[int]:
+    mp, _ = compress(arr)
+    return [mp[x] for x in arr]</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>arr = [100, 50, 200, 50, 100]
+compressed = compress_list(arr)
+# [1, 0, 2, 0, 1]</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ユーティリティ -->
+            <section id="utility" class="category-section">
+                <h2>ユーティリティ</h2>
+                <p class="frequency-tag medium">出題頻度：高い</p>
+                
+                <div class="function-card">
+                    <h3>manhattan(x1, y1, x2, y2)</h3>
+                    <p class="description">マンハッタン距離</p>
+                    <div class="code-block">
+                        <pre><code>def manhattan(x1: int, y1: int, x2: int, y2: int) -> int:
+    return abs(x1 - x2) + abs(y1 - y2)</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>chebyshev(x1, y1, x2, y2)</h3>
+                    <p class="description">チェビシェフ距離</p>
+                    <div class="code-block">
+                        <pre><code>def chebyshev(x1: int, y1: int, x2: int, y2: int) -> int:
+    return max(abs(x1 - x2), abs(y1 - y2))</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>ceil_div(a, b)</h3>
+                    <p class="description">切り上げ除算 (a, b > 0)</p>
+                    <div class="code-block">
+                        <pre><code>def ceil_div(a: int, b: int) -> int:
+    return (a + b - 1) // b</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>result = ceil_div(10, 3)  # 4</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>rotate_90(grid)</h3>
+                    <p class="description">グリッドを時計回りに90度回転</p>
+                    <div class="code-block">
+                        <pre><code>def rotate_90(grid: list[list]) -> list[list]:
+    H, W = len(grid), len(grid[0])
+    return [[grid[H-1-j][i] for j in range(H)] for i in range(W)]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>transpose(grid)</h3>
+                    <p class="description">グリッドの転置</p>
+                    <div class="code-block">
+                        <pre><code>def transpose(grid: list[list]) -> list[list]:
+    return [list(row) for row in zip(*grid)]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>floor_sum(n, m, a, b)</h3>
+                    <p class="description">Σ_{i=0}^{n-1} floor((a*i + b) / m)</p>
+                    <div class="code-block">
+                        <pre><code>def floor_sum(n: int, m: int, a: int, b: int) -> int:
+    # 高速に床関数の和を計算</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Outputクラス -->
+            <section id="output-class" class="category-section">
+                <h2>Outputクラス</h2>
+                <p class="description">データを記録してまとめて出力するためのクラス</p>
+                
+                <div class="function-card">
+                    <h3>Outputクラス</h3>
+                    <div class="code-block">
+                        <pre><code>class Output:
+    def __init__(self):
+        self.buffer = []
+    
+    def add(self, *args, sep: str = ' ') -> None:
+        """引数を一つの行(文字列)として結合して記録"""
+    
+    def extend(self, iterable) -> None:
+        """イテラブルの各要素をそれぞれ一行として記録"""
+    
+    def grid(self, grid: list[list], sep: str = ' ') -> None:
+        """2次元配列を各行を空白区切りなどで記録"""
+    
+    def yes(self, cond: bool, yes: str = "Yes", no: str = "No") -> None:
+        """条件に応じてYes/Noを記録"""
+    
+    def flush(self, sep: str = '\n', end: str = '\n', file=sys.stdout) -> None:
+        """記録した内容を結合して出力し、バッファを空にする"""
+    
+    def get(self, sep: str = '\n') -> str:
+        """記録した内容を結合した文字列を返す"""</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>out = Output()
+out.add(1, 2, 3)
+out.add(4, 5, 6)
+out.yes(True)
+out.flush()  # 一括出力
+# 1 2 3
+# 4 5 6
+# Yes</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- デバッグ -->
+            <section id="debug" class="category-section">
+                <h2>デバッグ</h2>
+                
+                <div class="function-card">
+                    <h3>debug(*args, **kwargs)</h3>
+                    <p class="description">デバッグ出力（標準エラー）</p>
+                    <div class="code-block">
+                        <pre><code>def debug(*args, **kwargs) -> None:
+    print("[DEBUG]", *args, **kwargs, file=sys.stderr)</code></pre>
+                    </div>
+                    <div class="usage">
+                        <h4>使用例</h4>
+                        <pre><code>debug("x =", x, "y =", y)
+# [DEBUG] x = 10 y = 20 (標準エラーに出力)</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>print_grid(grid, sep)</h3>
+                    <p class="description">グリッド表示</p>
+                    <div class="code-block">
+                        <pre><code>def print_grid(grid: list[list], sep: str = '') -> None:
+    for row in grid:
+        print(sep.join(map(str, row)))</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3>yn(cond)</h3>
+                    <p class="description">条件に応じてYes/No出力</p>
+                    <div class="code-block">
+                        <pre><code>def yn(cond: bool) -> None:
+    print("Yes" if cond else "No")</code></pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <button id="scrollTopBtn" class="scroll-top-btn" title="トップへ戻る">↑</button>
+
+    <script src="script.js"></script>
+</body>
+</html>
