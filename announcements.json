@@ -1,5 +1,6 @@
 {
   "announcements": [
+    { "date": "26/02/21", "text": "main: AtCoder レート推移ウィジェットを追加しました。" },
     { "date": "26/01/22", "text": "main: メインページの更新を行いました。" },
     { "date": "26/01/22", "text": "main: お知らせの表示方法を改良しました。" },
     { "date": "26/01/17", "text": "main: Audio-Visualizer v1.0.4 安定版公開開始！" },
