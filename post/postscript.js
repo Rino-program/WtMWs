@@ -920,14 +920,40 @@ document.addEventListener('DOMContentLoaded', function() {
                     try{
                         const id = '__burstBadge';
                         let b = document.getElementById(id);
-                        if(!b){ b = document.createElement('div'); b.id = id; b.style.position = 'fixed'; b.style.left = '12px'; b.style.bottom = '12px'; b.style.padding = '8px 10px'; b.style.borderRadius = '12px'; b.style.fontSize = '12px'; b.style.background = 'rgba(0,0,0,0.34)'; b.style.color = 'rgba(255,255,255,0.95)'; b.style.zIndex = 6000; b.style.backdropFilter = 'blur(6px)'; b.style.boxShadow = '0 6px 18px rgba(0,0,0,0.18)'; document.body.appendChild(b); }
-                        b.textContent = badgeText;
-                        b.style.opacity = '0.02';
-                        // fade in/out subtly
-                        b.style.transition = 'opacity 260ms linear';
-                        requestAnimationFrame(()=> b.style.opacity = '0.9');
+                        if(!b){
+                            b = document.createElement('div');
+                            b.id = id;
+                            // Visible, high-priority styling to avoid being hidden on iPad
+                            b.style.position = 'fixed';
+                            b.style.left = '12px';
+                            b.style.bottom = '12px';
+                            b.style.padding = '8px 10px';
+                            b.style.borderRadius = '10px';
+                            b.style.background = 'rgba(255,255,255,0.92)';
+                            b.style.color = '#111';
+                            b.style.boxShadow = '0 6px 18px rgba(0,0,0,0.12)';
+                            b.style.zIndex = '99999';
+                            b.style.fontSize = '0.85rem';
+                            b.style.fontWeight = '600';
+                            b.style.pointerEvents = 'none';
+                            b.style.opacity = '0';
+                            b.style.transition = 'opacity 260ms linear';
+                            document.body.appendChild(b);
+                        }
+                        b.textContent = badgeText || '';
+                        // fade in (rAF + timeout fallback for platforms where rAF might be delayed)
+                        try{
+                            (window.requestAnimationFrame || function(fn){ setTimeout(fn,16); })(function(){ b.style.opacity = '0.9'; });
+                            setTimeout(function(){
+                                try{
+                                    var comp = window.getComputedStyle ? window.getComputedStyle(b).opacity : null;
+                                    if(!comp || parseFloat(comp) < 0.1){ b.style.opacity = '0.95'; b.style.zIndex = '99999'; }
+                                }catch(e){}
+                            }, 60);
+                        }catch(e){}
+                        // ensure previous timer cleared
                         clearTimeout(b._t);
-                        b._t = setTimeout(()=>{ b.style.opacity = '0.02'; }, 1600);
+                        b._t = setTimeout(function(){ b.style.opacity = '0'; }, 1600);
                     }catch(e){}
                     schedule();
                 }, delay);
